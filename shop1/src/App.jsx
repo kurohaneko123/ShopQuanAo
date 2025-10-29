@@ -10,7 +10,7 @@ import AoLopKyYeuPage from "./View/AoLop.jsx";
 import AdminLayout from "./Admin/Admin.jsx";
 import ProtectedRoute from "./routes/ProtectedRoute.jsx";
 import ClassBanner from "./View/ClassBanner.jsx";
-
+import AdminRoutes from "./routes/AdminRoutes.jsx";
 export default function App() {
   const location = useLocation();
 
@@ -35,10 +35,10 @@ export default function App() {
 
         {/* Trang Admin có bảo vệ */}
         <Route
-          path="/admin"
+          path="/admin/*"
           element={
             <ProtectedRoute>
-              <AdminLayout />
+              <AdminRoutes />
             </ProtectedRoute>
           }
         />

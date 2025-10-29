@@ -1,11 +1,12 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { Link } from "react-router-dom";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
-/* ====== Import ảnh ====== */
+/* ====== Import ảnh mẫu (tạm) ====== */
 import Aosomi from "../assets/aosomi.jpg";
 import Aokhoac from "../assets/aokhoac.jpg";
 import Aopolo from "../assets/aopolo.jpeg";
@@ -15,9 +16,9 @@ import Quanjooger from "../assets/quanjooger.jpg";
 import QuanjoogerTrang from "../assets/quanjoogertrang.png";
 import Quanshort from "../assets/quan-short.jpg";
 import Bannermacthuongngay from "../assets/banner_mac.jpg";
-import Bannergoiy from "../assets/banner_goiy2.webp"; //
+import Bannergoiy from "../assets/banner_goiy2.webp";
 
-/* ====== 2 nút trái và phải cho slider ====== */
+/* ====== Nút trái/phải cho slider ====== */
 const PrevArrow = ({ onClick }) => (
   <button
     onClick={onClick}
@@ -66,53 +67,12 @@ const NextArrow = ({ onClick }) => (
 
 export default function HomePage() {
   const [selectedGender, setSelectedGender] = useState("nam");
+  const [dailyProducts, setDailyProducts] = useState([]); // sản phẩm mặc hàng ngày
+  const [highlightProducts, setHighlightProducts] = useState([]); // sản phẩm nổi bật
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  /* ===== 6 ô danh mục ===== */
-  const maleCategories = [
-    { id: "m-1", name: "ÁO THUN", img: Aothunbasic, slug: "ao-thun-nam" },
-    { id: "m-2", name: "ÁO POLO", img: Aopolo, slug: "ao-polo-nam" },
-    { id: "m-3", name: "Quần Short", img: Quanshort, slug: "quan-short" },
-    { id: "m-4", name: "Quần Jean", img: Quanjean, slug: "quan-jean" },
-    { id: "m-5", name: "Áo Khoác", img: Aokhoac, slug: "ao-khoac" },
-    {
-      id: "m-6",
-      name: "Quần Jogger",
-      img: QuanjoogerTrang,
-      slug: "quan-jogger",
-    },
-  ];
-
-  const femaleCategories = [
-    { id: "f-1", name: "ÁO THUN", img: Aopolo, slug: "ao-thun-nu" },
-    { id: "f-2", name: "VÁY", img: Aosomi, slug: "vay" },
-    { id: "f-3", name: "QUẦN TÂY", img: Quanjean, slug: "quan-tay" },
-    { id: "f-4", name: "QUẦN JEAN", img: Quanjean, slug: "quan-jean" },
-    { id: "f-5", name: "Quần Jogger", img: Quanjooger, slug: "quan-jogger" },
-    { id: "f-6", name: "Quần Short", img: Aokhoac, slug: "quan-short" },
-  ];
-
-  const gridCategories =
-    selectedGender === "nam" ? maleCategories : femaleCategories;
-
-  /* ===== sản phẩm mặc hằng ngày ===== */
-  const products = [
-    { id: 1, name: "Áo Thun Basic", price: 199000, img: Aothunbasic },
-    { id: 2, name: "Quần Jogger", price: 299000, img: QuanjoogerTrang },
-    { id: 3, name: "Áo Polo", price: 249000, img: Aopolo },
-    { id: 4, name: "Áo Khoác", price: 399000, img: Aokhoac },
-    { id: 5, name: "Quần Jeans", price: 349000, img: Quanjean },
-    { id: 6, name: "Áo Sơ Mi", price: 279000, img: Aosomi },
-  ];
-
-  const suggestionProducts = [
-    { id: 7, name: "Áo Khoác", price: 329000, img: Aokhoac },
-    { id: 8, name: "Áo Sơ Mi Trắng", price: 299000, img: Aosomi },
-    { id: 9, name: "Áo Polo Đen", price: 259000, img: Aopolo },
-    { id: 10, name: "Quần Jean", price: 359000, img: Quanjean },
-    { id: 11, name: "Áo Thun Cotton", price: 189000, img: Aothunbasic },
-    { id: 12, name: "Quần Jogger Xám", price: 279000, img: Quanjooger },
-  ];
-
+  /* ====== Cấu hình slider ====== */
   const settings = {
     dots: false,
     infinite: true,
@@ -130,10 +90,82 @@ export default function HomePage() {
     ],
   };
 
+  /* ====== Gọi API lấy dữ liệu sản phẩm ====== */
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/sanpham");
+        const apiData = res.data.data || [];
+
+        // 🌟 Chuyển đổi dữ liệu từ backend thành định dạng frontend hiểu được
+        const mappedProducts = apiData.map((item) => ({
+          id: item.masanpham,
+          name: item.tensanpham,
+          price: Math.floor(Math.random() * 400000) + 150000, // tạm random giá
+          img: Aothunbasic, // TODO: sau này gắn ảnh thật từ Cloudinary backend trả về
+          brand: item.thuonghieu,
+          mota: item.mota,
+          categoryId: item.madanhmuc,
+        }));
+
+        // 🌟 Chia sản phẩm thành 2 nhóm (demo)
+        setDailyProducts(mappedProducts.slice(0, 6)); // 6 sản phẩm đầu tiên
+        setHighlightProducts(mappedProducts.slice(6, 12)); // 6 sản phẩm tiếp theo
+      } catch (err) {
+        console.error("Lỗi khi lấy sản phẩm:", err);
+        setError("Không thể tải danh sách sản phẩm 😭");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  /* ====== Danh mục tĩnh (chưa có API riêng) ====== */
+  // TODO: sau này gắn API danh mục nam/nữ riêng (ví dụ /api/danhmuc?gender=nam)
+  const maleCategories = [
+    { id: "m-1", name: "ÁO THUN", img: Aothunbasic, slug: "ao-thun-nam" },
+    { id: "m-2", name: "ÁO POLO", img: Aopolo, slug: "ao-polo-nam" },
+    { id: "m-3", name: "QUẦN SHORT", img: Quanshort, slug: "quan-short" },
+    { id: "m-4", name: "QUẦN JEAN", img: Quanjean, slug: "quan-jean" },
+    { id: "m-5", name: "ÁO KHOÁC", img: Aokhoac, slug: "ao-khoac" },
+    {
+      id: "m-6",
+      name: "QUẦN JOGGER",
+      img: QuanjoogerTrang,
+      slug: "quan-jogger",
+    },
+  ];
+
+  const femaleCategories = [
+    { id: "f-1", name: "ÁO THUN", img: Aopolo, slug: "ao-thun-nu" },
+    { id: "f-2", name: "VÁY", img: Aosomi, slug: "vay" },
+    { id: "f-3", name: "QUẦN TÂY", img: Quanjean, slug: "quan-tay" },
+    { id: "f-4", name: "QUẦN JEAN", img: Quanjean, slug: "quan-jean" },
+    { id: "f-5", name: "QUẦN JOGGER", img: Quanjooger, slug: "quan-jogger" },
+    { id: "f-6", name: "QUẦN SHORT", img: Aokhoac, slug: "quan-short" },
+  ];
+
+  const gridCategories =
+    selectedGender === "nam" ? maleCategories : femaleCategories;
+
+  /* ====== Hiển thị ====== */
+  if (loading)
+    return (
+      <div className="pt-[150px] text-center text-gray-600 text-lg">
+        Đang tải dữ liệu sản phẩm...
+      </div>
+    );
+  if (error)
+    return (
+      <div className="pt-[150px] text-center text-red-600 text-lg">{error}</div>
+    );
+
   return (
     <main className="bg-white">
       <div className="container mx-auto px-6">
-        {/* ===== Filter Nam/Nữ ===== */}
+        {/* ===== Bộ lọc giới tính ===== */}
         <section className="pt-12 pb-6">
           <nav className="flex justify-start gap-4">
             <button
@@ -164,8 +196,8 @@ export default function HomePage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-6">
             {gridCategories.map((cat) => (
               <div key={cat.id} className="group flex flex-col items-center">
-                <a
-                  href={`/all/${selectedGender}/${cat.slug
+                <Link
+                  to={`/all/${selectedGender}/${cat.slug
                     .replace("-nam", "")
                     .replace("-nu", "")}`}
                 >
@@ -179,39 +211,23 @@ export default function HomePage() {
                   <p className="mt-3 text-center text-sm md:text-base font-semibold uppercase tracking-wide">
                     {cat.name}
                   </p>
-                </a>
+                </Link>
               </div>
             ))}
           </div>
         </section>
 
-        {/* ===== 🆕 Banner MẶC HÀNG NGÀY ===== */}
+        {/* ===== Banner MẶC HẰNG NGÀY ===== */}
         <section className="relative w-full h-[500px] rounded-3xl overflow-hidden mb-16">
           <img
             src={Bannermacthuongngay}
             alt="Banner Mặc Hằng Ngày"
             className="w-full h-full object-cover"
           />
-          {/* <div className="absolute inset-0 bg-black/30 flex flex-col justify-center px-10 md:px-20 lg:px-32">
-            <div className="max-w-xl">
-              <h2 className="text-5xl font-extrabold text-white mb-4 leading-tight">
-                MẶC HÀNG NGÀY
-              </h2>
-              <p className="text-white text-lg mb-6">
-                Nhập <span className="font-bold">COOLNEW</span> Giảm 50K đơn đầu
-                tiên từ 299K
-              </p>
-              <Link
-                to="/all/nam/ao-thun"
-                className="inline-block bg-white text-black font-semibold px-8 py-3 rounded-full shadow-md hover:bg-gray-100 transition"
-              >
-                MUA NGAY
-              </Link>
-            </div>
-          </div> */}
+          {/* TODO: sau này có thể thêm nội dung động (khuyến mãi / sự kiện) */}
         </section>
 
-        {/* ===== Sản phẩm mặc hằng ngày ===== */}
+        {/* ===== Sản phẩm Mặc hằng ngày ===== */}
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-3xl font-bold mb-6">Sản phẩm mặc hằng ngày</h2>
           <Link
@@ -223,7 +239,7 @@ export default function HomePage() {
         </div>
         <section className="relative overflow-visible pb-20">
           <Slider {...settings}>
-            {products.map((p) => (
+            {dailyProducts.map((p) => (
               <div key={p.id} className="px-3">
                 <div className="relative group bg-white border rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition">
                   <div className="h-72 bg-gray-50">
@@ -249,26 +265,17 @@ export default function HomePage() {
             ))}
           </Slider>
         </section>
-        {/* ===== 🆕 Banner Sản phẩm nổi bật  ===== */}
+
+        {/* ===== Banner Gợi ý nổi bật ===== */}
         <section className="relative w-full h-[500px] rounded-3xl overflow-hidden mb-16">
           <img
             src={Bannergoiy}
             alt="Banner Gợi Ý"
             className="w-full h-full object-cover"
           />
-          {/* <div className="absolute inset-0 bg-black/30 flex flex-col justify-center px-10 md:px-20 lg:px-32">
-            <div className="max-w-xl">
-              <h2 className="text-5xl font-extrabold text-white mb-4 leading-tight"></h2>
-              <p className="text-white text-lg mb-6">
-                <span className="font-bold"></span>
-              </p>
-              <Link
-                to="/all/nam/ao-thun"
-                className="absolute bottom-10 right-20 bg-white text-black font-semibold px-6 py-2 rounded-lg shadow-md hover:bg-gray-100 transition"
-              ></Link>
-            </div>
-          </div> */}
+          {/* TODO: sau này thêm nội dung banner động */}
         </section>
+
         {/* ===== Sản phẩm nổi bật ===== */}
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-3xl font-bold mb-6">Sản phẩm nổi bật</h2>
@@ -281,7 +288,7 @@ export default function HomePage() {
         </div>
         <section className="relative overflow-visible pb-20">
           <Slider {...settings}>
-            {suggestionProducts.map((p) => (
+            {highlightProducts.map((p) => (
               <div key={p.id} className="px-3">
                 <div className="relative group bg-white border rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition">
                   <div className="h-72 bg-gray-50">

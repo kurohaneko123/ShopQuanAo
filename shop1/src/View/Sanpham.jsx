@@ -1,6 +1,6 @@
 "use client";
-
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import {
   useSearchParams,
   useParams,
@@ -8,7 +8,7 @@ import {
   useLocation,
 } from "react-router-dom";
 
-/* ====== Import ảnh ====== */
+/* ====== Import ảnh mẫu (tạm) ====== */
 import Aosomi from "../assets/aosomi.jpg";
 import Aokhoac from "../assets/aokhoac.jpg";
 import Aopolo from "../assets/aopolo.jpeg";
@@ -16,7 +16,7 @@ import Aothunbasic from "../assets/aothunbasic.jpg";
 import Quanjean from "../assets/quanjean.jpg";
 import Quanjooger from "../assets/quanjooger.jpg";
 
-/* ====== Dữ liệu tĩnh ====== */
+/* ====== Dữ liệu bộ lọc ====== */
 const sizes = ["XS", "S", "M", "L", "XL"];
 const colors = [
   { name: "Đen", code: "black" },
@@ -34,101 +34,6 @@ const priceRanges = [
 ];
 const genders = ["Nam", "Nữ"];
 
-/* ====== Danh sách sản phẩm ====== */
-const products = [
-  {
-    id: 1,
-    name: "Áo thun nam",
-    price: 250000,
-    type: "ao-thun",
-    img: Aothunbasic,
-    colors: ["red", "white", "black"],
-    sizes: ["M", "L"],
-    gender: "Nam",
-  },
-  {
-    id: 2,
-    name: "Quần Jogger",
-    price: 299000,
-    type: "quan-jogger",
-    img: Quanjooger,
-    colors: ["red", "white", "gray"],
-    sizes: ["L", "XL"],
-    gender: "Nam",
-  },
-  {
-    id: 3,
-    name: "Áo Polo Nam",
-    price: 280000,
-    type: "ao-polo",
-    img: Aopolo,
-    colors: ["white", "blue"],
-    sizes: ["M"],
-    gender: "Nam",
-  },
-  {
-    id: 4,
-    name: "Áo Khoác Nam",
-    price: 600000,
-    type: "ao-khoac",
-    img: Aokhoac,
-    colors: ["blue", "black"],
-    sizes: ["XL"],
-    gender: "Nam",
-  },
-  {
-    id: 5,
-    name: "Áo sơ mi",
-    price: 320000,
-    type: "ao-so-mi",
-    img: Aosomi,
-    colors: ["white", "blue"],
-    sizes: ["L"],
-    gender: "Nam",
-  },
-  {
-    id: 6,
-    name: "Quần Jean",
-    price: 400000,
-    type: "quan-jean",
-    img: Quanjean,
-    colors: ["black", "gray"],
-    sizes: ["M", "L"],
-    gender: "Nữ",
-  },
-  {
-    id: 7,
-    name: "Áo Hoodie",
-    price: 450000,
-    type: "ao-hoodie",
-    img: Aokhoac,
-    colors: ["black", "red"],
-    sizes: ["M", "L", "XL"],
-    gender: "Nam",
-  },
-  {
-    id: 8,
-    name: "Áo Khoác Gió",
-    price: 500000,
-    type: "ao-khoac",
-    img: Aokhoac,
-    colors: ["blue", "gray"],
-    sizes: ["L", "XL"],
-    gender: "Nam",
-  },
-  {
-    id: 9,
-    name: "Quần Short Nữ",
-    price: 200000,
-    type: "quan-short",
-    img: Quanjean,
-    colors: ["white", "beige"],
-    sizes: ["S", "M"],
-    gender: "Nữ",
-  },
-];
-
-/* ====== Hàm hiển thị tên danh mục ====== */
 function formatCategoryName(slug) {
   const mapping = {
     "ao-thun": "Áo Thun",
@@ -137,19 +42,9 @@ function formatCategoryName(slug) {
     "ao-so-mi": "Áo Sơ Mi",
     "ao-hoodie": "Áo Hoodie",
     "quan-jean": "Quần Jean",
-    "quan-kaki": "Quần Kaki",
     "quan-jogger": "Quần Jogger",
-    "quan-short": "Quần Short",
-    " vay": "Váy ",
-    "quan-tay": "Quần Tây",
   };
-  return (
-    mapping[slug] ||
-    slug
-      ?.split("-")
-      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-      .join(" ")
-  );
+  return mapping[slug] || slug;
 }
 
 export default function TatCaSanPham() {
@@ -160,46 +55,48 @@ export default function TatCaSanPham() {
   const queryParams = new URLSearchParams(location.search);
   const searchTerm = queryParams.get("search")?.toLowerCase() || "";
 
-  /* ✅ Tách giới tính và danh mục từ slug */
-  const parseGenderAndCategory = (catSlug) => {
-    let realCategory = catSlug;
-    let genderFromSlug = null;
-    if (catSlug?.endsWith("-nam")) {
-      realCategory = catSlug.replace(/-nam$/, "");
-      genderFromSlug = "Nam";
-    } else if (catSlug?.endsWith("-nu")) {
-      realCategory = catSlug.replace(/-nu$/, "");
-      genderFromSlug = "Nữ";
-    }
-    return { realCategory, genderFromSlug };
-  };
-
-  const { realCategory, genderFromSlug } = parseGenderAndCategory(category);
-
-  /* ✅ Xác định giới tính ưu tiên */
-  const resolvedGender =
-    genderQuery ??
-    (genderParam === "nam" ? "Nam" : genderParam === "nu" ? "Nữ" : null) ??
-    genderFromSlug ??
-    null;
-
   /* ===== STATE ===== */
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const [selectedSizes, setSelectedSizes] = useState([]);
   const [selectedColors, setSelectedColors] = useState([]);
-  const [selectedGender, setSelectedGender] = useState(resolvedGender);
+  const [selectedGender, setSelectedGender] = useState(null);
   const [selectedPrice, setSelectedPrice] = useState(null);
   const [visibleCount, setVisibleCount] = useState(6);
   const [activeColor, setActiveColor] = useState({});
 
+  /* ✅ GỌI API */
   useEffect(() => {
-    setSelectedGender(resolvedGender);
-  }, [resolvedGender]);
+    const fetchProducts = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/sanpham");
+        const apiProducts = res.data.data.map((item) => ({
+          id: item.masanpham,
+          name: item.tensanpham,
+          brand: item.thuonghieu,
+          description: item.mota,
+          material: item.chatlieu,
+          categoryId: item.madanhmuc,
+          img: Aothunbasic, // tạm thời dùng ảnh mẫu
+          price: Math.floor(Math.random() * 400000) + 150000, // random giá
+          colors: ["black", "white", "red"],
+          sizes: ["M", "L", "XL"],
+          gender: "Nam",
+        }));
+        setProducts(apiProducts);
+      } catch (err) {
+        console.error(err);
+        setError("Không thể tải danh sách sản phẩm");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
 
-  useEffect(() => {
-    setVisibleCount(6);
-  }, [selectedSizes, selectedColors, selectedGender, selectedPrice]);
-
-  /* ===== HÀM LỌC ===== */
+  /* ===== FILTER LOGIC ===== */
   const toggleSize = (s) =>
     setSelectedSizes((prev) =>
       prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]
@@ -213,7 +110,7 @@ export default function TatCaSanPham() {
   const clearFilters = () => {
     setSelectedSizes([]);
     setSelectedColors([]);
-    setSelectedGender(resolvedGender);
+    setSelectedGender(null);
     setSelectedPrice(null);
     setVisibleCount(6);
   };
@@ -222,50 +119,31 @@ export default function TatCaSanPham() {
     const matchSize =
       selectedSizes.length === 0 ||
       p.sizes.some((sz) => selectedSizes.includes(sz));
-
     const matchColor =
       selectedColors.length === 0 ||
       p.colors.some((col) => selectedColors.includes(col));
-
     const matchGender = !selectedGender || p.gender === selectedGender;
-
     const matchPrice =
       !selectedPrice ||
       (p.price >= selectedPrice.min && p.price <= selectedPrice.max);
-
-    const matchCategory = !realCategory || p.type === realCategory;
-
-    // ✅ Thêm dòng này: lọc theo từ khóa tìm kiếm (nếu có)
     const matchSearch =
-      !searchTerm || p.name.toLowerCase().includes(searchTerm.toLowerCase());
-
-    // ✅ Giữ nguyên các điều kiện cũ + thêm matchSearch
-    return (
-      matchSize &&
-      matchColor &&
-      matchGender &&
-      matchPrice &&
-      matchCategory &&
-      matchSearch
-    );
+      !searchTerm || p.name.toLowerCase().includes(searchTerm);
+    return matchSize && matchColor && matchGender && matchPrice && matchSearch;
   });
 
   const visibleProducts = filteredProducts.slice(0, visibleCount);
 
-  /* ===== BREADCRUMB ===== */
-  const breadcrumb = [
-    { name: "Trang chủ", path: "/" },
-    selectedGender && {
-      name: selectedGender,
-      path: `/all?gender=${selectedGender}`,
-    },
-    realCategory && {
-      name: formatCategoryName(realCategory),
-      path: `/${genderParam || selectedGender}/${realCategory}`,
-    },
-  ].filter(Boolean);
-
   /* ===== RENDER ===== */
+  if (loading)
+    return (
+      <div className="pt-[150px] text-center text-gray-600">
+        Đang tải sản phẩm...
+      </div>
+    );
+
+  if (error)
+    return <div className="pt-[150px] text-center text-red-600">{error}</div>;
+
   return (
     <div className="min-h-screen bg-white pt-[100px] container mx-auto px-8 py-10">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8 items-start">
@@ -282,7 +160,7 @@ export default function TatCaSanPham() {
               </button>
             </div>
 
-            {/* Bộ lọc */}
+            {/* Kích cỡ */}
             <div>
               <h4 className="font-medium mb-2">Kích cỡ</h4>
               <div className="flex flex-wrap gap-2">
@@ -302,6 +180,7 @@ export default function TatCaSanPham() {
               </div>
             </div>
 
+            {/* Màu sắc */}
             <div>
               <h4 className="font-medium mb-2">Màu sắc</h4>
               <div className="flex flex-wrap gap-2">
@@ -319,6 +198,7 @@ export default function TatCaSanPham() {
               </div>
             </div>
 
+            {/* Giá */}
             <div>
               <h4 className="font-medium mb-2">Giá</h4>
               {priceRanges.map((r) => (
@@ -337,6 +217,7 @@ export default function TatCaSanPham() {
               ))}
             </div>
 
+            {/* Giới tính */}
             <div>
               <h4 className="font-medium mb-2">Giới tính</h4>
               {genders.map((g) => (
@@ -356,54 +237,11 @@ export default function TatCaSanPham() {
 
         {/* ===== DANH SÁCH SẢN PHẨM ===== */}
         <main className="md:col-span-3">
-          {/* Breadcrumb */}
-          <div className="text-sm text-gray-500 mb-4 flex items-center gap-1">
-            {breadcrumb.map((b, i) => (
-              <React.Fragment key={i}>
-                <Link
-                  to={b.path}
-                  className="hover:text-blue-600 transition-colors"
-                >
-                  {b.name}
-                </Link>
-                {i < breadcrumb.length - 1 && <span>›</span>}
-              </React.Fragment>
-            ))}
-          </div>
+          <h2 className="text-2xl font-bold mb-6">Tất cả sản phẩm</h2>
 
-          {/* Tiêu đề */}
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold">
-              {searchTerm
-                ? `Kết quả tìm kiếm cho "${searchTerm}"`
-                : realCategory
-                ? `${formatCategoryName(realCategory)} ${selectedGender || ""}`
-                : selectedGender || "Tất cả sản phẩm"}
-            </h2>
-
-            <div className="flex items-center gap-4">
-              <button
-                onClick={clearFilters}
-                className="md:hidden text-sm px-3 py-1 border rounded-md hover:bg-gray-50"
-              >
-                Bỏ lọc
-              </button>
-              <div className="text-sm text-gray-600">
-                Hiển thị {visibleProducts.length}/{filteredProducts.length}
-              </div>
-            </div>
-          </div>
-
-          {/* Danh sách sản phẩm */}
           {filteredProducts.length === 0 ? (
-            <div className="py-16 text-center">
-              <p className="text-gray-600 mb-4">Không có sản phẩm phù hợp.</p>
-              <button
-                onClick={clearFilters}
-                className="bg-black text-white px-6 py-2 rounded-md"
-              >
-                Bỏ lọc
-              </button>
+            <div className="py-16 text-center text-gray-600">
+              Không có sản phẩm phù hợp.
             </div>
           ) : (
             <>
@@ -413,7 +251,7 @@ export default function TatCaSanPham() {
                     <div className="relative w-full bg-white border rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition group">
                       <div className="h-72 flex items-center justify-center overflow-hidden bg-gray-50">
                         <img
-                          src={p.images?.[activeColor[p.id]] || p.img}
+                          src={p.img}
                           alt={p.name}
                           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                         />
@@ -421,9 +259,7 @@ export default function TatCaSanPham() {
 
                       <div className="p-4 text-center">
                         <h3 className="font-semibold">{p.name}</h3>
-                        <p className="text-gray-600 text-sm mb-2">
-                          {p.gender} • {p.sizes.join(", ")}
-                        </p>
+                        <p className="text-gray-600 text-sm mb-2">{p.brand}</p>
                         <div className="text-red-600 font-bold">
                           {p.price.toLocaleString("vi-VN")}đ
                         </div>
@@ -436,6 +272,7 @@ export default function TatCaSanPham() {
                       </div>
                     </div>
 
+                    {/* Màu sắc chọn */}
                     <div className="flex justify-center gap-3 mt-3">
                       {p.colors.map((clr) => (
                         <button

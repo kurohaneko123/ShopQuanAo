@@ -3,9 +3,10 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import pool from "./src/config/db.js"; // 🧠 Kết nối MySQL
-import sanphamRoutes from "./src/routes/sanphamRoutes.js"; // 🧩 Import routes sản phẩm
-import danhmucRoutes from "./src/routes/danhmucRoutes.js";// 🧩 Import routes danh mục
-import voucherRoutes from "./src/routes/voucherRoutes.js";// 🧩 Import routes voucher
+import sanphamRoutes from "./src/routes/sanphamRoutes.js"; // 🧩 Route sản phẩm
+import danhmucRoutes from "./src/routes/danhmucRoutes.js"; // 🧩 Route danh mục
+import voucherRoutes from "./src/routes/voucherRoutes.js"; // 🧩 Route voucher
+import nguoidungRoutes from "./src/routes/nguoidungRoutes.js"; // 🧩 Route người dùng (đăng nhập + đăng ký)
 
 dotenv.config();
 
@@ -17,7 +18,7 @@ app.use(express.json());
 
 // 🔰 Route test server
 app.get("/", (req, res) => {
-    res.send("💚 Backend server kết nối WAMP thành công!");
+    res.send("💚 Backend server kết nối WAMP thành công & JWT đang hoạt động ngon lành!");
 });
 
 // 🔍 Route test DB
@@ -31,12 +32,12 @@ app.get("/test-db", async (req, res) => {
     }
 });
 
-// 🚀 Gắn route sản phẩm (đồng bộ controller + model)
+// 🚀 Gắn các route API chính
 app.use("/api/sanpham", sanphamRoutes);
-// 🚀 Gắn route danh mục (đồng bộ controller + model)
 app.use("/api/danhmuc", danhmucRoutes);
-// 🚀 Gắn route voucher (đồng bộ controller + model)
 app.use("/api/voucher", voucherRoutes);
-// ⚙️ Chạy server
+app.use("/api/nguoidung", nguoidungRoutes); // ✅ Thêm route người dùng (JWT login/register)
+
+// ⚙️ Lắng nghe server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`✅ Server đang chạy tại cổng ${PORT}`));

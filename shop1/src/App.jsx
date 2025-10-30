@@ -1,3 +1,5 @@
+// App.jsx
+import React from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./View/Header.jsx";
 import Banner from "./View/Banner.jsx";
@@ -7,14 +9,19 @@ import TatCaSanPham from "./View/Sanpham.jsx";
 import LienHe from "./View/Lienhe.jsx";
 import CheckoutPage from "./Chucnang/Thanhtoan.jsx";
 import AoLopKyYeuPage from "./View/AoLop.jsx";
-import AdminLayout from "./Admin/Admin.jsx";
 import ProtectedRoute from "./routes/ProtectedRoute.jsx";
 import ClassBanner from "./View/ClassBanner.jsx";
-import AdminRoutes from "./routes/AdminRoutes.jsx";
+//Admin
+import AdminLayout from "./Admin/Admin.jsx";
+import ProductManagement from "./Admin/Sanpham/Quanlysp.jsx";
+import OrderManagement from "./Admin/Donhang/Quanlydh.jsx";
+import UserManagement from "./Admin/Users/Quanlyngdung.jsx";
+import Dashboard from "./Admin/Dashboard/Dashboard.jsx";
+import Voucher from "./Admin/Voucher/Quanlyvoucher.jsx";
 export default function App() {
   const location = useLocation();
 
-  // Ẩn Navbar và Footer khi đang ở trang Admin
+  // Ẩn Navbar và Footer khi ở trang admin
   const isAdminPage = location.pathname.startsWith("/admin");
 
   return (
@@ -22,6 +29,7 @@ export default function App() {
       {!isAdminPage && <Navbar />}
 
       <Routes>
+        {/* ====== TRANG NGƯỜI DÙNG ====== */}
         <Route
           path="/"
           element={
@@ -32,33 +40,30 @@ export default function App() {
             </>
           }
         />
+        {/* ====== TRANG Sản Phẩm  ====== */}
+        <Route path="/all" element={<TatCaSanPham />} />
+        <Route path="/all/:gender/:category" element={<TatCaSanPham />} />
+        <Route path="/all/:category" element={<TatCaSanPham />} />
+        <Route path="/all/:gender" element={<TatCaSanPham />} />
+        <Route path="/lienhe" element={<LienHe />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/aolop-kyyeu" element={<AoLopKyYeuPage />} />
 
-        {/* Trang Admin có bảo vệ */}
+        {/* ====== TRANG ADMIN ====== */}
         <Route
-          path="/admin/*"
+          path="/admin"
           element={
             <ProtectedRoute>
-              <AdminRoutes />
+              <AdminLayout />
             </ProtectedRoute>
           }
-        />
-        {/* Trang tất cả sản phẩm (dạng /all) */}
-        <Route path="/all" element={<TatCaSanPham />} />
-        {/* Trang tất cả sản phẩm (có lọc theo giới tính và loại) */}
-        <Route path="/all/:gender/:category" element={<TatCaSanPham />} />
-
-        {/* Trường hợp chỉ có category */}
-        <Route path="/all/:category" element={<TatCaSanPham />} />
-
-        {/* Trường hợp chỉ có giới tính (Nam/Nữ) */}
-        <Route path="/all/:gender" element={<TatCaSanPham />} />
-
-        {/*  Trang Liên hệ  */}
-        <Route path="/lienhe" element={<LienHe />} />
-        {/*  Trang kiểm tra  */}
-        <Route path="/checkout" element={<CheckoutPage />} />
-        {/*  Trang Thiết kế áo lớp  */}
-        <Route path="/aolop-kyyeu" element={<AoLopKyYeuPage />} />
+        >
+          <Route index element={<Dashboard />} />
+          <Route path="products" element={<ProductManagement />} />
+          <Route path="voucher" element={<Voucher />} />
+          <Route path="orders" element={<OrderManagement />} />
+          <Route path="users" element={<UserManagement />} />
+        </Route>
       </Routes>
 
       {!isAdminPage && <Footer />}

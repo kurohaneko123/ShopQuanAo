@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { X } from "lucide-react";
 import { signInWithPopup } from "firebase/auth";
-import { auth, provider } from "./firebaseConfig.jsx"; // nếu file bạn là .jsx thì sửa lại cho đúng
+import { auth, provider } from "./firebaseConfig.jsx";
+import { API_URL } from "../config/app.js"; // 💡 import API backend
 
 export default function AccountModal({ isOpen, onClose }) {
   const [mode, setMode] = useState("login");
@@ -15,8 +16,6 @@ export default function AccountModal({ isOpen, onClose }) {
       setLoading(true);
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-
-      // xác định quyền (nếu email là admin thì cho vào /admin)
       const role = user.email === "admin@gmail.com" ? "admin" : "user";
 
       localStorage.setItem(
@@ -31,10 +30,8 @@ export default function AccountModal({ isOpen, onClose }) {
 
       alert("Đăng nhập Google thành công!");
       onClose?.();
-
-      if (role === "admin") {
-        window.location.href = "/admin";
-      }
+      if (role === "admin") window.location.href = "/admin";
+      else window.location.reload();
     } catch (error) {
       console.error("Lỗi đăng nhập Google:", error);
       alert("Đăng nhập Google thất bại!");
@@ -43,9 +40,68 @@ export default function AccountModal({ isOpen, onClose }) {
     }
   };
 
+  // ✅ Gửi request lên API backend
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const email = e.target.email.value.trim();
+    const password = e.target.password?.value?.trim();
+    const name = e.target.hoten?.value?.trim();
+    const phone = e.target.sodienthoai?.value?.trim();
+
+    try {
+      setLoading(true);
+
+      if (mode === "login") {
+        // 🟣 GỌI API ĐĂNG NHẬP
+        const res = await fetch(`${API_URL}/dangnhap`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, matkhau: password }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Đăng nhập thất bại");
+
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.nguoidung));
+
+        alert("Đăng nhập thành công!");
+        onClose();
+        window.location.reload();
+      } else if (mode === "register") {
+        // 🟢 GỌI API ĐĂNG KÝ
+        const res = await fetch(`${API_URL}/dangky`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email,
+            matkhau: password,
+            hoten: name,
+            sodienthoai: phone,
+          }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Đăng ký thất bại");
+
+        alert("Đăng ký thành công! Vui lòng đăng nhập lại.");
+        setMode("login");
+      } else if (mode === "forgot") {
+        // 🟠 GIẢ LẬP GỬI EMAIL RESET
+        alert(`Link đặt lại mật khẩu đã gửi tới ${email}`);
+        setMode("login");
+      }
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[999]">
       <div className="bg-white w-[420px] md:w-[480px] rounded-2xl shadow-2xl p-8 relative">
+        {/* Nút đóng */}
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-500 hover:text-black transition"
@@ -53,6 +109,7 @@ export default function AccountModal({ isOpen, onClose }) {
           <X size={22} />
         </button>
 
+        {/* Logo */}
         <h2 className="text-3xl font-bold text-center mb-2">
           <span className="text-blue-700">COOL</span>
           <span className="bg-blue-700 text-white px-1 rounded">CLUB</span>
@@ -63,7 +120,7 @@ export default function AccountModal({ isOpen, onClose }) {
             ? "Đăng nhập để nhận ưu đãi thành viên"
             : mode === "register"
             ? "Tạo tài khoản để nhận quà độc quyền"
-            : "Nhập email để đặt lại mật khẩu của bạn"}
+            : "Nhập email để đặt lại mật khẩu"}
         </p>
 
         {/* Đăng nhập MXH */}
@@ -108,42 +165,18 @@ export default function AccountModal({ isOpen, onClose }) {
           </span>
         </div>
 
-        {/* Form đăng nhập cũ (giữ nguyên logic admin@gmail.com) */}
-        <form
-          className="flex flex-col gap-3"
-          onSubmit={(e) => {
-            e.preventDefault();
-            const email = e.target[0].value;
-            const password = e.target[1]?.value;
-
-            if (mode === "login") {
-              if (email === "admin@gmail.com" && password === "123456") {
-                localStorage.setItem(
-                  "user",
-                  JSON.stringify({ email, role: "admin" })
-                );
-                alert("Đăng nhập admin thành công!");
-                window.location.href = "/admin";
-              } else {
-                alert("Sai email hoặc mật khẩu!");
-              }
-            } else if (mode === "register") {
-              alert("Đăng ký thành công! Vui lòng đăng nhập lại.");
-              setMode("login");
-            } else if (mode === "forgot") {
-              alert(`Đã gửi liên kết đặt lại mật khẩu đến ${email}`);
-              setMode("login");
-            }
-          }}
-        >
+        {/* FORM */}
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           {mode === "register" && (
             <div className="flex gap-2">
               <input
+                name="hoten"
                 type="text"
                 placeholder="Họ và tên"
                 className="border rounded-lg px-3 py-2 w-1/2 focus:outline-none focus:ring-2 focus:ring-blue-300"
               />
               <input
+                name="sodienthoai"
                 type="text"
                 placeholder="Số điện thoại"
                 className="border rounded-lg px-3 py-2 w-1/2 focus:outline-none focus:ring-2 focus:ring-blue-300"
@@ -152,32 +185,39 @@ export default function AccountModal({ isOpen, onClose }) {
           )}
 
           <input
+            name="email"
             type="email"
             placeholder="Email của bạn"
+            required
             className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
           />
 
           {mode !== "forgot" && (
             <input
+              name="password"
               type="password"
               placeholder="Mật khẩu"
+              required={mode !== "forgot"}
               className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
             />
           )}
 
           <button
             type="submit"
-            className="bg-blue-600 text-white font-semibold py-2 rounded-lg hover:bg-blue-700 transition"
+            disabled={loading}
+            className="bg-blue-600 text-white font-semibold py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-60"
           >
-            {mode === "login"
+            {loading
+              ? "Đang xử lý..."
+              : mode === "login"
               ? "ĐĂNG NHẬP"
               : mode === "register"
               ? "TẠO TÀI KHOẢN"
-              : "GỬI YÊU CẦU ĐẶT LẠI MẬT KHẨU"}
+              : "GỬI YÊU CẦU"}
           </button>
         </form>
 
-        {/* Chuyển chế độ */}
+        {/* Liên kết chuyển chế độ */}
         <div className="flex justify-between text-sm mt-4">
           {mode === "login" && (
             <>

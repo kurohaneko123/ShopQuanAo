@@ -11,6 +11,8 @@ import CheckoutPage from "./Chucnang/Thanhtoan.jsx";
 import AoLopKyYeuPage from "./View/AoLop.jsx";
 import ProtectedRoute from "./routes/ProtectedRoute.jsx";
 import ClassBanner from "./View/ClassBanner.jsx";
+//User
+import ThongTinKhachHang from "./Chucnang/Thongtinkh.jsx";
 //Admin
 import AdminLayout from "./Admin/Admin.jsx";
 import ProductManagement from "./Admin/Sanpham/Quanlysp.jsx";
@@ -30,6 +32,7 @@ export default function App() {
 
       <Routes>
         {/* ====== TRANG NGƯỜI DÙNG ====== */}
+        <Route path="/thongtincanhan" element={<ThongTinKhachHang />} />
         <Route
           path="/"
           element={

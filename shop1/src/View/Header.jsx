@@ -17,7 +17,7 @@ export default function Navbar() {
   const [user, setUser] = useState(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
-  const [categories, setCategories] = useState([]); // 📦 Dữ liệu danh mục từ API
+  const [categories, setCategories] = useState([]); //  Dữ liệu danh mục từ API
   const [maleCategories, setMaleCategories] = useState([]);
   const [femaleCategories, setFemaleCategories] = useState([]);
 
@@ -53,6 +53,9 @@ export default function Navbar() {
     setUser(null);
     alert("Đăng xuất thành công!");
     window.location.reload();
+  };
+  const handleAvatarClick = () => {
+    navigate("/thongtincanhan"); // chuyển hướng sang trang thông tin khách hàng
   };
 
   /* ===== THANH TÌM KIẾM ===== */
@@ -341,7 +344,9 @@ export default function Navbar() {
             </button>
           ) : (
             <div className="relative group">
+              {/* 🧠 Avatar — thêm sự kiện click */}
               <img
+                onClick={handleAvatarClick}
                 src={
                   user.photo ||
                   "https://cdn-icons-png.flaticon.com/512/1077/1077012.png"
@@ -349,6 +354,8 @@ export default function Navbar() {
                 alt="avatar"
                 className="w-9 h-9 rounded-full border cursor-pointer hover:opacity-80"
               />
+
+              {/* 🪄 Menu hover (vẫn giữ nguyên) */}
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border py-2 opacity-0 group-hover:opacity-100 invisible group-hover:visible transition-all duration-200">
                 <div className="px-4 py-2 border-b">
                   <p className="text-sm font-medium text-gray-900">
@@ -368,6 +375,7 @@ export default function Navbar() {
             </div>
           )}
 
+          {/* Modal đăng nhập */}
           {isAccountOpen && (
             <AccountModal
               isOpen={isAccountOpen}

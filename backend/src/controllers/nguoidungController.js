@@ -1,5 +1,8 @@
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import pool from "../config/db.js";
+import bcrypt from "bcryptjs";
+import nodemailer from "nodemailer";
 import {
     taoNguoiDung,
     timNguoiDungTheoEmail,
@@ -81,6 +84,7 @@ export const dangNhapNguoiDung = async (req, res) => {
         res.status(500).json({ message: "Lỗi máy chủ khi đăng nhập." });
     }
 };
+
 // 🟢 Lấy thông tin người dùng từ token (API bảo vệ)
 export const layThongTinCaNhan = async (req, res) => {
     try {
@@ -95,3 +99,84 @@ export const layThongTinCaNhan = async (req, res) => {
     }
 };
 
+// 🧩 =================== QUÊN MẬT KHẨU ===================
+
+// 1️⃣ Gửi mã xác nhận (OTP) qua email
+export const guiMaXacNhan = async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) return res.status(400).json({ message: "Thiếu email." });
+
+        const [rows] = await pool.query("SELECT * FROM nguoidung WHERE email = ?", [email]);
+        if (rows.length === 0)
+            return res.status(404).json({ message: "Email không tồn tại trong hệ thống." });
+
+        const ma = Math.floor(100000 + Math.random() * 900000).toString(); // OTP 6 số
+        const expireTime = new Date(Date.now() + 10 * 60 * 1000); // hết hạn sau 10 phút
+
+        await pool.query(
+            "UPDATE nguoidung SET resettoken = ?, thoigianhethan = ? WHERE email = ?",
+            [ma, expireTime, email]
+        );
+
+        const transporter = nodemailer.createTransport({
+            service: "gmail",
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS,
+            },
+        });
+
+        await transporter.sendMail({
+            from: `"Shop Quần Áo Horizon" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: "Mã xác nhận đặt lại mật khẩu",
+            html: `
+        <h3>Xin chào ${rows[0].hoten || "bạn"}!</h3>
+        <p>Mã xác nhận của bạn là:</p>
+        <h1 style="color:#1a73e8; letter-spacing:4px;">${ma}</h1>
+        <p>Mã này sẽ hết hạn sau 10 phút. Nếu bạn không yêu cầu, vui lòng bỏ qua email này.</p>
+      `,
+        });
+
+        res.json({ message: "Mã xác nhận đã được gửi đến email của bạn!" });
+    } catch (error) {
+        console.error("❌ Lỗi gửi mã xác nhận:", error);
+        res.status(500).json({ message: "Không thể gửi mã xác nhận." });
+    }
+};
+
+// 2️⃣ Đặt lại mật khẩu sau khi nhập mã
+export const datLaiMatKhau = async (req, res) => {
+    try {
+        const { email, resettoken, matkhaumoi } = req.body; // 👈 tên biến trùng với body
+        if (!email || !resettoken || !matkhaumoi)
+            return res.status(400).json({ message: "Thiếu dữ liệu cần thiết." });
+
+        // Tìm người dùng có email và mã khớp
+        const [rows] = await pool.query(
+            "SELECT * FROM nguoidung WHERE email = ? AND resettoken = ?",
+            [email, resettoken]
+        );
+        if (rows.length === 0)
+            return res.status(400).json({ message: "Mã xác nhận không hợp lệ!" });
+
+        const nguoidung = rows[0];
+        const now = new Date();
+        if (new Date(nguoidung.thoigianhethan) < now)
+            return res.status(400).json({ message: "Mã xác nhận đã hết hạn!" });
+
+        // Cập nhật mật khẩu mới (hash)
+        const bcrypt = await import("bcryptjs");
+        const hash = await bcrypt.hash(matkhaumoi, 10);
+        await pool.query(
+            "UPDATE nguoidung SET matkhau = ?, resettoken = NULL, thoigianhethan = NULL WHERE email = ?",
+            [hash, email]
+        );
+
+        res.json({ message: "Đặt lại mật khẩu thành công!" });
+    } catch (error) {
+        console.error("❌ Lỗi đặt lại mật khẩu:", error);
+        res.status(500).json({ message: "Lỗi máy chủ khi đặt lại mật khẩu." });
+    }
+};

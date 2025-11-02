@@ -2,11 +2,12 @@ import React, { useState } from "react";
 import { X } from "lucide-react";
 import { signInWithPopup } from "firebase/auth";
 import { auth, provider } from "./firebaseConfig.jsx";
-import { API_URL } from "../config/app.js"; // 💡 import API backend
-
+import { API_URL } from "../config/app.js"; //  import API backend
+import { useNavigate } from "react-router-dom";
 export default function AccountModal({ isOpen, onClose }) {
   const [mode, setMode] = useState("login");
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   // 🔁 Biến dành cho quên mật khẩu
   const [resetStep, setResetStep] = useState(1); // 1: nhập email, 2: nhập mã & mật khẩu mới
@@ -20,7 +21,7 @@ export default function AccountModal({ isOpen, onClose }) {
       setLoading(true);
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      const role = user.email === "admin@gmail.com" ? "admin" : "user";
+      const vaitro = user.email === "admin@gmail.com" ? "admin" : "user";
 
       localStorage.setItem(
         "user",
@@ -28,13 +29,13 @@ export default function AccountModal({ isOpen, onClose }) {
           email: user.email,
           name: user.displayName,
           photo: user.photoURL,
-          role,
+          vaitro,
         })
       );
 
       alert("Đăng nhập Google thành công!");
       onClose?.();
-      if (role === "admin") window.location.href = "/admin";
+      if (vaitro === "admin") window.location.href = "/admin";
       else window.location.reload();
     } catch (error) {
       console.error("Lỗi đăng nhập Google:", error);
@@ -71,7 +72,11 @@ export default function AccountModal({ isOpen, onClose }) {
 
         alert("Đăng nhập thành công!");
         onClose();
-        window.location.reload();
+        if (data.nguoidung.vaitro === "admin") {
+          navigate("/admin");
+        } else {
+          window.location.reload();
+        }
       }
 
       // 🟢 ĐĂNG KÝ
@@ -94,7 +99,7 @@ export default function AccountModal({ isOpen, onClose }) {
         setMode("login");
       }
 
-      // 🧡 QUÊN MẬT KHẨU (Bước 1 & 2)
+      // QUÊN MẬT KHẨU (Bước 1 & 2)
       else if (mode === "forgot") {
         if (resetStep === 1) {
           // B1: Gửi email lấy mã
@@ -104,9 +109,10 @@ export default function AccountModal({ isOpen, onClose }) {
             body: JSON.stringify({ email }),
           });
           const data = await res.json();
-          if (!res.ok) throw new Error(data.message || "Không thể gửi email xác nhận.");
+          if (!res.ok)
+            throw new Error(data.message || "Không thể gửi email xác nhận.");
 
-          alert("✅ Mã xác nhận đã được gửi đến email của bạn!");
+          alert(" Mã xác nhận đã được gửi đến email của bạn!");
           setResetEmail(email);
           setResetStep(2);
         } else if (resetStep === 2) {
@@ -125,9 +131,10 @@ export default function AccountModal({ isOpen, onClose }) {
           });
 
           const data = await res.json();
-          if (!res.ok) throw new Error(data.message || "Không thể đặt lại mật khẩu.");
+          if (!res.ok)
+            throw new Error(data.message || "Không thể đặt lại mật khẩu.");
 
-          alert("🎉 Đặt lại mật khẩu thành công! Hãy đăng nhập lại nhé.");
+          alert(" Đặt lại mật khẩu thành công! Hãy đăng nhập lại nhé.");
           setMode("login");
           setResetStep(1);
         }
@@ -160,10 +167,10 @@ export default function AccountModal({ isOpen, onClose }) {
           {mode === "login"
             ? "Đăng nhập để nhận ưu đãi thành viên"
             : mode === "register"
-              ? "Tạo tài khoản để nhận quà độc quyền"
-              : resetStep === 1
-                ? "Nhập email để nhận mã xác nhận"
-                : "Nhập mã xác nhận và mật khẩu mới"}
+            ? "Tạo tài khoản để nhận quà độc quyền"
+            : resetStep === 1
+            ? "Nhập email để nhận mã xác nhận"
+            : "Nhập mã xác nhận và mật khẩu mới"}
         </p>
 
         {/* Đăng nhập MXH */}
@@ -288,12 +295,12 @@ export default function AccountModal({ isOpen, onClose }) {
             {loading
               ? "Đang xử lý..."
               : mode === "login"
-                ? "ĐĂNG NHẬP"
-                : mode === "register"
-                  ? "TẠO TÀI KHOẢN"
-                  : resetStep === 1
-                    ? "GỬI MÃ XÁC NHẬN"
-                    : "ĐẶT LẠI MẬT KHẨU"}
+              ? "ĐĂNG NHẬP"
+              : mode === "register"
+              ? "TẠO TÀI KHOẢN"
+              : resetStep === 1
+              ? "GỬI MÃ XÁC NHẬN"
+              : "ĐẶT LẠI MẬT KHẨU"}
           </button>
         </form>
 

@@ -8,7 +8,7 @@ export default function AdminLayout() {
   // Kiểm tra đăng nhập
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
-    if (!user || user.role !== "admin") {
+    if (!user || user.vaitro !== "admin") {
       navigate("/"); // chưa đăng nhập thì quay về trang chủ
     }
   }, [navigate]);

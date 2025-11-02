@@ -8,6 +8,10 @@ export default function AccountModal({ isOpen, onClose }) {
   const [mode, setMode] = useState("login");
   const [loading, setLoading] = useState(false);
 
+  // 🔁 Biến dành cho quên mật khẩu
+  const [resetStep, setResetStep] = useState(1); // 1: nhập email, 2: nhập mã & mật khẩu mới
+  const [resetEmail, setResetEmail] = useState("");
+
   if (!isOpen) return null;
 
   // ✅ Đăng nhập bằng Google
@@ -43,7 +47,7 @@ export default function AccountModal({ isOpen, onClose }) {
   // ✅ Gửi request lên API backend
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const email = e.target.email.value.trim();
+    const email = e.target.email?.value.trim();
     const password = e.target.password?.value?.trim();
     const name = e.target.hoten?.value?.trim();
     const phone = e.target.sodienthoai?.value?.trim();
@@ -68,8 +72,10 @@ export default function AccountModal({ isOpen, onClose }) {
         alert("Đăng nhập thành công!");
         onClose();
         window.location.reload();
-      } else if (mode === "register") {
-        // 🟢 GỌI API ĐĂNG KÝ
+      }
+
+      // 🟢 ĐĂNG KÝ
+      else if (mode === "register") {
         const res = await fetch(`${API_URL}/dangky`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -86,10 +92,45 @@ export default function AccountModal({ isOpen, onClose }) {
 
         alert("Đăng ký thành công! Vui lòng đăng nhập lại.");
         setMode("login");
-      } else if (mode === "forgot") {
-        // 🟠 GIẢ LẬP GỬI EMAIL RESET
-        alert(`Link đặt lại mật khẩu đã gửi tới ${email}`);
-        setMode("login");
+      }
+
+      // 🧡 QUÊN MẬT KHẨU (Bước 1 & 2)
+      else if (mode === "forgot") {
+        if (resetStep === 1) {
+          // B1: Gửi email lấy mã
+          const res = await fetch(`${API_URL}/quenmatkhau`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email }),
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.message || "Không thể gửi email xác nhận.");
+
+          alert("✅ Mã xác nhận đã được gửi đến email của bạn!");
+          setResetEmail(email);
+          setResetStep(2);
+        } else if (resetStep === 2) {
+          // B2: Nhập mã & mật khẩu mới
+          const token = e.target.token.value.trim();
+          const newPassword = e.target.newpassword.value.trim();
+
+          const res = await fetch(`${API_URL}/datlaimatkhau`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: resetEmail,
+              resettoken: token,
+              matkhaumoi: newPassword,
+            }),
+          });
+
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.message || "Không thể đặt lại mật khẩu.");
+
+          alert("🎉 Đặt lại mật khẩu thành công! Hãy đăng nhập lại nhé.");
+          setMode("login");
+          setResetStep(1);
+        }
       }
     } catch (err) {
       alert(err.message);
@@ -119,8 +160,10 @@ export default function AccountModal({ isOpen, onClose }) {
           {mode === "login"
             ? "Đăng nhập để nhận ưu đãi thành viên"
             : mode === "register"
-            ? "Tạo tài khoản để nhận quà độc quyền"
-            : "Nhập email để đặt lại mật khẩu"}
+              ? "Tạo tài khoản để nhận quà độc quyền"
+              : resetStep === 1
+                ? "Nhập email để nhận mã xác nhận"
+                : "Nhập mã xác nhận và mật khẩu mới"}
         </p>
 
         {/* Đăng nhập MXH */}
@@ -167,6 +210,38 @@ export default function AccountModal({ isOpen, onClose }) {
 
         {/* FORM */}
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+          {/* Bước 1: Nhập email */}
+          {mode === "forgot" && resetStep === 1 && (
+            <input
+              name="email"
+              type="email"
+              placeholder="Nhập email để đặt lại mật khẩu"
+              required
+              className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
+            />
+          )}
+
+          {/* Bước 2: Nhập mã + mật khẩu mới */}
+          {mode === "forgot" && resetStep === 2 && (
+            <>
+              <input
+                name="token"
+                type="text"
+                placeholder="Nhập mã xác nhận"
+                required
+                className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
+              />
+              <input
+                name="newpassword"
+                type="password"
+                placeholder="Nhập mật khẩu mới"
+                required
+                className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
+              />
+            </>
+          )}
+
+          {/* Đăng ký */}
           {mode === "register" && (
             <div className="flex gap-2">
               <input
@@ -184,24 +259,27 @@ export default function AccountModal({ isOpen, onClose }) {
             </div>
           )}
 
-          <input
-            name="email"
-            type="email"
-            placeholder="Email của bạn"
-            required
-            className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
-          />
-
+          {/* Email + mật khẩu cho login/register */}
           {mode !== "forgot" && (
-            <input
-              name="password"
-              type="password"
-              placeholder="Mật khẩu"
-              required={mode !== "forgot"}
-              className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
-            />
+            <>
+              <input
+                name="email"
+                type="email"
+                placeholder="Email của bạn"
+                required
+                className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
+              />
+              <input
+                name="password"
+                type="password"
+                placeholder="Mật khẩu"
+                required
+                className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
+              />
+            </>
           )}
 
+          {/* Nút gửi */}
           <button
             type="submit"
             disabled={loading}
@@ -210,10 +288,12 @@ export default function AccountModal({ isOpen, onClose }) {
             {loading
               ? "Đang xử lý..."
               : mode === "login"
-              ? "ĐĂNG NHẬP"
-              : mode === "register"
-              ? "TẠO TÀI KHOẢN"
-              : "GỬI YÊU CẦU"}
+                ? "ĐĂNG NHẬP"
+                : mode === "register"
+                  ? "TẠO TÀI KHOẢN"
+                  : resetStep === 1
+                    ? "GỬI MÃ XÁC NHẬN"
+                    : "ĐẶT LẠI MẬT KHẨU"}
           </button>
         </form>
 
@@ -247,7 +327,10 @@ export default function AccountModal({ isOpen, onClose }) {
 
           {mode === "forgot" && (
             <button
-              onClick={() => setMode("login")}
+              onClick={() => {
+                setMode("login");
+                setResetStep(1);
+              }}
               className="text-blue-600 hover:underline"
             >
               Quay lại đăng nhập

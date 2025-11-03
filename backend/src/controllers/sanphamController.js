@@ -1,6 +1,11 @@
 
 // Import hàm từ model — nơi xử lý truy vấn database
-import { layTatCaSanPham } from "../models/sanphamModel.js";
+import {
+    layTatCaSanPham,
+    laySanPhamTheoID,
+    layBienTheTheoSanPham,
+    layHinhTheoBienThe,
+} from "../models/sanphamModel.js";
 // 🎯 Controller: Hiển thị toàn bộ sản phẩm
 export const hienThiSanPham = async (req, res) => {
     try {
@@ -23,5 +28,40 @@ export const hienThiSanPham = async (req, res) => {
             message: "Lỗi máy chủ", // Thông báo chung
             error: error.message,   // Thông tin chi tiết về lỗi để tiện debug
         });
+    }
+};
+
+// 🟢 Lấy chi tiết sản phẩm theo ID
+export const layChiTietSanPham = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // 1️⃣ Thông tin sản phẩm
+        const sanpham = await laySanPhamTheoID(id);
+        if (!sanpham)
+            return res.status(404).json({ message: "Không tìm thấy sản phẩm." });
+
+        // 2️⃣ Biến thể
+        const bienthe = await layBienTheTheoSanPham(id);
+
+        // 3️⃣ Hình ảnh
+        const hinhanh = await layHinhTheoBienThe(id);
+
+        // 4️⃣ Gộp ảnh theo biến thể
+        const bientheCoHinh = bienthe.map((bt) => ({
+            ...bt,
+            hinhanh: hinhanh
+                .filter((h) => h.mabienthe === bt.mabienthe)
+                .map((h) => h.urlhinhanh),
+        }));
+
+        res.json({
+            message: "Lấy chi tiết sản phẩm thành công!",
+            sanpham,
+            bienthe: bientheCoHinh,
+        });
+    } catch (error) {
+        console.error("❌ Lỗi lấy chi tiết sản phẩm:", error);
+        res.status(500).json({ message: "Lỗi server", error: error.message });
     }
 };

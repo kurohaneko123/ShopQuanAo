@@ -1,23 +1,50 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { mockProducts } from "../dulieugia/dulieu.jsx";
 import { ShoppingBag, Star } from "lucide-react";
 
 export default function ChiTietSanPham() {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
+  const [variants, setVariants] = useState([]);
   const [mainImage, setMainImage] = useState("");
   const [selectedColor, setSelectedColor] = useState("");
   const [selectedSize, setSelectedSize] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const found = mockProducts.find((p) => p.id === Number(id));
-    if (found) {
-      setProduct(found);
-      setMainImage(found.images[0]);
-    }
+    const fetchProduct = async () => {
+      try {
+        const res = await fetch(`http://localhost:5000/api/sanpham/${id}`);
+        const data = await res.json();
+        if (res.ok) {
+          setProduct(data.sanpham);
+          setVariants(data.bienthe);
+
+          // Gán ảnh đầu tiên
+          const firstImage = data.bienthe[0]?.hinhanh?.[0] || "";
+          setMainImage(firstImage);
+
+          // Gán mặc định màu & size
+          setSelectedColor(data.bienthe[0]?.tenmausac || "");
+          setSelectedSize(data.bienthe[0]?.tenkichthuoc || "");
+        }
+      } catch (error) {
+        console.error("❌ Lỗi khi tải chi tiết sản phẩm:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
   }, [id]);
+
+  if (loading)
+    return (
+      <div className="pt-[150px] text-center text-gray-600">
+        Đang tải sản phẩm...
+      </div>
+    );
 
   if (!product)
     return (
@@ -26,12 +53,23 @@ export default function ChiTietSanPham() {
       </div>
     );
 
+  // Lấy danh sách màu và size duy nhất
+  const uniqueColors = [
+    ...new Map(variants.map((v) => [v.tenmausac, v.hexcode])).entries(),
+  ];
+  const uniqueSizes = [...new Set(variants.map((v) => v.tenkichthuoc))];
+
+  // Tìm biến thể khớp với lựa chọn
+  const currentVariant = variants.find(
+    (v) => v.tenmausac === selectedColor && v.tenkichthuoc === selectedSize
+  );
+
   return (
     <div className="min-h-screen bg-white pt-[120px] pb-20">
       <div className="container mx-auto px-6 md:px-10 lg:px-16">
-        {/* ===== KHUNG CHÍNH (Card tổng) ===== */}
+        {/* ===== KHUNG CHÍNH ===== */}
         <div className="bg-white border rounded-3xl shadow-sm p-8 md:p-10">
-          {/* ===== BREADCRUMB TRONG CARD ===== */}
+          {/* ===== BREADCRUMB ===== */}
           <nav className="text-sm text-gray-500 mb-8 flex items-center gap-1">
             <Link to="/" className="hover:text-black transition">
               <span className="flex items-center gap-1">
@@ -52,33 +90,31 @@ export default function ChiTietSanPham() {
                 Đồ Nam
               </span>
             </Link>
-
             <span className="text-gray-400">/</span>
-
             <Link to="/all" className="hover:text-black transition">
               Áo Nam
             </Link>
-
             <span className="text-gray-400">/</span>
-
             <span className="text-gray-700 font-medium">
-              {product.category}
+              {product.tensanpham}
             </span>
           </nav>
 
-          {/* ===== GRID: Ảnh & Thông tin ===== */}
+          {/* ===== GRID: ẢNH & THÔNG TIN ===== */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
             {/* ẢNH */}
             <div className="flex flex-col items-center">
               <div className="w-full max-w-[550px] rounded-3xl overflow-hidden shadow-sm border">
                 <img
                   src={mainImage}
-                  alt={product.name}
+                  alt={product.tensanpham}
                   className="w-full h-[480px] object-cover"
                 />
               </div>
+
+              {/* Thumbnail */}
               <div className="flex gap-3 justify-center mt-6 flex-wrap">
-                {product.images.map((img, i) => (
+                {currentVariant?.hinhanh?.map((img, i) => (
                   <button
                     key={i}
                     onClick={() => setMainImage(img)}
@@ -101,8 +137,12 @@ export default function ChiTietSanPham() {
             {/* THÔNG TIN */}
             <div className="space-y-7">
               <div>
-                <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
-                <p className="text-gray-600 text-sm mb-3">{product.brand}</p>
+                <h1 className="text-3xl font-bold mb-2">
+                  {product.tensanpham}
+                </h1>
+                <p className="text-gray-600 text-sm mb-3">
+                  {product.thuonghieu}
+                </p>
                 <div className="flex items-center gap-1 text-yellow-500 mb-4">
                   {[...Array(5)].map((_, i) => (
                     <Star key={i} size={18} fill="currentColor" />
@@ -112,24 +152,24 @@ export default function ChiTietSanPham() {
                   </span>
                 </div>
                 <div className="text-3xl font-bold text-red-600">
-                  {product.price.toLocaleString("vi-VN")}đ
+                  {Number(currentVariant?.giaban || 0).toLocaleString("vi-VN")}đ
                 </div>
               </div>
 
               {/* Màu sắc */}
               <div>
                 <h4 className="font-semibold mb-2">Màu sắc</h4>
-                <div className="flex gap-3">
-                  {product.colors.map((c) => (
+                <div className="flex gap-3 flex-wrap">
+                  {uniqueColors.map(([colorName, hex]) => (
                     <button
-                      key={c}
-                      onClick={() => setSelectedColor(c)}
+                      key={colorName}
+                      onClick={() => setSelectedColor(colorName)}
                       className={`w-8 h-8 rounded-full border-2 transition ${
-                        selectedColor === c
+                        selectedColor === colorName
                           ? "border-black scale-110"
                           : "border-gray-300"
                       }`}
-                      style={{ backgroundColor: c }}
+                      style={{ backgroundColor: hex }}
                     />
                   ))}
                 </div>
@@ -139,7 +179,7 @@ export default function ChiTietSanPham() {
               <div>
                 <h4 className="font-semibold mb-2">Kích cỡ</h4>
                 <div className="flex gap-3 flex-wrap">
-                  {product.sizes.map((s) => (
+                  {uniqueSizes.map((s) => (
                     <button
                       key={s}
                       onClick={() => setSelectedSize(s)}
@@ -162,47 +202,13 @@ export default function ChiTietSanPham() {
 
               <div className="border-t pt-6 mt-8">
                 <h4 className="font-semibold mb-2">Mô tả sản phẩm</h4>
-                <p className="text-gray-700 leading-relaxed">
-                  {product.description}
-                </p>
+                <p className="text-gray-700 leading-relaxed">{product.mota}</p>
                 <p className="text-gray-600 mt-2 text-sm">
                   Chất liệu:{" "}
-                  <span className="font-medium">{product.material}</span>
+                  <span className="font-medium">{product.chatlieu}</span>
                 </p>
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* ===== GỢI Ý SẢN PHẨM ===== */}
-        <div className="mt-20">
-          <h2 className="text-2xl font-bold mb-8 text-gray-800">
-            Sản phẩm tương tự
-          </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-            {mockProducts.slice(0, 4).map((p) => (
-              <Link
-                key={p.id}
-                to={`/product/${p.id}`}
-                className="border rounded-2xl overflow-hidden hover:shadow-md transition group bg-white"
-              >
-                <div className="relative w-full h-56 overflow-hidden">
-                  <img
-                    src={p.images[0]}
-                    alt={p.name}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                </div>
-                <div className="p-3 text-center">
-                  <h3 className="font-semibold text-sm text-gray-800 mb-1 truncate">
-                    {p.name}
-                  </h3>
-                  <div className="text-red-600 font-bold text-sm">
-                    {p.price.toLocaleString("vi-VN")}đ
-                  </div>
-                </div>
-              </Link>
-            ))}
           </div>
         </div>
       </div>

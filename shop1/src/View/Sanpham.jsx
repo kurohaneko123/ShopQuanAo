@@ -248,7 +248,10 @@ export default function TatCaSanPham() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {visibleProducts.map((p) => (
                   <div key={p.id} className="flex flex-col items-center">
-                    <div className="relative w-full bg-white border rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition group">
+                    <Link
+                      to={`/product/${p.id}`}
+                      className="relative w-full bg-white border rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition group"
+                    >
                       <div className="h-72 flex items-center justify-center overflow-hidden bg-gray-50">
                         <img
                           src={p.img}
@@ -264,13 +267,7 @@ export default function TatCaSanPham() {
                           {p.price.toLocaleString("vi-VN")}đ
                         </div>
                       </div>
-
-                      <div className="absolute bottom-4 left-0 w-full flex justify-center opacity-0 group-hover:opacity-100 transition">
-                        <button className="bg-black text-white px-5 py-2 rounded-full text-sm font-medium">
-                          Thêm vào giỏ hàng +
-                        </button>
-                      </div>
-                    </div>
+                    </Link>
 
                     {/* Màu sắc chọn */}
                     <div className="flex justify-center gap-3 mt-3">

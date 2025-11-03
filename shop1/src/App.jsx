@@ -11,6 +11,7 @@ import CheckoutPage from "./Chucnang/Thanhtoan.jsx";
 import AoLopKyYeuPage from "./View/AoLop.jsx";
 import ProtectedRoute from "./routes/ProtectedRoute.jsx";
 import ClassBanner from "./View/ClassBanner.jsx";
+import ChiTietSanPham from "./View/Chitietsp.jsx";
 //User
 import ThongTinKhachHang from "./Chucnang/Thongtinkh.jsx";
 //Admin
@@ -48,6 +49,7 @@ export default function App() {
         <Route path="/all/:gender/:category" element={<TatCaSanPham />} />
         <Route path="/all/:category" element={<TatCaSanPham />} />
         <Route path="/all/:gender" element={<TatCaSanPham />} />
+        <Route path="/product/:id" element={<ChiTietSanPham />} />
         <Route path="/lienhe" element={<LienHe />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/aolop-kyyeu" element={<AoLopKyYeuPage />} />

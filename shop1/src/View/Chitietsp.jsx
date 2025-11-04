@@ -12,32 +12,54 @@ export default function ChiTietSanPham() {
   const [selectedSize, setSelectedSize] = useState("");
   const [loading, setLoading] = useState(true);
 
+  const BASE_URL = "http://localhost:5000";
+
+  // ✅ Hàm chuẩn hóa đường dẫn ảnh
+  const getFullUrl = (path) => {
+    if (!path) return "";
+    if (path.startsWith("http")) return path;
+    if (!path.startsWith("/")) path = "/" + path;
+    return `${BASE_URL}${path}`;
+  };
+
+  // 🧠 Lấy dữ liệu sản phẩm
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/sanpham/${id}`);
+        const res = await fetch(`${BASE_URL}/api/sanpham/${id}`);
         const data = await res.json();
+
         if (res.ok) {
           setProduct(data.sanpham);
           setVariants(data.bienthe);
 
-          // Gán ảnh đầu tiên
-          const firstImage = data.bienthe[0]?.hinhanh?.[0] || "";
-          setMainImage(firstImage);
+          // Gán mặc định biến thể đầu tiên
+          const firstVariant = data.bienthe[0];
+          const firstImg = firstVariant?.hinhanh?.[0]
+            ? getFullUrl(firstVariant.hinhanh[0])
+            : "";
 
-          // Gán mặc định màu & size
-          setSelectedColor(data.bienthe[0]?.tenmausac || "");
-          setSelectedSize(data.bienthe[0]?.tenkichthuoc || "");
+          setMainImage(firstImg);
+          setSelectedColor(firstVariant?.tenmausac || "");
+          setSelectedSize(firstVariant?.tenkichthuoc || "");
         }
-      } catch (error) {
-        console.error("❌ Lỗi khi tải chi tiết sản phẩm:", error);
+      } catch (err) {
+        console.error("❌ Lỗi khi tải chi tiết sản phẩm:", err);
       } finally {
         setLoading(false);
       }
     };
-
     fetchProduct();
   }, [id]);
+
+  // 🟣 Khi đổi màu → đổi ảnh đúng biến thể
+  useEffect(() => {
+    const variant = variants.find((v) => v.tenmausac === selectedColor);
+    if (variant?.hinhanh?.length) {
+      const img = getFullUrl(variant.hinhanh[0]);
+      setMainImage(img);
+    }
+  }, [selectedColor, variants]);
 
   if (loading)
     return (
@@ -53,13 +75,13 @@ export default function ChiTietSanPham() {
       </div>
     );
 
-  // Lấy danh sách màu và size duy nhất
+  // 🧩 Danh sách màu & size duy nhất
   const uniqueColors = [
     ...new Map(variants.map((v) => [v.tenmausac, v.hexcode])).entries(),
   ];
   const uniqueSizes = [...new Set(variants.map((v) => v.tenkichthuoc))];
 
-  // Tìm biến thể khớp với lựa chọn
+  // 🧩 Biến thể hiện tại
   const currentVariant = variants.find(
     (v) => v.tenmausac === selectedColor && v.tenkichthuoc === selectedSize
   );
@@ -67,7 +89,6 @@ export default function ChiTietSanPham() {
   return (
     <div className="min-h-screen bg-white pt-[120px] pb-20">
       <div className="container mx-auto px-6 md:px-10 lg:px-16">
-        {/* ===== KHUNG CHÍNH ===== */}
         <div className="bg-white border rounded-3xl shadow-sm p-8 md:p-10">
           {/* ===== BREADCRUMB ===== */}
           <nav className="text-sm text-gray-500 mb-8 flex items-center gap-1">
@@ -84,7 +105,7 @@ export default function ChiTietSanPham() {
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75V20.25A1.5 1.5 0 006 21.75h12a1.5 1.5 0 001.5-1.5V9.75"
+                    d="M2.25 12l8.954-8.955a1.125 1.125 0 011.591 0L21.75 12M4.5 9.75V20.25A1.5 1.5 0 006 21.75h12a1.5 1.5 0 001.5-1.5V9.75"
                   />
                 </svg>
                 Đồ Nam
@@ -100,15 +121,18 @@ export default function ChiTietSanPham() {
             </span>
           </nav>
 
-          {/* ===== GRID: ẢNH & THÔNG TIN ===== */}
+          {/* ===== GRID ===== */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-            {/* ẢNH */}
+            {/* ===== ẢNH ===== */}
             <div className="flex flex-col items-center">
-              <div className="w-full max-w-[550px] rounded-3xl overflow-hidden shadow-sm border">
+              <div className="w-full max-w-[550px] rounded-3xl overflow-hidden shadow-sm border relative">
                 <img
                   src={mainImage}
                   alt={product.tensanpham}
                   className="w-full h-[480px] object-cover"
+                  onError={(e) =>
+                    (e.target.src = getFullUrl("/images/default.jpg"))
+                  }
                 />
               </div>
 
@@ -116,25 +140,27 @@ export default function ChiTietSanPham() {
               <div className="flex gap-3 justify-center mt-6 flex-wrap">
                 {currentVariant?.hinhanh?.map((img, i) => (
                   <button
-                    key={i}
-                    onClick={() => setMainImage(img)}
-                    className={`w-20 h-20 md:w-24 md:h-24 border rounded-xl overflow-hidden transition-all ${
-                      mainImage === img
+                    key={`${currentVariant.mabienthe}-${i}`}
+                    onClick={() => setMainImage(getFullUrl(img))}
+                    className={`w-20 h-20 md:w-24 md:h-24 border rounded-xl overflow-hidden transition-all ${mainImage === getFullUrl(img)
                         ? "border-black scale-105 shadow-md"
                         : "border-gray-300 hover:border-black"
-                    }`}
+                      }`}
                   >
                     <img
-                      src={img}
-                      alt=""
+                      src={getFullUrl(img)}
+                      alt="ảnh sản phẩm"
                       className="w-full h-full object-cover"
+                      onError={(e) =>
+                        (e.target.src = getFullUrl("/images/default.jpg"))
+                      }
                     />
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* THÔNG TIN */}
+            {/* ===== THÔNG TIN ===== */}
             <div className="space-y-7">
               <div>
                 <h1 className="text-3xl font-bold mb-2">
@@ -160,15 +186,14 @@ export default function ChiTietSanPham() {
               <div>
                 <h4 className="font-semibold mb-2">Màu sắc</h4>
                 <div className="flex gap-3 flex-wrap">
-                  {uniqueColors.map(([colorName, hex]) => (
+                  {uniqueColors.map(([colorName, hex], i) => (
                     <button
-                      key={colorName}
+                      key={`${colorName}-${i}`}
                       onClick={() => setSelectedColor(colorName)}
-                      className={`w-8 h-8 rounded-full border-2 transition ${
-                        selectedColor === colorName
+                      className={`w-8 h-8 rounded-full border-2 transition ${selectedColor === colorName
                           ? "border-black scale-110"
                           : "border-gray-300"
-                      }`}
+                        }`}
                       style={{ backgroundColor: hex }}
                     />
                   ))}
@@ -179,15 +204,14 @@ export default function ChiTietSanPham() {
               <div>
                 <h4 className="font-semibold mb-2">Kích cỡ</h4>
                 <div className="flex gap-3 flex-wrap">
-                  {uniqueSizes.map((s) => (
+                  {uniqueSizes.map((s, i) => (
                     <button
-                      key={s}
+                      key={`${s}-${i}`}
                       onClick={() => setSelectedSize(s)}
-                      className={`px-4 py-2 rounded-full border text-sm font-medium ${
-                        selectedSize === s
+                      className={`px-4 py-2 rounded-full border text-sm font-medium ${selectedSize === s
                           ? "bg-black text-white border-black"
                           : "hover:border-black"
-                      }`}
+                        }`}
                     >
                       {s}
                     </button>
@@ -195,11 +219,13 @@ export default function ChiTietSanPham() {
                 </div>
               </div>
 
+              {/* Nút thêm giỏ hàng */}
               <button className="flex items-center justify-center gap-2 bg-black text-white py-4 w-full rounded-xl font-semibold hover:bg-gray-800 transition">
                 <ShoppingBag size={20} />
                 Thêm vào giỏ hàng
               </button>
 
+              {/* Mô tả */}
               <div className="border-t pt-6 mt-8">
                 <h4 className="font-semibold mb-2">Mô tả sản phẩm</h4>
                 <p className="text-gray-700 leading-relaxed">{product.mota}</p>

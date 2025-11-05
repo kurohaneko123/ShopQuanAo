@@ -2,47 +2,24 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ShoppingBag, Star } from "lucide-react";
+import axios from "axios";
 
 export default function ChiTietSanPham() {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
-  const [variants, setVariants] = useState([]);
   const [mainImage, setMainImage] = useState("");
-  const [selectedColor, setSelectedColor] = useState("");
-  const [selectedSize, setSelectedSize] = useState("");
+  const [selectedColor, setSelectedColor] = useState("Đen");
+  const [selectedSize, setSelectedSize] = useState("M");
   const [loading, setLoading] = useState(true);
 
   const BASE_URL = "http://localhost:5000";
 
-  // ✅ Hàm chuẩn hóa đường dẫn ảnh
-  const getFullUrl = (path) => {
-    if (!path) return "";
-    if (path.startsWith("http")) return path;
-    if (!path.startsWith("/")) path = "/" + path;
-    return `${BASE_URL}${path}`;
-  };
-
-  // 🧠 Lấy dữ liệu sản phẩm
+  // 🧠 Lấy chi tiết sản phẩm
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const res = await fetch(`${BASE_URL}/api/sanpham/${id}`);
-        const data = await res.json();
-
-        if (res.ok) {
-          setProduct(data.sanpham);
-          setVariants(data.bienthe);
-
-          // Gán mặc định biến thể đầu tiên
-          const firstVariant = data.bienthe[0];
-          const firstImg = firstVariant?.hinhanh?.[0]
-            ? getFullUrl(firstVariant.hinhanh[0])
-            : "";
-
-          setMainImage(firstImg);
-          setSelectedColor(firstVariant?.tenmausac || "");
-          setSelectedSize(firstVariant?.tenkichthuoc || "");
-        }
+        const res = await axios.get(`${BASE_URL}/api/sanpham/${id}`);
+        setProduct(res.data.sanpham || null);
       } catch (err) {
         console.error("❌ Lỗi khi tải chi tiết sản phẩm:", err);
       } finally {
@@ -52,14 +29,23 @@ export default function ChiTietSanPham() {
     fetchProduct();
   }, [id]);
 
-  // 🟣 Khi đổi màu → đổi ảnh đúng biến thể
+  //  Ảnh backend (4 ảnh có sẵn trong thư mục public/images)
+  const colorImages = {
+    Đen: [
+      `${BASE_URL}/images/aothuncottonden1.jpg`,
+      `${BASE_URL}/images/aothuncottonden2.jpg`,
+    ],
+    Trắng: [
+      `${BASE_URL}/images/aothuncottontrang1.jpg`,
+      `${BASE_URL}/images/aothuncottontrang2.jpg`,
+    ],
+  };
+
+  // Khi đổi màu
   useEffect(() => {
-    const variant = variants.find((v) => v.tenmausac === selectedColor);
-    if (variant?.hinhanh?.length) {
-      const img = getFullUrl(variant.hinhanh[0]);
-      setMainImage(img);
-    }
-  }, [selectedColor, variants]);
+    const imgs = colorImages[selectedColor] || [];
+    setMainImage(imgs[0]);
+  }, [selectedColor]);
 
   if (loading)
     return (
@@ -75,16 +61,7 @@ export default function ChiTietSanPham() {
       </div>
     );
 
-  // 🧩 Danh sách màu & size duy nhất
-  const uniqueColors = [
-    ...new Map(variants.map((v) => [v.tenmausac, v.hexcode])).entries(),
-  ];
-  const uniqueSizes = [...new Set(variants.map((v) => v.tenkichthuoc))];
-
-  // 🧩 Biến thể hiện tại
-  const currentVariant = variants.find(
-    (v) => v.tenmausac === selectedColor && v.tenkichthuoc === selectedSize
-  );
+  const currentImages = colorImages[selectedColor] || [];
 
   return (
     <div className="min-h-screen bg-white pt-[120px] pb-20">
@@ -93,27 +70,11 @@ export default function ChiTietSanPham() {
           {/* ===== BREADCRUMB ===== */}
           <nav className="text-sm text-gray-500 mb-8 flex items-center gap-1">
             <Link to="/" className="hover:text-black transition">
-              <span className="flex items-center gap-1">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="w-4 h-4"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M2.25 12l8.954-8.955a1.125 1.125 0 011.591 0L21.75 12M4.5 9.75V20.25A1.5 1.5 0 006 21.75h12a1.5 1.5 0 001.5-1.5V9.75"
-                  />
-                </svg>
-                Đồ Nam
-              </span>
+              Trang chủ
             </Link>
             <span className="text-gray-400">/</span>
             <Link to="/all" className="hover:text-black transition">
-              Áo Nam
+              Sản phẩm
             </Link>
             <span className="text-gray-400">/</span>
             <span className="text-gray-700 font-medium">
@@ -125,35 +86,48 @@ export default function ChiTietSanPham() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
             {/* ===== ẢNH ===== */}
             <div className="flex flex-col items-center">
-              <div className="w-full max-w-[550px] rounded-3xl overflow-hidden shadow-sm border relative">
+              {/* ===== ẢNH CHÍNH (có hiệu ứng hover đổi ảnh) ===== */}
+              <div
+                className="w-full max-w-[550px] rounded-3xl overflow-hidden shadow-sm border relative bg-gray-50 flex justify-center items-center"
+                //  Khi di chuột vào ảnh:
+                onMouseEnter={() => {
+                  //  Lấy danh sách ảnh theo màu đang chọn (đen / trắng)
+                  const imgs = colorImages[selectedColor];
+                  //  Nếu có ít nhất 2 ảnh thì đổi sang ảnh thứ 2
+                  if (imgs && imgs.length > 1) setMainImage(imgs[1]);
+                }}
+                // Khi rời chuột khỏi ảnh:
+                onMouseLeave={() => {
+                  // Lấy lại danh sách ảnh theo màu đang chọn
+                  const imgs = colorImages[selectedColor];
+                  // Nếu có ít nhất 1 ảnh thì đổi lại ảnh đầu tiên
+                  if (imgs && imgs.length > 0) setMainImage(imgs[0]);
+                }}
+              >
+                {/*  Ảnh chính của sản phẩm */}
                 <img
-                  src={mainImage}
-                  alt={product.tensanpham}
-                  className="w-full h-[480px] object-cover"
-                  onError={(e) =>
-                    (e.target.src = getFullUrl("/images/default.jpg"))
-                  }
+                  src={mainImage} // ảnh đang hiển thị
+                  alt={product.tensanpham} // tên sản phẩm để SEO tốt hơn
+                  className="max-h-[500px] w-auto object-contain rounded-3xl transition-transform duration-300" // giữ tỉ lệ ảnh chuẩn, hover mượt
                 />
               </div>
 
               {/* Thumbnail */}
               <div className="flex gap-3 justify-center mt-6 flex-wrap">
-                {currentVariant?.hinhanh?.map((img, i) => (
+                {currentImages.map((img, i) => (
                   <button
-                    key={`${currentVariant.mabienthe}-${i}`}
-                    onClick={() => setMainImage(getFullUrl(img))}
-                    className={`w-20 h-20 md:w-24 md:h-24 border rounded-xl overflow-hidden transition-all ${mainImage === getFullUrl(img)
+                    key={i}
+                    onClick={() => setMainImage(img)}
+                    className={`w-20 h-20 md:w-24 md:h-24 border rounded-xl overflow-hidden transition-all ${
+                      mainImage === img
                         ? "border-black scale-105 shadow-md"
                         : "border-gray-300 hover:border-black"
-                      }`}
+                    }`}
                   >
                     <img
-                      src={getFullUrl(img)}
+                      src={img}
                       alt="ảnh sản phẩm"
-                      className="w-full h-full object-cover"
-                      onError={(e) =>
-                        (e.target.src = getFullUrl("/images/default.jpg"))
-                      }
+                      className="w-full h-full object-contain bg-white rounded-lg transition-transform duration-300 hover:scale-105"
                     />
                   </button>
                 ))}
@@ -177,24 +151,30 @@ export default function ChiTietSanPham() {
                     (45 đánh giá)
                   </span>
                 </div>
-                <div className="text-3xl font-bold text-red-600">
-                  {Number(currentVariant?.giaban || 0).toLocaleString("vi-VN")}đ
-                </div>
+                <div className="text-3xl font-bold text-red-600">199.000đ</div>
               </div>
 
               {/* Màu sắc */}
               <div>
                 <h4 className="font-semibold mb-2">Màu sắc</h4>
                 <div className="flex gap-3 flex-wrap">
-                  {uniqueColors.map(([colorName, hex], i) => (
+                  {Object.keys(colorImages).map((color) => (
                     <button
-                      key={`${colorName}-${i}`}
-                      onClick={() => setSelectedColor(colorName)}
-                      className={`w-8 h-8 rounded-full border-2 transition ${selectedColor === colorName
+                      key={color}
+                      onClick={() => setSelectedColor(color)}
+                      className={`w-8 h-8 rounded-full border-2 transition ${
+                        selectedColor === color
                           ? "border-black scale-110"
                           : "border-gray-300"
-                        }`}
-                      style={{ backgroundColor: hex }}
+                      }`}
+                      style={{
+                        backgroundColor:
+                          color === "Đen"
+                            ? "#000"
+                            : color === "Trắng"
+                            ? "#fff"
+                            : "#ccc",
+                      }}
                     />
                   ))}
                 </div>
@@ -204,14 +184,15 @@ export default function ChiTietSanPham() {
               <div>
                 <h4 className="font-semibold mb-2">Kích cỡ</h4>
                 <div className="flex gap-3 flex-wrap">
-                  {uniqueSizes.map((s, i) => (
+                  {["S", "M", "L", "XL"].map((s) => (
                     <button
-                      key={`${s}-${i}`}
+                      key={s}
                       onClick={() => setSelectedSize(s)}
-                      className={`px-4 py-2 rounded-full border text-sm font-medium ${selectedSize === s
+                      className={`px-4 py-2 rounded-full border text-sm font-medium ${
+                        selectedSize === s
                           ? "bg-black text-white border-black"
                           : "hover:border-black"
-                        }`}
+                      }`}
                     >
                       {s}
                     </button>

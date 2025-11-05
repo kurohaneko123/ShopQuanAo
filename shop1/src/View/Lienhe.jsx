@@ -7,7 +7,7 @@ export default function LienHe() {
       <div className="container mx-auto px-6">
         {/* Tiêu đề */}
         <h1 className="text-3xl font-bold text-center text-black-700 mb-10">
-          Liên hệ với COOLMATE
+          Liên hệ với Horizon
         </h1>
 
         <div className="grid md:grid-cols-2 gap-10">
@@ -20,7 +20,8 @@ export default function LienHe() {
             <div className="flex items-start gap-3">
               <MapPin className="text-blue-600 mt-1" />
               <p className="text-gray-700">
-                <strong>Địa chỉ:</strong> 180 Cao Lỗ, Phường Chánh Hưng, Quận 8, TP.HCM
+                <strong>Địa chỉ:</strong> 180 Cao Lỗ, Phường Chánh Hưng, Quận 8,
+                TP.HCM
               </p>
             </div>
 
@@ -34,14 +35,14 @@ export default function LienHe() {
             <div className="flex items-start gap-3">
               <Mail className="text-blue-600 mt-1" />
               <p className="text-gray-700">
-                <strong>Email:</strong> support@coolmate.vn
+                <strong>Email:</strong> support@horizonmate.vn
               </p>
             </div>
 
             <p className="text-gray-600 mt-6">
               Nếu bạn có bất kỳ thắc mắc nào về sản phẩm, đơn hàng, hoặc cần hỗ
-              trợ kỹ thuật, hãy liên hệ với chúng tôi qua các kênh trên.  
-              Đội ngũ COOLMATE luôn sẵn sàng hỗ trợ bạn!
+              trợ kỹ thuật, hãy liên hệ với chúng tôi qua các kênh trên. Đội ngũ
+              Horizon luôn sẵn sàng hỗ trợ bạn!
             </p>
           </div>
 
@@ -49,7 +50,7 @@ export default function LienHe() {
           <div className="rounded-xl overflow-hidden shadow-md">
             <iframe
               title="Google Map"
-             src="https://www.google.com/maps?q=Đại+học+Công+Nghệ+Sài+Gòn+180+Cao+Lỗ,+Phường+4,+Quận+8,+TP.HCM&output=embed"
+              src="https://www.google.com/maps?q=Đại+học+Công+Nghệ+Sài+Gòn+180+Cao+Lỗ,+Phường+4,+Quận+8,+TP.HCM&output=embed"
               width="100%"
               height="400"
               allowFullScreen=""

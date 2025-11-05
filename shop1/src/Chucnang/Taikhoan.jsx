@@ -4,6 +4,8 @@ import { signInWithPopup } from "firebase/auth";
 import { auth, provider } from "./firebaseConfig.jsx";
 import { API_URL } from "../config/app.js"; //  import API backend
 import { useNavigate } from "react-router-dom";
+import Logo from "../assets/logo_header/logo.png";
+
 export default function AccountModal({ isOpen, onClose }) {
   const [mode, setMode] = useState("login");
   const [loading, setLoading] = useState(false);
@@ -158,9 +160,12 @@ export default function AccountModal({ isOpen, onClose }) {
         </button>
 
         {/* Logo */}
-        <h2 className="text-3xl font-bold text-center mb-2">
-          <span className="text-blue-700">COOL</span>
-          <span className="bg-blue-700 text-white px-1 rounded">CLUB</span>
+        <h2 className="text-center mb-2">
+          <img
+            src={Logo}
+            alt="Horizon Logo"
+            className="mx-auto w-32 md:w-40 hover:scale-105 transition-transform duration-300"
+          />
         </h2>
 
         <p className="text-center text-base text-gray-600 mb-5">

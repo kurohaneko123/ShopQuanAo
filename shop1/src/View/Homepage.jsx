@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -25,19 +25,8 @@ const PrevArrow = ({ onClick }) => (
     aria-label="Previous slide"
     className="absolute -left-8 top-1/2 -translate-y-1/2 z-30 bg-black text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-gray-800 transition"
   >
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      className="h-5 w-5"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M15 19l-7-7 7-7"
-      />
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
     </svg>
   </button>
 );
@@ -48,30 +37,21 @@ const NextArrow = ({ onClick }) => (
     aria-label="Next slide"
     className="absolute -right-8 top-1/2 -translate-y-1/2 z-30 bg-black text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-gray-800 transition"
   >
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      className="h-5 w-5"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M9 5l7 7-7 7"
-      />
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
     </svg>
   </button>
 );
 
 export default function HomePage() {
+  const navigate = useNavigate();
   const [selectedGender, setSelectedGender] = useState("nam");
-  const [dailyProducts, setDailyProducts] = useState([]); // sản phẩm mặc hàng ngày
-  const [highlightProducts, setHighlightProducts] = useState([]); // sản phẩm nổi bật
+  const [dailyProducts, setDailyProducts] = useState([]);
+  const [highlightProducts, setHighlightProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [vouchers, setVouchers] = useState([]);
+
   /* ====== Cấu hình slider ====== */
   const settings = {
     dots: false,
@@ -89,66 +69,82 @@ export default function HomePage() {
       { breakpoint: 480, settings: { slidesToShow: 1 } },
     ],
   };
-  /* ====== Ưu đãi nổi bật ====== */
 
+  /* ====== Gọi API ====== */
   useEffect(() => {
-    const fetchVouchers = async () => {
+    const fetchData = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/voucher");
-        setVouchers(res.data.data || []);
-      } catch (error) {
-        console.error("Lỗi khi tải voucher:", error);
-      }
-    };
-    fetchVouchers();
-  }, []);
+        const [productRes, voucherRes] = await Promise.all([
+          axios.get("http://localhost:5000/api/sanpham"),
+          axios.get("http://localhost:5000/api/voucher"),
+        ]);
 
-  /* ====== Gọi API lấy dữ liệu sản phẩm ====== */
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const res = await axios.get("http://localhost:5000/api/sanpham");
-        const apiData = res.data.data || [];
-
-        // 🌟 Chuyển đổi dữ liệu từ backend thành định dạng frontend hiểu được
-        const mappedProducts = apiData.map((item) => ({
+        const apiData = productRes.data.data || [];
+        const mapped = apiData.map((item) => ({
           id: item.masanpham,
           name: item.tensanpham,
-          price: Math.floor(Math.random() * 400000) + 150000, // tạm random giá
-          img: Aothunbasic, // TODO: sau này gắn ảnh thật từ Cloudinary backend trả về
+          price: Math.floor(Math.random() * 400000) + 150000,
+          img: Aothunbasic,
           brand: item.thuonghieu,
           mota: item.mota,
           categoryId: item.madanhmuc,
         }));
 
-        // 🌟 Chia sản phẩm thành 2 nhóm (demo)
-        setDailyProducts(mappedProducts.slice(0, 6)); // 6 sản phẩm đầu tiên
-        setHighlightProducts(mappedProducts.slice(6, 12)); // 6 sản phẩm tiếp theo
+        setDailyProducts(mapped.slice(0, 6));
+        setHighlightProducts(mapped.slice(6, 12));
+        setVouchers(voucherRes.data.data || []);
       } catch (err) {
-        console.error("Lỗi khi lấy sản phẩm:", err);
-        setError("Không thể tải danh sách sản phẩm 😭");
+        console.error("Lỗi khi tải dữ liệu:", err);
+        setError("Không thể tải dữ liệu 😭");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProducts();
+    fetchData();
   }, []);
 
-  /* ====== Danh mục tĩnh (chưa có API riêng) ====== */
-  // TODO: sau này gắn API danh mục nam/nữ riêng (ví dụ /api/danhmuc?gender=nam)
+  /* ====== 🛒 Hàm thêm sản phẩm vào giỏ hàng ====== */
+  const handleAddToCart = (product) => {
+    try {
+      const stored = JSON.parse(localStorage.getItem("cart")) || [];
+
+      const existing = stored.find((item) => item.id === product.id);
+      if (existing) {
+        existing.qty += 1;
+      } else {
+        stored.push({
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          qty: 1,
+          color: "Trắng",
+          size: "M",
+          img: product.img || "",
+        });
+      }
+
+      localStorage.setItem("cart", JSON.stringify(stored));
+
+      const toast = document.createElement("div");
+      toast.innerText = `🛒 Đã thêm "${product.name}" vào giỏ hàng!`;
+      toast.className =
+        "fixed bottom-6 right-6 bg-black text-white px-4 py-2 rounded-lg shadow-lg z-[9999]";
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 2000);
+    } catch (error) {
+      console.error("Lỗi khi thêm vào giỏ hàng:", error);
+    }
+  };
+
+  /* ====== Danh mục tĩnh ====== */
   const maleCategories = [
     { id: "m-1", name: "ÁO THUN", img: Aothunbasic, slug: "ao-thun-nam" },
     { id: "m-2", name: "ÁO POLO", img: Aopolo, slug: "ao-polo-nam" },
     { id: "m-3", name: "QUẦN SHORT", img: Quanshort, slug: "quan-short" },
     { id: "m-4", name: "QUẦN JEAN", img: Quanjean, slug: "quan-jean" },
     { id: "m-5", name: "ÁO KHOÁC", img: Aokhoac, slug: "ao-khoac" },
-    {
-      id: "m-6",
-      name: "QUẦN JOGGER",
-      img: QuanjoogerTrang,
-      slug: "quan-jogger",
-    },
+    { id: "m-6", name: "QUẦN JOGGER", img: QuanjoogerTrang, slug: "quan-jogger" },
   ];
 
   const femaleCategories = [
@@ -160,44 +156,37 @@ export default function HomePage() {
     { id: "f-6", name: "QUẦN SHORT", img: Aokhoac, slug: "quan-short" },
   ];
 
-  const gridCategories =
-    selectedGender === "nam" ? maleCategories : femaleCategories;
+  const gridCategories = selectedGender === "nam" ? maleCategories : femaleCategories;
 
-  /* ====== Hiển thị ====== */
+  /* ====== Loading & Error ====== */
   if (loading)
-    return (
-      <div className="pt-[150px] text-center text-gray-600 text-lg">
-        Đang tải dữ liệu sản phẩm...
-      </div>
-    );
+    return <div className="pt-[150px] text-center text-gray-600 text-lg">Đang tải dữ liệu sản phẩm...</div>;
   if (error)
-    return (
-      <div className="pt-[150px] text-center text-red-600 text-lg">{error}</div>
-    );
+    return <div className="pt-[150px] text-center text-red-600 text-lg">{error}</div>;
 
+  /* ====== Render ====== */
   return (
     <main className="bg-white">
       <div className="container mx-auto px-6">
+
         {/* ===== Bộ lọc giới tính ===== */}
         <section className="pt-12 pb-6">
           <nav className="flex justify-start gap-4">
             <button
               onClick={() => setSelectedGender("nam")}
-              className={`h-12 px-6 rounded-full font-semibold uppercase transition-all ${
-                selectedGender === "nam"
+              className={`h-12 px-6 rounded-full font-semibold uppercase transition-all ${selectedGender === "nam"
                   ? "bg-neutral-900 text-white"
                   : "bg-neutral-200 text-neutral-800 hover:bg-neutral-300"
-              }`}
+                }`}
             >
               Nam
             </button>
             <button
               onClick={() => setSelectedGender("nu")}
-              className={`h-12 px-6 rounded-full font-semibold uppercase transition-all ${
-                selectedGender === "nu"
+              className={`h-12 px-6 rounded-full font-semibold uppercase transition-all ${selectedGender === "nu"
                   ? "bg-neutral-900 text-white"
                   : "bg-neutral-200 text-neutral-800 hover:bg-neutral-300"
-              }`}
+                }`}
             >
               Nữ
             </button>
@@ -209,11 +198,7 @@ export default function HomePage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-6">
             {gridCategories.map((cat) => (
               <div key={cat.id} className="group flex flex-col items-center">
-                <Link
-                  to={`/all/${selectedGender}/${cat.slug
-                    .replace("-nam", "")
-                    .replace("-nu", "")}`}
-                >
+                <Link to={`/all/${selectedGender}/${cat.slug.replace("-nam", "").replace("-nu", "")}`}>
                   <figure className="w-full overflow-hidden rounded-2xl bg-gray-50 shadow-sm">
                     <img
                       src={cat.img}
@@ -230,26 +215,14 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ===== Banner MẶC HẰNG NGÀY ===== */}
-        <section className="relative w-full h-[500px] rounded-3xl overflow-hidden mb-16">
-          <img
-            src={Bannermacthuongngay}
-            alt="Banner Mặc Hằng Ngày"
-            className="w-full h-full object-cover"
-          />
-          {/* TODO: sau này có thể thêm nội dung động (khuyến mãi / sự kiện) */}
-        </section>
-
         {/* ===== Sản phẩm Mặc hằng ngày ===== */}
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-3xl font-bold mb-6">Sản phẩm mặc hằng ngày</h2>
-          <Link
-            to="/all"
-            className="text-sm underline underline-offset-2 hover:text-blue-600"
-          >
+          <Link to="/all" className="text-sm underline underline-offset-2 hover:text-blue-600">
             Xem thêm
           </Link>
         </div>
+
         <section className="relative overflow-visible pb-20">
           <Slider {...settings}>
             {dailyProducts.map((p) => (
@@ -264,12 +237,13 @@ export default function HomePage() {
                   </div>
                   <div className="p-4 text-center">
                     <h3 className="font-semibold text-lg">{p.name}</h3>
-                    <p className="text-red-600 font-bold">
-                      {p.price.toLocaleString("vi-VN")}đ
-                    </p>
+                    <p className="text-red-600 font-bold">{p.price.toLocaleString("vi-VN")}đ</p>
                   </div>
                   <div className="absolute bottom-4 left-0 w-full flex justify-center opacity-0 group-hover:opacity-100 transition">
-                    <button className="bg-black text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-gray-800">
+                    <button
+                      onClick={() => handleAddToCart(p)}
+                      className="bg-black text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-gray-800"
+                    >
                       Thêm vào giỏ hàng +
                     </button>
                   </div>
@@ -279,128 +253,9 @@ export default function HomePage() {
           </Slider>
         </section>
 
-        {/* ===== Banner Gợi ý nổi bật ===== */}
+        {/* ===== Banner Gợi ý ===== */}
         <section className="relative w-full h-[500px] rounded-3xl overflow-hidden mb-16">
-          <img
-            src={Bannergoiy}
-            alt="Banner Gợi Ý"
-            className="w-full h-full object-cover"
-          />
-          {/* TODO: sau này thêm nội dung banner động */}
-        </section>
-
-        {/* ===== Sản phẩm nổi bật ===== */}
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-3xl font-bold mb-6">Sản phẩm nổi bật</h2>
-          <Link
-            to="/all"
-            className="text-sm underline underline-offset-2 hover:text-blue-600"
-          >
-            Xem thêm
-          </Link>
-        </div>
-        <section className="relative overflow-visible pb-20">
-          <Slider {...settings}>
-            {highlightProducts.map((p) => (
-              <div key={p.id} className="px-3">
-                <div className="relative group bg-white border rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition">
-                  <div className="h-72 bg-gray-50">
-                    <img
-                      src={p.img}
-                      alt={p.name}
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                  </div>
-                  <div className="p-4 text-center">
-                    <h3 className="font-semibold text-lg">{p.name}</h3>
-                    <p className="text-red-600 font-bold">
-                      {p.price.toLocaleString("vi-VN")}đ
-                    </p>
-                  </div>
-                  <div className="absolute bottom-4 left-0 w-full flex justify-center opacity-0 group-hover:opacity-100 transition">
-                    <button className="bg-black text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-gray-800">
-                      Thêm vào giỏ hàng +
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </Slider>
-        </section>
-
-        {/* ===== Ưu đãi nổi bật ===== */}
-        <section className="pb-28">
-          <div className="flex items-center justify-between mb-10">
-            <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">
-              Ưu đãi nổi bật
-            </h2>
-
-            <Link
-              to="/sale"
-              className="text-sm underline underline-offset-2 hover:text-blue-600"
-            >
-              Xem thêm
-            </Link>
-          </div>
-
-          {vouchers.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
-              {vouchers.map((v) => (
-                <div
-                  key={v.mavoucher}
-                  className="relative overflow-hidden rounded-3xl border border-blue-200 shadow-sm 
-                     bg-gradient-to-br from-blue-50 via-white to-blue-100
-                     hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
-                >
-                  {/* Mép rách kiểu phiếu giảm giá */}
-                  <div className="absolute top-0 left-0 w-2 h-full bg-blue-600 rounded-l-3xl"></div>
-                  <div className="absolute right-0 top-1/2 -translate-y-1/2 w-6 h-6 bg-white border border-blue-200 rounded-full"></div>
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-6 h-6 bg-white border border-blue-200 rounded-full"></div>
-
-                  {/* Nội dung voucher */}
-                  <div className="px-8 py-6">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2 line-clamp-1">
-                      {v.tenvoucher}
-                    </h3>
-                    <p className="text-gray-600 mb-4 line-clamp-2">{v.mota}</p>
-
-                    <div className="flex items-center gap-2 mb-4">
-                      <span className="text-3xl font-extrabold text-red-500 drop-shadow-sm">
-                        {v.loaigiam === "%"
-                          ? `${v.giatrigiam}%`
-                          : `${v.giatrigiam.toLocaleString("vi-VN")}đ`}
-                      </span>
-                      <span className="text-gray-500 text-sm mt-2">
-                        {v.loaigiam === "%" ? "giảm giá" : "giảm tiền mặt"}
-                      </span>
-                    </div>
-
-                    <div className="flex justify-between items-center mt-4">
-                      <span className="text-sm text-gray-600">
-                        HSD:{" "}
-                        <span className="font-semibold text-gray-900">
-                          {new Date(v.ngayketthuc).toLocaleDateString("vi-VN")}
-                        </span>
-                      </span>
-
-                      <button
-                        className="bg-neutral-900 text-white text-sm px-5 py-2 rounded-full 
-             font-semibold border border-neutral-900 shadow-sm 
-             hover:bg-transparent hover:text-neutral-900 
-             transition-all duration-300 ease-in-out"
-                      >
-                        Sử dụng ngay
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500 italic text-center">
-              Hiện chưa có ưu đãi nào 🥲
-            </p>
-          )}
+          <img src={Bannergoiy} alt="Banner Gợi Ý" className="w-full h-full object-cover" />
         </section>
       </div>
     </main>

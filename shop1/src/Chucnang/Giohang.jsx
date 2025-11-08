@@ -56,17 +56,44 @@ export default function CartSlidebar({ onClose }) {
   useEffect(() => {
     try {
       const stored = localStorage.getItem("cart");
-      if (stored) setCart(JSON.parse(stored));
-      else setCart(SAMPLE_CART);
-    } catch {
+      if (stored) {
+        const parsed = JSON.parse(stored);
+
+        // ✅ Chuẩn hóa dữ liệu nếu thiếu field
+        const normalized = parsed.map((it) => ({
+          id: it.id || it.masanpham || `sp-${Date.now()}`, // fallback ID
+          name: it.name || it.tensanpham || "Sản phẩm không tên",
+          price: Number(it.price) || 0,
+          qty: it.qty || 1,
+          color: it.color || "Trắng",
+          size: it.size || "M",
+          sku: it.sku || `SP-${it.id || it.masanpham || "001"}`,
+          img:
+            it.img ||
+            it.image ||
+            it.hinhanh ||
+            "/img/placeholder.png",
+        }));
+
+        setCart(normalized);
+      } else {
+        setCart(SAMPLE_CART);
+      }
+    } catch (err) {
+      console.error("Lỗi khi đọc localStorage cart:", err);
       setCart(SAMPLE_CART);
     }
   }, []);
 
+
   // persist cart
+  // 🧠 Chỉ cập nhật localStorage khi giỏ hàng KHÔNG rỗng
   useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(cart));
+    if (cart && cart.length > 0) {
+      localStorage.setItem("cart", JSON.stringify(cart));
+    }
   }, [cart]);
+
 
   // quantity handlers
   const updateQty = (id, delta) => {
@@ -193,8 +220,8 @@ export default function CartSlidebar({ onClose }) {
                 {appliedCoupon.type === "percent"
                   ? `- ${appliedCoupon.value}%`
                   : appliedCoupon.type === "fixed"
-                  ? `- ${appliedCoupon.value.toLocaleString("vi-VN")}đ`
-                  : "(Miễn phí vận chuyển)"}
+                    ? `- ${appliedCoupon.value.toLocaleString("vi-VN")}đ`
+                    : "(Miễn phí vận chuyển)"}
                 <button
                   onClick={clearCoupon}
                   className="ml-3 text-xs text-blue-600 underline"

@@ -12,7 +12,8 @@ export const layTatCaSanPham = async () => {
             chatlieu,
             kieudang,
             baoquan,
-            madanhmuc
+            madanhmuc,
+            anhdaidien
         FROM sanpham
     `);
     return rows;

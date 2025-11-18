@@ -93,7 +93,19 @@ export default function HomePage() {
       { breakpoint: 480, settings: { slidesToShow: 1 } },
     ],
   };
+  /* ====== Ưu đãi nổi bật ====== */
 
+  useEffect(() => {
+    const fetchVouchers = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/voucher");
+        setVouchers(res.data.data || []);
+      } catch (error) {
+        console.error("Lỗi khi tải voucher:", error);
+      }
+    };
+    fetchVouchers();
+  }, []);
   /* ====== Gọi API ====== */
   useEffect(() => {
     const fetchData = async () => {
@@ -368,6 +380,80 @@ export default function HomePage() {
               </div>
             ))}
           </Slider>
+        </section>
+        {/* ===== Ưu đãi nổi bật ===== */}
+        <section className="pb-28">
+          <div className="flex items-center justify-between mb-10">
+            <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">
+              Ưu đãi nổi bật
+            </h2>
+
+            <Link
+              to="/sale"
+              className="text-sm underline underline-offset-2 hover:text-blue-600"
+            >
+              Xem thêm
+            </Link>
+          </div>
+
+          {vouchers.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
+              {vouchers.map((v) => (
+                <div
+                  key={v.mavoucher}
+                  className="relative overflow-hidden rounded-3xl border border-blue-200 shadow-sm 
+                     bg-gradient-to-br from-blue-50 via-white to-blue-100
+                     hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+                >
+                  {/* Mép rách kiểu phiếu giảm giá */}
+                  <div className="absolute top-0 left-0 w-2 h-full bg-blue-600 rounded-l-3xl"></div>
+                  <div className="absolute right-0 top-1/2 -translate-y-1/2 w-6 h-6 bg-white border border-blue-200 rounded-full"></div>
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-6 h-6 bg-white border border-blue-200 rounded-full"></div>
+
+                  {/* Nội dung voucher */}
+                  <div className="px-8 py-6">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-2 line-clamp-1">
+                      {v.tenvoucher}
+                    </h3>
+                    <p className="text-gray-600 mb-4 line-clamp-2">{v.mota}</p>
+
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="text-3xl font-extrabold text-red-500 drop-shadow-sm">
+                        {v.loaigiam === "%"
+                          ? `${v.giatrigiam}%`
+                          : `${v.giatrigiam.toLocaleString("vi-VN")}đ`}
+                      </span>
+                      <span className="text-gray-500 text-sm mt-2">
+                        {v.loaigiam === "%" ? "giảm giá" : "giảm tiền mặt"}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between items-center mt-4">
+                      <span className="text-sm text-gray-600">
+                        HSD:{" "}
+                        <span className="font-semibold text-gray-900">
+                          {new Date(v.ngayketthuc).toLocaleDateString("vi-VN")}
+                        </span>
+                      </span>
+
+                      <button
+                        className="bg-neutral-900 text-white text-sm px-5 py-2 rounded-full 
+             font-semibold border border-neutral-900 shadow-sm 
+             hover:bg-transparent hover:text-neutral-900 
+             transition-all duration-300 ease-in-out"
+                      >
+                        Sử dụng ngay
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500 italic text-center">
+              Hiện chưa có ưu đãi nào 🥲
+            </p>
+          )}
         </section>
       </div>
     </main>

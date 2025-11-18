@@ -106,6 +106,17 @@ export default function HomePage() {
     };
     fetchVouchers();
   }, []);
+  //Nút coppy
+  const copyVoucher = (code) => {
+    navigator.clipboard.writeText(code)
+      .then(() => {
+        alert(`Đã copy mã: ${code} ✔`);
+      })
+      .catch(() => {
+        alert("Copy thất bại!");
+      });
+  };
+
   /* ====== Gọi API ====== */
   useEffect(() => {
     const fetchData = async () => {
@@ -241,21 +252,19 @@ export default function HomePage() {
           <nav className="flex justify-start gap-4">
             <button
               onClick={() => setSelectedGender("nam")}
-              className={`h-12 px-6 rounded-full font-semibold uppercase transition-all ${
-                selectedGender === "nam"
-                  ? "bg-neutral-900 text-white"
-                  : "bg-neutral-200 text-neutral-800 hover:bg-neutral-300"
-              }`}
+              className={`h-12 px-6 rounded-full font-semibold uppercase transition-all ${selectedGender === "nam"
+                ? "bg-neutral-900 text-white"
+                : "bg-neutral-200 text-neutral-800 hover:bg-neutral-300"
+                }`}
             >
               Nam
             </button>
             <button
               onClick={() => setSelectedGender("nu")}
-              className={`h-12 px-6 rounded-full font-semibold uppercase transition-all ${
-                selectedGender === "nu"
-                  ? "bg-neutral-900 text-white"
-                  : "bg-neutral-200 text-neutral-800 hover:bg-neutral-300"
-              }`}
+              className={`h-12 px-6 rounded-full font-semibold uppercase transition-all ${selectedGender === "nu"
+                ? "bg-neutral-900 text-white"
+                : "bg-neutral-200 text-neutral-800 hover:bg-neutral-300"
+                }`}
             >
               Nữ
             </button>
@@ -419,12 +428,12 @@ export default function HomePage() {
 
                     <div className="flex items-center gap-2 mb-4">
                       <span className="text-3xl font-extrabold text-red-500 drop-shadow-sm">
-                        {v.loaigiam === "%"
+                        {v.loaikhuyenmai === "%"
                           ? `${v.giatrigiam}%`
                           : `${v.giatrigiam.toLocaleString("vi-VN")}đ`}
                       </span>
                       <span className="text-gray-500 text-sm mt-2">
-                        {v.loaigiam === "%" ? "giảm giá" : "giảm tiền mặt"}
+                        {v.loaikhuyenmai === "%" ? "giảm giá" : "giảm tiền mặt"}
                       </span>
                     </div>
 
@@ -437,13 +446,15 @@ export default function HomePage() {
                       </span>
 
                       <button
+                        onClick={() => copyVoucher(v.magiamgia)} // ← thêm dòng này
                         className="bg-neutral-900 text-white text-sm px-5 py-2 rounded-full 
-             font-semibold border border-neutral-900 shadow-sm 
-             hover:bg-transparent hover:text-neutral-900 
-             transition-all duration-300 ease-in-out"
+  font-semibold border border-neutral-900 shadow-sm 
+  hover:bg-transparent hover:text-neutral-900 
+  transition-all duration-300 ease-in-out"
                       >
                         Sử dụng ngay
                       </button>
+
                     </div>
                   </div>
                 </div>

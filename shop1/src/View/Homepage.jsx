@@ -327,6 +327,48 @@ export default function HomePage() {
             className="w-full h-full object-cover"
           />
         </section>
+        {/* ===== Sản phẩm nổi bật ===== */}
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-3xl font-bold mb-6">Sản phẩm nổi bật</h2>
+          <Link
+            to="/all"
+            className="text-sm underline underline-offset-2 hover:text-blue-600"
+          >
+            Xem thêm
+          </Link>
+        </div>
+
+        <section className="relative overflow-visible pb-20">
+          <Slider {...settings}>
+            {dailyProducts.map((p) => (
+              <div key={p.id} className="px-3">
+                <div className="relative group bg-white border rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition">
+                  <div className="h-72 bg-gray-50">
+                    <img
+                      src={p.img}
+                      alt={p.name}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                  </div>
+                  <div className="p-4 text-center">
+                    <h3 className="font-semibold text-lg">{p.name}</h3>
+                    <p className="text-red-600 font-bold">
+                      {p.price.toLocaleString("vi-VN")}đ
+                    </p>
+                  </div>
+                  <div className="absolute bottom-4 left-0 w-full flex justify-center opacity-0 group-hover:opacity-100 transition">
+                    <button
+                      onClick={() => handleAddToCart(p)}
+                      className="bg-black text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-gray-800"
+                    >
+                      Thêm vào giỏ hàng +
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </Slider>
+        </section>
       </div>
     </main>
   );

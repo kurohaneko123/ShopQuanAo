@@ -20,6 +20,8 @@ import Quanshort from "../assets/quan-short.jpg";
 import Bannermacthuongngay from "../assets/banner_mac.jpg";
 import Bannergoiy from "../assets/banner_goiy2.webp";
 
+//
+// Vì đây chỉ là CSS + vị trí tuyệt đối (absolute), đổi className là xong.
 /* ====== Nút trái/phải cho slider ====== */
 const PrevArrow = ({ onClick }) => (
   <button
@@ -236,7 +238,10 @@ export default function HomePage() {
   return (
     <main className="bg-white">
       <div className="container mx-auto px-6">
-        {/* ===== Bộ lọc giới tính ===== */}
+        {/* ===== Bộ lọc giới tính =====
+        // Vì đang dùng flex + gap, muốn đưa sang trái/phải chỉ cần justify-between hoặc justify-end.
+        // Muốn đổi thành dropdown cũng được → sửa UI thôi. */}
+
         <section className="pt-12 pb-6">
           <nav className="flex justify-start gap-4">
             <button

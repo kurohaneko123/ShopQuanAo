@@ -254,8 +254,8 @@ export default function CartSlidebar({ onClose }) {
                 {appliedCoupon.type === "percent"
                   ? `- ${appliedCoupon.value}%`
                   : appliedCoupon.type === "fixed"
-                    ? `- ${appliedCoupon.value.toLocaleString("vi-VN")}đ`
-                    : "(Miễn phí vận chuyển)"}
+                  ? `- ${appliedCoupon.value.toLocaleString("vi-VN")}đ`
+                  : "(Miễn phí vận chuyển)"}
                 <button
                   onClick={clearCoupon}
                   className="ml-3 text-xs text-blue-600 underline"
@@ -265,15 +265,13 @@ export default function CartSlidebar({ onClose }) {
               </div>
             )}
 
-            {error && (
-              <div className="mt-2 text-sm text-red-600">{error}</div>
-            )}
+            {error && <div className="mt-2 text-sm text-red-600">{error}</div>}
 
-            {/* ⭐⭐⭐ GỢI Ý MÃ GIẢM GIÁ ⭐⭐⭐ */}
+            {/*  GỢI Ý MÃ GIẢM GIÁ  */}
             {suggested.length > 0 && (
               <div className="mt-3 bg-blue-50 p-3 rounded-md border border-blue-200">
                 <div className="text-sm font-semibold text-blue-700 mb-2">
-                  Gợi ý mã giảm giá phù hợp 🎁
+                  Gợi ý mã giảm giá phù hợp
                 </div>
 
                 <div className="space-y-2">
@@ -293,8 +291,7 @@ export default function CartSlidebar({ onClose }) {
                           : ""}
                       </div>
                       <div className="text-xs text-gray-400">
-                        Đơn tối thiểu:{" "}
-                        {v.dontoithieu.toLocaleString("vi-VN")}đ
+                        Đơn tối thiểu: {v.dontoithieu.toLocaleString("vi-VN")}đ
                       </div>
                     </div>
                   ))}
@@ -351,7 +348,9 @@ export default function CartSlidebar({ onClose }) {
                       >
                         <Minus size={14} />
                       </button>
-                      <div className="px-3 py-1 border rounded text-sm">{it.qty}</div>
+                      <div className="px-3 py-1 border rounded text-sm">
+                        {it.qty}
+                      </div>
                       <button
                         onClick={() => updateQty(it.id, +1)}
                         className="p-1 border rounded-md hover:bg-gray-100"
@@ -377,7 +376,9 @@ export default function CartSlidebar({ onClose }) {
             </div>
             <div className="flex justify-between text-sm">
               <span>Giảm giá</span>
-              <span className="text-red-600">-{discountValue.toLocaleString("vi-VN")} đ</span>
+              <span className="text-red-600">
+                -{discountValue.toLocaleString("vi-VN")} đ
+              </span>
             </div>
             <div className="flex justify-between text-sm">
               <span>Phí vận chuyển</span>
@@ -404,7 +405,8 @@ export default function CartSlidebar({ onClose }) {
           </div>
 
           <div className="text-xs text-gray-500">
-            * Miễn phí vận chuyển cho đơn hàng từ 500.000 đ hoặc sử dụng mã FREESHIP
+            * Miễn phí vận chuyển cho đơn hàng từ 500.000 đ hoặc sử dụng mã
+            FREESHIP
           </div>
         </div>
       </aside>

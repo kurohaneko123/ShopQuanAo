@@ -3,18 +3,6 @@ import React, { useEffect, useState } from "react";
 import { X, Trash2, Plus, Minus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-/**
- * CartSlidebar.jsx
- * - Lấy giỏ hàng từ localStorage key "cart" (mảng item)
- * - Nếu không có thì dùng sampleData
- * - Hỗ trợ: tăng/giảm/slash remove, nhập mã giảm giá, tính tổng, chuyển checkout
- *
- * Item shape:
- * {
- *   id, name, price (number), qty, color?, size?, img?
- * }
- */
-
 const SAMPLE_CART = [
   {
     id: "p1",
@@ -24,7 +12,7 @@ const SAMPLE_CART = [
     qty: 1,
     size: "110",
     color: "Tím",
-    img: "/img/sp1.jpg", // nếu không có ảnh, component sẽ fallback
+    img: "/img/sp1.jpg",
   },
   {
     id: "p2",
@@ -38,13 +26,6 @@ const SAMPLE_CART = [
   },
 ];
 
-const AVAILABLE_COUPONS = {
-  // mã: { type: 'fixed' | 'percent', value: number }
-  SALE20K: { type: "fixed", value: 20000 },
-  DISCOUNT10: { type: "percent", value: 10 }, // 10%
-  FREESHIP: { type: "freeship", value: 0 },
-};
-
 export default function CartSlidebar({ onClose }) {
   const navigate = useNavigate();
   const [cart, setCart] = useState([]);
@@ -52,27 +33,23 @@ export default function CartSlidebar({ onClose }) {
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [error, setError] = useState("");
 
-  // load cart from localStorage or sample
+  // ⭐ THÊM MỚI: SUGGESTED VOUCHER
+  const [suggested, setSuggested] = useState([]);
+
   useEffect(() => {
     try {
       const stored = localStorage.getItem("cart");
       if (stored) {
         const parsed = JSON.parse(stored);
-
-        // ✅ Chuẩn hóa dữ liệu nếu thiếu field
         const normalized = parsed.map((it) => ({
-          id: it.id || it.masanpham || `sp-${Date.now()}`, // fallback ID
+          id: it.id || it.masanpham || `sp-${Date.now()}`,
           name: it.name || it.tensanpham || "Sản phẩm không tên",
           price: Number(it.price) || 0,
           qty: it.qty || 1,
           color: it.color || "Trắng",
           size: it.size || "M",
           sku: it.sku || `SP-${it.id || it.masanpham || "001"}`,
-          img:
-            it.img ||
-            it.image ||
-            it.hinhanh ||
-            "/img/placeholder.png",
+          img: it.img || it.image || it.hinhanh || "/img/placeholder.png",
         }));
 
         setCart(normalized);
@@ -85,21 +62,18 @@ export default function CartSlidebar({ onClose }) {
     }
   }, []);
 
-
-  // persist cart
-  // 🧠 Chỉ cập nhật localStorage khi giỏ hàng KHÔNG rỗng
   useEffect(() => {
     if (cart && cart.length > 0) {
       localStorage.setItem("cart", JSON.stringify(cart));
     }
   }, [cart]);
 
-
-  // quantity handlers
   const updateQty = (id, delta) => {
     setCart((prev) =>
       prev
-        .map((it) => (it.id === id ? { ...it, qty: Math.max(1, it.qty + delta) } : it))
+        .map((it) =>
+          it.id === id ? { ...it, qty: Math.max(1, it.qty + delta) } : it
+        )
         .filter(Boolean)
     );
   };
@@ -108,23 +82,26 @@ export default function CartSlidebar({ onClose }) {
     setCart((prev) => prev.filter((it) => it.id !== id));
   };
 
-  // price calculations
   const subtotal = cart.reduce((s, it) => s + it.price * it.qty, 0);
 
   const computeDiscount = () => {
     if (!appliedCoupon) return 0;
     const c = appliedCoupon;
+
     if (c.type === "fixed") return Math.min(c.value, subtotal);
-    if (c.type === "percent") return Math.round((subtotal * c.value) / 100);
+
+    if (c.type === "percent") {
+      const raw = Math.round((subtotal * c.value) / 100);
+      return Math.min(raw, c.maxDiscount || raw);
+    }
+
     if (c.type === "freeship") return 0;
     return 0;
   };
 
   const shippingFee = () => {
-    // freeship coupon or subtotal threshold free shipping
     if (appliedCoupon?.type === "freeship") return 0;
     if (subtotal - computeDiscount() >= 500000) return 0;
-    // default shipping
     return subtotal === 0 ? 0 : 30000;
   };
 
@@ -132,20 +109,48 @@ export default function CartSlidebar({ onClose }) {
   const shipping = shippingFee();
   const total = Math.max(0, subtotal - discountValue + shipping);
 
-  // coupon apply / clear
-  const applyCoupon = () => {
+  // ⭐ HÀM ÁP DỤNG COUPON
+  const applyCoupon = async () => {
     const code = (coupon || "").trim().toUpperCase();
     if (!code) {
       setError("Vui lòng nhập mã ưu đãi");
       return;
     }
-    const found = AVAILABLE_COUPONS[code];
-    if (!found) {
-      setError("Mã không hợp lệ");
-      return;
+
+    try {
+      const res = await fetch("http://localhost:5000/api/voucher");
+      const json = await res.json();
+      const vouchers = json.data || [];
+
+      const found = vouchers.find((v) => v.magiamgia.toUpperCase() === code);
+
+      if (!found) {
+        setError("Mã không hợp lệ");
+        return;
+      }
+
+      if (subtotal < found.dontoithieu) {
+        setError(
+          `Đơn hàng tối thiểu ${found.dontoithieu.toLocaleString("vi-VN")} đ`
+        );
+        return;
+      }
+
+      let type = "fixed";
+      if (found.loaikhuyenmai === "%") type = "percent";
+
+      setAppliedCoupon({
+        code: found.magiamgia,
+        type,
+        value: found.giatrigiam,
+        maxDiscount: found.giantoida,
+      });
+
+      setError("");
+    } catch (err) {
+      console.error(err);
+      setError("Không thể áp dụng mã lúc này");
     }
-    setAppliedCoupon({ code, ...found });
-    setError("");
   };
 
   const clearCoupon = () => {
@@ -154,49 +159,77 @@ export default function CartSlidebar({ onClose }) {
     setError("");
   };
 
-  // checkout
+  // ⭐⭐ THÊM HÀM GỢI Ý
+  const loadSuggestedVouchers = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/api/voucher");
+      const json = await res.json();
+      const vouchers = json.data || [];
+
+      const now = new Date();
+
+      const filtered = vouchers.filter((v) => {
+        const start = new Date(v.ngaybatdau);
+        const end = new Date(v.ngayketthuc);
+
+        return (
+          v.trangthai === "hoạt động" &&
+          subtotal >= v.dontoithieu &&
+          now >= start &&
+          now <= end
+        );
+      });
+
+      setSuggested(filtered);
+    } catch (err) {
+      console.error("Không thể tải voucher:", err);
+    }
+  };
+
+  // ⭐⭐ GỌI KHI GIỎ HÀNG THAY ĐỔI
+  useEffect(() => {
+    loadSuggestedVouchers();
+  }, [subtotal]);
+
+  //HÀM CHECKOUT
   const handleCheckout = () => {
-    // nếu ko có sản phẩm -> không cho checkout
     if (cart.length === 0) {
       setError("Giỏ hàng trống");
       return;
     }
 
-    // lưu tạm thông tin thanh toán (ví dụ)
     const checkoutPayload = {
       cart,
       coupon: appliedCoupon,
       totals: { subtotal, discountValue, shipping, total },
     };
+
     localStorage.setItem("checkoutPayload", JSON.stringify(checkoutPayload));
 
-    // đóng sidebar và chuyển tới trang thanh toán
     onClose && onClose();
     navigate("/checkout");
   };
 
+  // =================== UI ===================
+
   return (
     <div className="fixed inset-0 z-[999]">
-      {/* backdrop */}
       <div
         className="absolute inset-0 bg-black/30"
         onClick={() => onClose && onClose()}
       />
 
-      {/* panel */}
       <aside className="absolute right-0 top-0 h-full w-full md:w-[420px] bg-white shadow-2xl overflow-auto">
         <div className="p-4 border-b flex items-center justify-between">
           <h3 className="text-lg font-semibold">Giỏ hàng ({cart.length})</h3>
           <button
             onClick={() => onClose && onClose()}
             className="p-2 rounded-full hover:bg-gray-100"
-            aria-label="Close cart"
           >
             <X size={18} />
           </button>
         </div>
 
-        {/* content */}
         <div className="p-4 space-y-4">
           {/* coupon */}
           <div className="bg-gray-50 p-3 rounded-md">
@@ -205,7 +238,7 @@ export default function CartSlidebar({ onClose }) {
                 value={coupon}
                 onChange={(e) => setCoupon(e.target.value)}
                 className="flex-1 border rounded-md px-3 py-2 outline-none"
-                placeholder="Nhập mã ưu đãi (VD: SALE20K, DISCOUNT10, FREESHIP)"
+                placeholder="Nhập mã ưu đãi"
               />
               <button
                 onClick={applyCoupon}
@@ -214,6 +247,7 @@ export default function CartSlidebar({ onClose }) {
                 Áp dụng
               </button>
             </div>
+
             {appliedCoupon && (
               <div className="mt-2 text-sm text-green-700">
                 Đã áp dụng: <strong>{appliedCoupon.code}</strong>{" "}
@@ -230,7 +264,43 @@ export default function CartSlidebar({ onClose }) {
                 </button>
               </div>
             )}
-            {error && <div className="mt-2 text-sm text-red-600">{error}</div>}
+
+            {error && (
+              <div className="mt-2 text-sm text-red-600">{error}</div>
+            )}
+
+            {/* ⭐⭐⭐ GỢI Ý MÃ GIẢM GIÁ ⭐⭐⭐ */}
+            {suggested.length > 0 && (
+              <div className="mt-3 bg-blue-50 p-3 rounded-md border border-blue-200">
+                <div className="text-sm font-semibold text-blue-700 mb-2">
+                  Gợi ý mã giảm giá phù hợp 🎁
+                </div>
+
+                <div className="space-y-2">
+                  {suggested.map((v) => (
+                    <div
+                      key={v.magiamgia}
+                      onClick={() => setCoupon(v.magiamgia)}
+                      className="p-2 bg-white rounded-md shadow-sm border cursor-pointer hover:bg-blue-100 transition"
+                    >
+                      <div className="font-bold">{v.magiamgia}</div>
+                      <div className="text-sm text-gray-600">
+                        {v.loaikhuyenmai === "%"
+                          ? `Giảm ${v.giatrigiam}%`
+                          : `Giảm ${v.giatrigiam.toLocaleString("vi-VN")}đ`}
+                        {v.giantoida
+                          ? ` • tối đa ${v.giantoida.toLocaleString("vi-VN")}đ`
+                          : ""}
+                      </div>
+                      <div className="text-xs text-gray-400">
+                        Đơn tối thiểu:{" "}
+                        {v.dontoithieu.toLocaleString("vi-VN")}đ
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* items */}

@@ -1,5 +1,7 @@
 import React, { useState } from "react";
+import { ArrowLeft } from "lucide-react";
 
+import { Link } from "react-router-dom";
 export default function Checkout() {
   // State lưu form người dùng nhập
   const [formData, setFormData] = useState({
@@ -21,13 +23,26 @@ export default function Checkout() {
   const handleOrder = (e) => {
     e.preventDefault();
     alert(
-      `Đặt hàng thành công!\n\nKhách hàng: ${formData.name}\nSĐT: ${formData.phone}\nĐịa chỉ: ${formData.address}\nPhương thức: ${formData.payment.toUpperCase()}`
+      `Đặt hàng thành công!\n\nKhách hàng: ${formData.name}\nSĐT: ${
+        formData.phone
+      }\nĐịa chỉ: ${
+        formData.address
+      }\nPhương thức: ${formData.payment.toUpperCase()}`
     );
   };
 
   return (
-    <div className="min-h-screen bg-white text-black mt-30 px-8">
-      <h1 className="text-2xl font-bold mb-8">Thanh toán</h1>
+    <div className="min-h-screen bg-white text-black mt-32 px-8">
+      {/* ==== NÚT QUAY LẠI MUA SẮM ==== */}
+      <div className="flex items-center justify-end mb-6">
+        <Link
+          to="/"
+          className="flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-red-600 transition"
+        >
+          <span className="text-lg">←</span>
+          TIẾP TỤC MUA SẮM
+        </Link>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Bên trái: Thông tin giao hàng */}
@@ -42,9 +57,7 @@ export default function Checkout() {
             placeholder="Họ và tên"
             className="w-full border rounded-lg p-3 mb-3"
             value={formData.name}
-            onChange={(e) =>
-              setFormData({ ...formData, name: e.target.value })
-            }
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             required
           />
 
@@ -97,9 +110,7 @@ export default function Checkout() {
                   setFormData({ ...formData, shipping: e.target.value })
                 }
               />
-              <span className="ml-2">
-                Giao hàng nhanh (1–2 ngày) - 40.000đ
-              </span>
+              <span className="ml-2">Giao hàng nhanh (1–2 ngày) - 40.000đ</span>
             </label>
           </div>
 
@@ -193,4 +204,6 @@ export default function Checkout() {
     </div>
   );
 }
-{/*mẫu chưa sử dụng nha đợi backend xong cái rồi làm gì làm */ }
+{
+  /*mẫu chưa sử dụng nha đợi backend xong cái rồi làm gì làm */
+}

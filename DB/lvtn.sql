@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: 127.0.0.1:3306
--- Thời gian đã tạo: Th10 27, 2025 lúc 04:24 PM
+-- Thời gian đã tạo: Th10 19, 2025 lúc 06:56 PM
 -- Phiên bản máy phục vụ: 8.3.0
 -- Phiên bản PHP: 8.2.18
 
@@ -41,21 +41,37 @@ CREATE TABLE IF NOT EXISTS `bienthesanpham` (
   KEY `masanpham` (`masanpham`),
   KEY `makichthuoc` (`makichthuoc`),
   KEY `mamausac` (`mamausac`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `bienthesanpham`
 --
 
 INSERT INTO `bienthesanpham` (`mabienthe`, `masanpham`, `makichthuoc`, `mamausac`, `soluongton`, `giaban`, `ngaytao`, `trangthaihoatdongbtsp`) VALUES
-(1, 1, 2, 1, 50, 199000.00, '2025-10-27 16:14:10', 'hoạt động'),
-(2, 1, 3, 2, 40, 199000.00, '2025-10-27 16:14:10', 'hoạt động'),
-(3, 2, 2, 3, 30, 259000.00, '2025-10-27 16:14:10', 'hoạt động'),
-(4, 2, 3, 1, 25, 259000.00, '2025-10-27 16:14:10', 'hoạt động'),
-(5, 3, 3, 2, 20, 399000.00, '2025-10-27 16:14:10', 'hoạt động'),
-(6, 3, 4, 5, 15, 399000.00, '2025-10-27 16:14:10', 'hoạt động'),
-(7, 4, 3, 4, 25, 499000.00, '2025-10-27 16:14:10', 'hoạt động'),
-(8, 4, 4, 2, 15, 499000.00, '2025-10-27 16:14:10', 'hoạt động');
+(9, 1, 2, 1, 50, 199000.00, '2025-11-04 18:29:05', 'hoạt động'),
+(10, 1, 3, 1, 50, 199000.00, '2025-11-04 18:29:05', 'hoạt động'),
+(11, 1, 2, 2, 50, 199000.00, '2025-11-04 18:29:05', 'hoạt động'),
+(12, 1, 3, 2, 50, 199000.00, '2025-11-04 18:29:05', 'hoạt động'),
+(13, 2, 2, 1, 50, 199000.00, '2025-11-19 18:37:54', 'hoạt động'),
+(14, 2, 2, 2, 50, 199000.00, '2025-11-19 18:37:54', 'hoạt động'),
+(15, 2, 3, 1, 50, 199000.00, '2025-11-19 18:37:54', 'hoạt động'),
+(16, 2, 3, 2, 50, 199000.00, '2025-11-19 18:37:54', 'hoạt động'),
+(17, 3, 2, 1, 50, 199000.00, '2025-11-19 18:38:13', 'hoạt động'),
+(18, 3, 2, 2, 50, 199000.00, '2025-11-19 18:38:13', 'hoạt động'),
+(19, 3, 3, 1, 50, 199000.00, '2025-11-19 18:38:13', 'hoạt động'),
+(20, 3, 3, 2, 50, 199000.00, '2025-11-19 18:38:13', 'hoạt động'),
+(21, 4, 2, 1, 50, 199000.00, '2025-11-19 18:38:25', 'hoạt động'),
+(22, 4, 2, 2, 50, 199000.00, '2025-11-19 18:38:25', 'hoạt động'),
+(23, 4, 3, 1, 50, 199000.00, '2025-11-19 18:38:25', 'hoạt động'),
+(24, 4, 3, 2, 50, 199000.00, '2025-11-19 18:38:25', 'hoạt động'),
+(25, 5, 2, 1, 50, 199000.00, '2025-11-19 18:38:39', 'hoạt động'),
+(26, 5, 2, 2, 50, 199000.00, '2025-11-19 18:38:39', 'hoạt động'),
+(27, 5, 3, 1, 50, 199000.00, '2025-11-19 18:38:39', 'hoạt động'),
+(28, 5, 3, 2, 50, 199000.00, '2025-11-19 18:38:39', 'hoạt động'),
+(29, 8, 2, 1, 50, 199000.00, '2025-11-19 18:38:48', 'hoạt động'),
+(30, 8, 2, 2, 50, 199000.00, '2025-11-19 18:38:48', 'hoạt động'),
+(31, 8, 3, 1, 50, 199000.00, '2025-11-19 18:38:48', 'hoạt động'),
+(32, 8, 3, 2, 50, 199000.00, '2025-11-19 18:38:48', 'hoạt động');
 
 -- --------------------------------------------------------
 
@@ -106,8 +122,6 @@ INSERT INTO `danhmuc` (`madanhmuc`, `tendanhmuc`, `ngaytao`, `slug`) VALUES
 (3, 'Quần jeans', '2025-10-27 16:04:32', 'quan-jeans'),
 (4, 'Áo khoác', '2025-10-27 16:04:32', 'ao-khoac'),
 (5, 'Đầm váy', '2025-10-27 16:04:32', 'dam-vay'),
-(6, 'Phụ kiện', '2025-10-27 16:04:32', 'phu-kien'),
-(7, 'Giày dép', '2025-10-27 16:04:32', 'giay-dep'),
 (8, 'Áo polo', '2025-10-27 16:04:32', 'ao-polo');
 
 -- --------------------------------------------------------
@@ -154,21 +168,61 @@ CREATE TABLE IF NOT EXISTS `hinhanh` (
   `stt` int DEFAULT NULL,
   PRIMARY KEY (`mahinhanh`),
   KEY `mabienthe` (`mabienthe`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=65 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `hinhanh`
 --
 
 INSERT INTO `hinhanh` (`mahinhanh`, `mabienthe`, `urlhinhanh`, `ngaytao`, `stt`) VALUES
-(1, 1, 'https://cdn.shopthucong.com/images/ao-thun-trang-1.jpg', '2025-10-27 16:16:24', 1),
-(2, 1, 'https://cdn.shopthucong.com/images/ao-thun-trang-2.jpg', '2025-10-27 16:16:24', 2),
-(3, 2, 'https://cdn.shopthucong.com/images/ao-thun-den-1.jpg', '2025-10-27 16:16:24', 1),
-(4, 3, 'https://cdn.shopthucong.com/images/so-mi-be-1.jpg', '2025-10-27 16:16:24', 1),
-(5, 5, 'https://cdn.shopthucong.com/images/quan-jeans-den-1.jpg', '2025-10-27 16:16:24', 1),
-(6, 5, 'https://cdn.shopthucong.com/images/quan-jeans-den-2.jpg', '2025-10-27 16:16:24', 2),
-(7, 7, 'https://cdn.shopthucong.com/images/ao-khoac-navy-1.jpg', '2025-10-27 16:16:24', 1),
-(8, 7, 'https://cdn.shopthucong.com/images/ao-khoac-navy-2.jpg', '2025-10-27 16:16:24', 2);
+(17, 9, '/images/aothuncottontrang1.jpg', '2025-11-04 19:05:32', 1),
+(18, 9, '/images/aothuncottontrang2.jpg', '2025-11-04 19:05:32', 2),
+(19, 10, '/images/aothuncottontrang1.jpg', '2025-11-04 19:05:32', 1),
+(20, 10, '/images/aothuncottontrang2.jpg', '2025-11-04 19:05:32', 2),
+(21, 11, '/images/aothuncottonden1.jpg', '2025-11-04 19:05:32', 1),
+(22, 11, '/images/aothuncottonden2.jpg', '2025-11-04 19:05:32', 2),
+(23, 12, '/images/aothuncottonden1.jpg', '2025-11-04 19:05:32', 1),
+(24, 12, '/images/aothuncottonden2.jpg', '2025-11-04 19:05:32', 2),
+(25, 13, '/images/aosominutaydaiden1.jpg', '2025-11-19 18:52:43', 1),
+(26, 13, '/images/aosominutaydaiden2.jpg', '2025-11-19 18:52:43', 2),
+(27, 14, '/images/aosominutaydaixam1.jpg', '2025-11-19 18:52:43', 1),
+(28, 14, '/images/aosominutaydaixam2.jpg', '2025-11-19 18:52:43', 2),
+(29, 15, '/images/aosominutaydaiden1.jpg', '2025-11-19 18:52:43', 1),
+(30, 15, '/images/aosominutaydaiden2.jpg', '2025-11-19 18:52:43', 2),
+(31, 16, '/images/aosominutaydaixam1.jpg', '2025-11-19 18:52:43', 1),
+(32, 16, '/images/aosominutaydaixam2.jpg', '2025-11-19 18:52:43', 2),
+(33, 17, '/images/quanjeannamrachnheden1.jpg', '2025-11-19 18:53:00', 1),
+(34, 17, '/images/quanjeannamrachnheden2.jpg', '2025-11-19 18:53:00', 2),
+(35, 18, '/images/quanjeanrachnhexam1.jpg', '2025-11-19 18:53:00', 1),
+(36, 18, '/images/quanjeanrachnhexam2.jpg', '2025-11-19 18:53:00', 2),
+(37, 19, '/images/quanjeannamrachnheden1.jpg', '2025-11-19 18:53:00', 1),
+(38, 19, '/images/quanjeannamrachnheden2.jpg', '2025-11-19 18:53:00', 2),
+(39, 20, '/images/quanjeanrachnhexam1.jpg', '2025-11-19 18:53:00', 1),
+(40, 20, '/images/quanjeanrachnhexam2.jpg', '2025-11-19 18:53:00', 2),
+(41, 21, '/images/aokhoacnamden1.jpg', '2025-11-19 18:53:11', 1),
+(42, 21, '/images/aokhoacnamden2.jpg', '2025-11-19 18:53:11', 2),
+(43, 22, '/images/aokhoacnamxam1.jpg', '2025-11-19 18:53:11', 1),
+(44, 22, '/images/aokhoacnamxam2.jpg', '2025-11-19 18:53:11', 2),
+(45, 23, '/images/aokhoacnamden1.jpg', '2025-11-19 18:53:11', 1),
+(46, 23, '/images/aokhoacnamden2.jpg', '2025-11-19 18:53:11', 2),
+(47, 24, '/images/aokhoacnamxam1.jpg', '2025-11-19 18:53:11', 1),
+(48, 24, '/images/aokhoacnamxam2.jpg', '2025-11-19 18:53:11', 2),
+(49, 25, '/images/damnuhoanhiden1.jpg', '2025-11-19 18:53:31', 1),
+(50, 25, '/images/damnuhoanhiden2.jpg', '2025-11-19 18:53:31', 2),
+(51, 26, '/images/damnuhoanhixam1.jpg', '2025-11-19 18:53:31', 1),
+(52, 26, '/images/damnuhoanhixam2.jpg', '2025-11-19 18:53:31', 2),
+(53, 27, '/images/damnuhoanhiden1.jpg', '2025-11-19 18:53:31', 1),
+(54, 27, '/images/damnuhoanhiden2.jpg', '2025-11-19 18:53:31', 2),
+(55, 28, '/images/damnuhoanhixam1.jpg', '2025-11-19 18:53:31', 1),
+(56, 28, '/images/damnuhoanhixam2.jpg', '2025-11-19 18:53:31', 2),
+(57, 29, '/images/aopolonamden1.jpg', '2025-11-19 18:53:39', 1),
+(58, 29, '/images/aopolonamden2.jpg', '2025-11-19 18:53:39', 2),
+(59, 30, '/images/aopolonamxam1.jpg', '2025-11-19 18:53:39', 1),
+(60, 30, '/images/aopolonamxam2.jpg', '2025-11-19 18:53:39', 2),
+(61, 31, '/images/aopolonamden1.jpg', '2025-11-19 18:53:39', 1),
+(62, 31, '/images/aopolonamden2.jpg', '2025-11-19 18:53:39', 2),
+(63, 32, '/images/aopolonamxam1.jpg', '2025-11-19 18:53:39', 1),
+(64, 32, '/images/aopolonamxam2.jpg', '2025-11-19 18:53:39', 2);
 
 -- --------------------------------------------------------
 
@@ -241,9 +295,20 @@ CREATE TABLE IF NOT EXISTS `nguoidung` (
   `trangthai` enum('hoạt động','không hoạt động') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'hoạt động',
   `ngaytao` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `ngaycapnhat` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `resettoken` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `thoigianhethan` datetime DEFAULT NULL,
   PRIMARY KEY (`manguoidung`),
   UNIQUE KEY `email` (`email`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `nguoidung`
+--
+
+INSERT INTO `nguoidung` (`manguoidung`, `email`, `matkhau`, `hoten`, `sodienthoai`, `diachi`, `vaitro`, `trangthai`, `ngaytao`, `ngaycapnhat`, `resettoken`, `thoigianhethan`) VALUES
+(1, 'hau@example.com', '$2b$10$zeMkgSF9QWnHfXEsWym9s./PUl/lHNCj1UQOxEMx5nHOZhPGoXedi', 'Nguyễn Thanh Hậu', '0909123456', NULL, 'client', 'hoạt động', '2025-10-30 18:05:41', '2025-10-30 18:05:41', NULL, NULL),
+(2, 'san@gmail.com', '$2b$10$ZdspotbnGKJGrCJmsNaahOqPXfBq/kixvwIrn1qAXFV.1jhWmC96u', NULL, NULL, NULL, 'admin', 'hoạt động', '2025-11-01 17:36:35', '2025-11-02 16:08:58', NULL, NULL),
+(3, 'test@gmail.com', '$2b$10$iMZRcvZtF.4z4EhMPmXZ.eX/uP0.qYOUmebNYCxYu89/NH4N3pyUy', 'test thoi', '0123456789', NULL, 'client', 'hoạt động', '2025-11-01 17:59:07', '2025-11-01 18:32:59', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -263,6 +328,7 @@ CREATE TABLE IF NOT EXISTS `sanpham` (
   `ngaytao` timestamp NOT NULL,
   `ngaycapnhat` timestamp NULL DEFAULT NULL,
   `madanhmuc` int NOT NULL,
+  `anhdaidien` varchar(250) NOT NULL,
   PRIMARY KEY (`masanpham`),
   KEY `madanhmuc` (`madanhmuc`)
 ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -271,15 +337,13 @@ CREATE TABLE IF NOT EXISTS `sanpham` (
 -- Đang đổ dữ liệu cho bảng `sanpham`
 --
 
-INSERT INTO `sanpham` (`masanpham`, `tensanpham`, `thuonghieu`, `mota`, `chatlieu`, `kieudang`, `baoquan`, `ngaytao`, `ngaycapnhat`, `madanhmuc`) VALUES
-(1, 'Áo Thun Nam Basic Cotton', 'Coolmate', 'Áo thun cotton thoáng mát, form rộng trẻ trung.', 'Cotton 100%', 'Regular Fit', 'Giặt máy, không tẩy', '2025-10-27 16:06:48', NULL, 1),
-(2, 'Áo Sơ Mi Nữ Tay Dài Trắng', 'Routine', 'Thiết kế thanh lịch, dễ phối đồ, phù hợp môi trường công sở.', 'Vải lanh pha polyester', 'Slim Fit', 'Giặt tay, không vắt mạnh', '2025-10-27 16:06:48', NULL, 2),
-(3, 'Quần Jeans Nam Xanh Đậm Rách Nhẹ', 'Levis', 'Chất denim co giãn nhẹ, phong cách năng động.', 'Denim co giãn', 'Slim Taper', 'Giặt trong nước lạnh', '2025-10-27 16:06:48', NULL, 3),
-(4, 'Áo Khoác Nam Dù Chống Nước', 'YODY', 'Áo khoác chống gió, chống nước nhẹ, thích hợp đi chơi hoặc đi học.', 'Polyester cao cấp', 'Bomber', 'Phơi nơi thoáng mát', '2025-10-27 16:06:48', NULL, 4),
-(5, 'Đầm Nữ Hoa Nhí Dáng Xòe', 'IVY Moda', 'Đầm hoa nhí dịu dàng, tôn dáng, phù hợp đi dạo hoặc dự tiệc nhẹ.', 'Voan mềm', 'Xòe', 'Giặt nhẹ, không sấy', '2025-10-27 16:06:48', NULL, 5),
-(6, 'Thắt Lưng Da Nam Màu Đen', 'Pedro', 'Thắt lưng da bò thật, bền đẹp, khóa kim loại sáng bóng.', 'Da bò thật', 'Cổ điển', 'Tránh ẩm mốc, lau bằng khăn khô', '2025-10-27 16:06:48', NULL, 6),
-(7, 'Giày Sneaker Trắng Classic', 'Adidas', 'Giày sneaker trắng cổ điển, dễ phối đồ, êm ái khi di chuyển.', 'Da tổng hợp & vải lưới', 'Low-top', 'Tránh ngâm nước', '2025-10-27 16:06:48', NULL, 7),
-(8, 'Áo Polo Nam Cá Sấu Xanh Navy', 'Lacoste', 'Áo polo chất cá sấu cao cấp, logo thêu tinh tế.', 'Cotton pique', 'Regular Fit', 'Giặt nhẹ, không ủi trực tiếp lên logo', '2025-10-27 16:06:48', NULL, 8);
+INSERT INTO `sanpham` (`masanpham`, `tensanpham`, `thuonghieu`, `mota`, `chatlieu`, `kieudang`, `baoquan`, `ngaytao`, `ngaycapnhat`, `madanhmuc`, `anhdaidien`) VALUES
+(1, 'Áo Thun Nam Basic Cotton', 'Coolmate', 'Áo thun cotton thoáng mát, form rộng trẻ trung.', 'Cotton 100%', 'Regular Fit', 'Giặt máy, không tẩy', '2025-11-08 18:03:03', NULL, 1, 'assets/aothuncottonden1.jpg'),
+(2, 'Áo Sơ Mi Nữ Tay Dài ', 'Routine', 'Thiết kế thanh lịch, dễ phối đồ, phù hợp môi trường công sở.', 'Vải lanh pha polyester', 'Slim Fit', 'Giặt tay, không vắt mạnh', '2025-11-19 18:04:59', NULL, 2, ''),
+(3, 'Quần Jeans Nam  Rách Nhẹ', 'Levis', 'Chất denim co giãn nhẹ, phong cách năng động.', 'Denim co giãn', 'Slim Taper', 'Giặt trong nước lạnh', '2025-11-19 18:05:12', NULL, 3, ''),
+(4, 'Áo Khoác Nam Dù Chống Nước', 'YODY', 'Áo khoác chống gió, chống nước nhẹ, thích hợp đi chơi hoặc đi học.', 'Polyester cao cấp', 'Bomber', 'Phơi nơi thoáng mát', '2025-10-27 16:06:48', NULL, 4, ''),
+(5, 'Đầm Nữ Hoa Nhí Dáng Xòe', 'IVY Moda', 'Đầm hoa nhí dịu dàng, tôn dáng, phù hợp đi dạo hoặc dự tiệc nhẹ.', 'Voan mềm', 'Xòe', 'Giặt nhẹ, không sấy', '2025-10-27 16:06:48', NULL, 5, ''),
+(8, 'Áo Polo Nam Cá Sấu ', 'Lacoste', 'Áo polo chất cá sấu cao cấp, logo thêu tinh tế.', 'Cotton pique', 'Regular Fit', 'Giặt nhẹ, không ủi trực tiếp lên logo', '2025-11-19 18:05:31', NULL, 8, '');
 
 -- --------------------------------------------------------
 

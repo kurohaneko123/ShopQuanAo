@@ -6,20 +6,30 @@ import axios from "axios";
 
 export default function ChiTietSanPham() {
   const { id } = useParams();
+
   const [product, setProduct] = useState(null);
+  const [variants, setVariants] = useState([]);
   const [mainImage, setMainImage] = useState("");
-  const [selectedColor, setSelectedColor] = useState("Đen");
-  const [selectedSize, setSelectedSize] = useState("M");
+  const [selectedColor, setSelectedColor] = useState("");
+  const [selectedSize, setSelectedSize] = useState("");
   const [loading, setLoading] = useState(true);
 
   const BASE_URL = "http://localhost:5000";
 
-  // 🧠 Lấy chi tiết sản phẩm
+  // 🧠 Lấy chi tiết sản phẩm + biến thể
   useEffect(() => {
     const fetchProduct = async () => {
       try {
         const res = await axios.get(`${BASE_URL}/api/sanpham/${id}`);
-        setProduct(res.data.sanpham || null);
+
+        setProduct(res.data.sanpham);
+        setVariants(res.data.bienthe);
+
+        // Auto chọn màu + size đầu tiên
+        if (res.data.bienthe.length > 0) {
+          setSelectedColor(res.data.bienthe[0].tenmausac);
+          setSelectedSize(res.data.bienthe[0].tenkichthuoc);
+        }
       } catch (err) {
         console.error("❌ Lỗi khi tải chi tiết sản phẩm:", err);
       } finally {
@@ -29,23 +39,20 @@ export default function ChiTietSanPham() {
     fetchProduct();
   }, [id]);
 
-  //  Ảnh backend (4 ảnh có sẵn trong thư mục public/images)
-  const colorImages = {
-    Đen: [
-      `${BASE_URL}/images/aothuncottonden1.jpg`,
-      `${BASE_URL}/images/aothuncottonden2.jpg`,
-    ],
-    Trắng: [
-      `${BASE_URL}/images/aothuncottontrang1.jpg`,
-      `${BASE_URL}/images/aothuncottontrang2.jpg`,
-    ],
-  };
+  // 👉 Lấy variant theo màu
+  const currentVariant = variants.find((v) => v.tenmausac === selectedColor);
 
-  // Khi đổi màu
+  // 👉 Lấy danh sách ảnh
+  const currentImages = currentVariant?.hinhanh || [];
+
+  // 👉 Reset ảnh chính mỗi lần đổi màu
   useEffect(() => {
-    const imgs = colorImages[selectedColor] || [];
-    setMainImage(imgs[0]);
-  }, [selectedColor]);
+    if (currentImages.length > 0) {
+      setMainImage(currentImages[0]);
+    } else {
+      setMainImage(null); // không có ảnh -> tránh lỗi src=""
+    }
+  }, [selectedColor, variants]);
 
   if (loading)
     return (
@@ -61,7 +68,8 @@ export default function ChiTietSanPham() {
       </div>
     );
 
-  const currentImages = colorImages[selectedColor] || [];
+  // 👉 Lấy danh sách màu
+  const colorList = [...new Set(variants.map((v) => v.tenmausac))];
 
   return (
     <div className="min-h-screen bg-white pt-[120px] pb-20">
@@ -72,11 +80,11 @@ export default function ChiTietSanPham() {
             <Link to="/" className="hover:text-black transition">
               Trang chủ
             </Link>
-            <span className="text-gray-400">/</span>
+            <span>/</span>
             <Link to="/all" className="hover:text-black transition">
               Sản phẩm
             </Link>
-            <span className="text-gray-400">/</span>
+            <span>/</span>
             <span className="text-gray-700 font-medium">
               {product.tensanpham}
             </span>
@@ -84,31 +92,14 @@ export default function ChiTietSanPham() {
 
           {/* ===== GRID ===== */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-            {/* ===== ẢNH ===== */}
+            {/* ===== ẢNH SẢN PHẨM ===== */}
             <div className="flex flex-col items-center">
-              {/* ===== ẢNH CHÍNH (có hiệu ứng hover đổi ảnh) ===== */}
-              <div
-                className="w-full max-w-[550px] rounded-3xl overflow-hidden shadow-sm border relative bg-gray-50 flex justify-center items-center"
-                //  Khi di chuột vào ảnh:
-                onMouseEnter={() => {
-                  //  Lấy danh sách ảnh theo màu đang chọn (đen / trắng)
-                  const imgs = colorImages[selectedColor];
-                  //  Nếu có ít nhất 2 ảnh thì đổi sang ảnh thứ 2
-                  if (imgs && imgs.length > 1) setMainImage(imgs[1]);
-                }}
-                // Khi rời chuột khỏi ảnh:
-                onMouseLeave={() => {
-                  // Lấy lại danh sách ảnh theo màu đang chọn
-                  const imgs = colorImages[selectedColor];
-                  // Nếu có ít nhất 1 ảnh thì đổi lại ảnh đầu tiên
-                  if (imgs && imgs.length > 0) setMainImage(imgs[0]);
-                }}
-              >
-                {/*  Ảnh chính của sản phẩm */}
+              {/* ẢNH CHÍNH */}
+              <div className="w-full max-w-[550px] rounded-3xl overflow-hidden shadow-sm border bg-gray-50 flex justify-center items-center">
                 <img
-                  src={mainImage} // ảnh đang hiển thị
-                  alt={product.tensanpham} // tên sản phẩm để SEO tốt hơn
-                  className="max-h-[500px] w-auto object-contain rounded-3xl transition-transform duration-300" // giữ tỉ lệ ảnh chuẩn, hover mượt
+                  src={mainImage}
+                  alt={product.tensanpham}
+                  className="max-h-[500px] w-auto object-contain rounded-3xl"
                 />
               </div>
 
@@ -127,7 +118,7 @@ export default function ChiTietSanPham() {
                     <img
                       src={img}
                       alt="ảnh sản phẩm"
-                      className="w-full h-full object-contain bg-white rounded-lg transition-transform duration-300 hover:scale-105"
+                      className="w-full h-full object-contain bg-white"
                     />
                   </button>
                 ))}
@@ -136,54 +127,52 @@ export default function ChiTietSanPham() {
 
             {/* ===== THÔNG TIN ===== */}
             <div className="space-y-7">
-              <div>
-                <h1 className="text-3xl font-bold mb-2">
-                  {product.tensanpham}
-                </h1>
-                <p className="text-gray-600 text-sm mb-3">
-                  {product.thuonghieu}
-                </p>
-                <div className="flex items-center gap-1 text-yellow-500 mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} size={18} fill="currentColor" />
-                  ))}
-                  <span className="text-gray-500 text-sm ml-2">
-                    (45 đánh giá)
-                  </span>
-                </div>
-                <div className="text-3xl font-bold text-red-600">199.000đ</div>
+              <h1 className="text-3xl font-bold">{product.tensanpham}</h1>
+              <p className="text-gray-600 text-sm">{product.thuonghieu}</p>
+
+              <div className="flex items-center gap-1 text-yellow-500 mb-4">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} size={18} fill="currentColor" />
+                ))}
+                <span className="text-gray-500 text-sm ml-2">
+                  (45 đánh giá)
+                </span>
               </div>
+
+              <div className="text-3xl font-bold text-red-600">199.000đ</div>
 
               {/* Màu sắc */}
               <div>
                 <h4 className="font-semibold mb-2">Màu sắc</h4>
+
                 <div className="flex gap-3 flex-wrap">
-                  {Object.keys(colorImages).map((color) => (
-                    <button
-                      key={color}
-                      onClick={() => setSelectedColor(color)}
-                      className={`w-8 h-8 rounded-full border-2 transition ${
-                        selectedColor === color
-                          ? "border-black scale-110"
-                          : "border-gray-300"
-                      }`}
-                      style={{
-                        backgroundColor:
-                          color === "Đen"
-                            ? "#000"
-                            : color === "Trắng"
-                            ? "#fff"
-                            : "#ccc",
-                      }}
-                    />
-                  ))}
+                  {colorList.map((color) => {
+                    const colorHex = variants.find(
+                      (v) => v.tenmausac === color
+                    )?.hexcode;
+
+                    return (
+                      <button
+                        key={color}
+                        onClick={() => setSelectedColor(color)}
+                        className={`w-8 h-8 rounded-full border-2 transition
+            ${
+              selectedColor === color
+                ? "border-black scale-110"
+                : "border-gray-300"
+            }`}
+                        style={{ backgroundColor: colorHex || "#ccc" }}
+                        title={color}
+                      />
+                    );
+                  })}
                 </div>
               </div>
 
-              {/* Kích cỡ */}
+              {/* Size */}
               <div>
                 <h4 className="font-semibold mb-2">Kích cỡ</h4>
-                <div className="flex gap-3 flex-wrap">
+                <div className="flex gap-3">
                   {["S", "M", "L", "XL"].map((s) => (
                     <button
                       key={s}
@@ -200,7 +189,7 @@ export default function ChiTietSanPham() {
                 </div>
               </div>
 
-              {/* Nút thêm giỏ hàng */}
+              {/* Add to cart */}
               <button className="flex items-center justify-center gap-2 bg-black text-white py-4 w-full rounded-xl font-semibold hover:bg-gray-800 transition">
                 <ShoppingBag size={20} />
                 Thêm vào giỏ hàng
@@ -210,7 +199,7 @@ export default function ChiTietSanPham() {
               <div className="border-t pt-6 mt-8">
                 <h4 className="font-semibold mb-2">Mô tả sản phẩm</h4>
                 <p className="text-gray-700 leading-relaxed">{product.mota}</p>
-                <p className="text-gray-600 mt-2 text-sm">
+                <p className="text-gray-600 text-sm mt-1">
                   Chất liệu:{" "}
                   <span className="font-medium">{product.chatlieu}</span>
                 </p>

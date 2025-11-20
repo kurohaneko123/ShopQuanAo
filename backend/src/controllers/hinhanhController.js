@@ -1,40 +1,90 @@
 import multer from "multer";
-import path from "path";
-import fs from "fs";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+import cloudinary from "../config/cloudinary.js";
+import { getCloudinaryFolder } from "../utils/locnamnucloudinary.js";
+import db from "../config/db.js";
 import { themHinhAnh } from "../models/hinhanhModel.js";
 
-const imageDir = "public/images";
-if (!fs.existsSync(imageDir)) fs.mkdirSync(imageDir, { recursive: true });
+export const uploadHinhAnhTheoBienThe = async (req, res) => {
+  try {
+    // 👉 B1: KHÔNG đọc req.body ở đây
 
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, imageDir),
-    filename: (req, file, cb) => {
-        const filename = `${Date.now()}-${file.originalname.replace(/\s/g, "_")}`;
-        cb(null, filename);
-    },
-});
+    // 👉 B2: tạo multer storage trước
+    const upload = multer({
+      storage: new CloudinaryStorage({
+        cloudinary,
+        params: async (req, file) => {
+          const { mabienthe } = req.body;
 
-const upload = multer({ storage });
+          console.log("➡️ BODY:", req.body);
 
-// 🟢 Upload ảnh theo mã biến thể
-export const uploadHinhAnhTheoBienThe = [
-    upload.single("image"),
-    async (req, res) => {
-        try {
-            const { mabienthe } = req.body;
-            if (!req.file) return res.status(400).json({ message: "Không có file nào được tải lên" });
-            if (!mabienthe) return res.status(400).json({ message: "Thiếu mã biến thể" });
+          if (!mabienthe) throw new Error("Thiếu mã biến thể");
 
-            const urlhinhanh = `/images/${req.file.filename}`;
-            await themHinhAnh(mabienthe, urlhinhanh, 1);
+          const [btRows] = await db.query(
+            "SELECT masanpham FROM bienthesanpham WHERE mabienthe = ?",
+            [mabienthe]
+          );
 
-            res.status(200).json({
-                message: "Upload thành công!",
-                url: urlhinhanh,
-            });
-        } catch (err) {
-            console.error(err);
-            res.status(500).json({ message: "Lỗi server khi upload ảnh" });
-        }
-    },
-];
+          console.log("➡️ Mã sản phẩm:", btRows);
+
+          const masanpham = btRows[0]?.masanpham;
+          if (!masanpham) throw new Error("Không tìm thấy masanpham");
+
+          const [spRows] = await db.query(
+            "SELECT madanhmuc FROM sanpham WHERE masanpham = ?",
+            [masanpham]
+          );
+
+          console.log("➡️ Mã danh mục:", spRows);
+
+          const madanhmuc = spRows[0]?.madanhmuc;
+          if (!madanhmuc) throw new Error("Không tìm thấy madanhmuc");
+
+          const [dmRows] = await db.query(
+            "SELECT tendanhmuc FROM danhmuc WHERE madanhmuc = ?",
+            [madanhmuc]
+          );
+
+          const tendanhmuc = dmRows[0]?.tendanhmuc;
+          console.log("➡️ Tên danh mục:", tendanhmuc);
+
+          if (!tendanhmuc) throw new Error("Không tìm thấy tendanhmuc");
+
+          const gioitinh = tendanhmuc.includes("Nam") ? "Nam" : "Nu";
+          console.log("➡️ Giới tính:", gioitinh);
+
+          const folder = getCloudinaryFolder(gioitinh, tendanhmuc);
+          console.log("➡️ FolderPath:", folder);
+
+          return {
+            folder,
+            allowed_formats: ["jpg", "jpeg", "png", "webp"],
+            public_id: Date.now().toString(),
+          };
+        },
+      }),
+    }).single("image");
+
+    // 👉 B3: chạy multer, lúc này mới có req.body
+    upload(req, res, async (err) => {
+      if (err)
+        return res.status(500).json({ message: "Upload lỗi Cloudinary", err });
+
+      const { mabienthe } = req.body;
+
+      if (!req.file) return res.status(400).json({ message: "Chưa chọn file" });
+
+      const url = req.file.path;
+
+      await themHinhAnh(mabienthe, url, 1);
+
+      res.json({
+        message: "Upload thành công!",
+        url,
+      });
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Lỗi server" });
+  }
+};

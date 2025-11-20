@@ -267,7 +267,7 @@ export default function CartSlidebar({ onClose }) {
 
             {error && <div className="mt-2 text-sm text-red-600">{error}</div>}
 
-            {/*  GỢI Ý MÃ GIẢM GIÁ  */}
+            {/*    GỢI Ý MÃ GIẢM GIÁ  */}
             {suggested.length > 0 && (
               <div className="mt-3 bg-blue-50 p-3 rounded-md border border-blue-200">
                 <div className="text-sm font-semibold text-blue-700 mb-2">

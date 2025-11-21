@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Pencil, Trash2, PlusCircle, Loader2, Search } from "lucide-react";
+import { Pencil, Trash2, PlusCircle, Loader2, Search, Eye } from "lucide-react";
 
 export default function Quanlysp() {
   const [products, setProducts] = useState([]);
@@ -172,8 +172,9 @@ export default function Quanlysp() {
                     <div className="w-16 h-16 border rounded-md overflow-hidden mx-auto bg-gray-100">
                       <img
                         src={
-                          p.hinhanh ||
-                          "https://via.placeholder.com/100x100.png?text=No+Image"
+                          p.anhdaidien && p.anhdaidien.trim() !== ""
+                            ? p.anhdaidien
+                            : "https://via.placeholder.com/100x100.png?text=No+Image"
                         }
                         alt={p.tensanpham}
                         className="w-full h-full object-cover"
@@ -185,19 +186,35 @@ export default function Quanlysp() {
                   <td className="p-2 border">{p.chatlieu}</td>
                   <td className="p-2 border">{p.kieudang}</td>
                   <td className="p-2 border">{getCategoryName(p.madanhmuc)}</td>
-                  <td className="p-2 border text-center">
+                  <td className="p-2 border text-center flex items-center gap-3 justify-center">
+                    {/* Xem chi tiết */}
+                    <button
+                      onClick={() =>
+                        (window.location.href = `/admin/products/${p.masanpham}`)
+                      }
+                      className="text-blue-600 hover:text-blue-800"
+                      title="Xem chi tiết"
+                    >
+                      <Eye size={18} />
+                    </button>
+
+                    {/* Sửa */}
                     <button
                       onClick={() => {
                         setEditProduct(p);
                         setShowEditModal(true);
                       }}
-                      className="text-yellow-500 hover:text-yellow-600 mr-3"
+                      className="text-yellow-500 hover:text-yellow-600"
+                      title="Sửa"
                     >
                       <Pencil size={18} />
                     </button>
+
+                    {/* Xóa */}
                     <button
                       onClick={() => handleDelete(p.masanpham)}
                       className="text-red-500 hover:text-red-600"
+                      title="Xóa"
                     >
                       <Trash2 size={18} />
                     </button>

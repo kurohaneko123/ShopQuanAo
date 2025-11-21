@@ -2,7 +2,8 @@
 import { Link, useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Search, ShoppingBag, User, LogOut } from "lucide-react";
+import { Search, ShoppingBag, User, LogOut, UserCircle } from "lucide-react";
+
 import AccountModal from "../Chucnang/Taikhoan.jsx";
 import bannerNam from "../assets/ao.jpg";
 import bannerNu from "../assets/aonu.jpg";
@@ -340,19 +341,13 @@ export default function Navbar() {
               onClick={() => setIsAccountOpen(true)}
               className="p-2 rounded-full hover:bg-gray-100 transition-all duration-200"
             >
-              <User className="w-5 h-5 text-gray-800 hover:text-blue-600" />
+              <UserCircle className="w-7 h-7 text-gray-800 hover:text-blue-600" />
             </button>
           ) : (
             <div className="relative group">
-              {/* 🧠 Avatar — thêm sự kiện click */}
-              <img
+              <UserCircle
                 onClick={handleAvatarClick}
-                src={
-                  user.photo ||
-                  "https://cdn-icons-png.flaticon.com/512/1077/1077012.png"
-                }
-                alt="avatar"
-                className="w-9 h-9 rounded-full border cursor-pointer hover:opacity-80"
+                className="w-9 h-9 text-gray-800 cursor-pointer hover:text-blue-600"
               />
 
               {/* 🪄 Menu hover (vẫn giữ nguyên) */}

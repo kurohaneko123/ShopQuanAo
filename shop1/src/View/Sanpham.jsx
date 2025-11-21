@@ -79,8 +79,8 @@ export default function TatCaSanPham() {
           description: item.mota,
           material: item.chatlieu,
           categoryId: item.madanhmuc,
-          img: Aothunbasic, // tạm thời dùng ảnh mẫu
-          price: Math.floor(Math.random() * 400000) + 150000, // random giá
+          img: item.anhdaidien || Aothunbasic,
+          price: Math.floor(Math.random() * 400000) + 150000,
           colors: ["black", "white", "red"],
           sizes: ["M", "L", "XL"],
           gender: "Nam",

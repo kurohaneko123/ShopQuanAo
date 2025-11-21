@@ -21,6 +21,7 @@ import OrderManagement from "./Admin/Donhang/Quanlydh.jsx";
 import UserManagement from "./Admin/Users/Quanlyngdung.jsx";
 import Dashboard from "./Admin/Dashboard/Dashboard.jsx";
 import Voucher from "./Admin/Voucher/Quanlyvoucher.jsx";
+import ChiTietSanPhamAdmin from "./Admin/Sanpham/Quanlychitietsp.jsx";
 export default function App() {
   const location = useLocation();
 
@@ -65,6 +66,7 @@ export default function App() {
         >
           <Route index element={<Dashboard />} />
           <Route path="products" element={<ProductManagement />} />
+          <Route path="products/:id" element={<ChiTietSanPhamAdmin />} />
           <Route path="voucher" element={<Voucher />} />
           <Route path="orders" element={<OrderManagement />} />
           <Route path="users" element={<UserManagement />} />

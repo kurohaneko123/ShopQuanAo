@@ -1,7 +1,11 @@
 // Import express để tạo router
 import express from "express";
 // Import controller
-import { hienThiSanPham, layChiTietSanPham } from "../controllers/sanphamController.js";
+import {
+  hienThiSanPham,
+  layChiTietSanPham,
+  uploadAnhDaiDien,
+} from "../controllers/sanphamController.js";
 
 // Khởi tạo router
 const router = express.Router();
@@ -11,6 +15,9 @@ router.get("/", hienThiSanPham);
 
 // 🟠 GET /api/sanpham/:id → chi tiết sản phẩm
 router.get("/:id", layChiTietSanPham);
+
+// 🟢 POST upload ảnh đại diện
+router.post("/upanhdaidien", uploadAnhDaiDien);
 
 // Export router để server.js có thể dùng
 export default router;

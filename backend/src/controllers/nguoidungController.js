@@ -11,7 +11,7 @@ import {
 
 dotenv.config();
 
-// 🧠 Hàm tạo token JWT
+//  Hàm tạo token JWT
 const taoToken = (nguoidung) => {
     return jwt.sign(
         {
@@ -24,7 +24,7 @@ const taoToken = (nguoidung) => {
     );
 };
 
-// 🟢 Đăng ký người dùng
+//  Đăng ký người dùng
 export const dangKyNguoiDung = async (req, res) => {
     try {
         const { email, matkhau, hoten, sodienthoai } = req.body;
@@ -51,7 +51,7 @@ export const dangKyNguoiDung = async (req, res) => {
     }
 };
 
-// 🟣 Đăng nhập người dùng
+//  Đăng nhập người dùng
 export const dangNhapNguoiDung = async (req, res) => {
     try {
         const { email, matkhau } = req.body;
@@ -85,7 +85,7 @@ export const dangNhapNguoiDung = async (req, res) => {
     }
 };
 
-// 🟢 Lấy thông tin người dùng từ token (API bảo vệ)
+//  Lấy thông tin người dùng từ token (API bảo vệ)
 export const layThongTinCaNhan = async (req, res) => {
     try {
         const user = req.nguoidung; // middleware xacthucToken sẽ gán vào req.nguoidung
@@ -99,9 +99,9 @@ export const layThongTinCaNhan = async (req, res) => {
     }
 };
 
-// 🧩 =================== QUÊN MẬT KHẨU ===================
+// =================== QUÊN MẬT KHẨU ===================
 
-// 1️⃣ Gửi mã xác nhận (OTP) qua email
+// 1️. Gửi mã xác nhận (OTP) qua email
 export const guiMaXacNhan = async (req, res) => {
     try {
         const { email } = req.body;
@@ -146,7 +146,7 @@ export const guiMaXacNhan = async (req, res) => {
     }
 };
 
-// 2️⃣ Đặt lại mật khẩu sau khi nhập mã
+// 2️. Đặt lại mật khẩu sau khi nhập mã
 export const datLaiMatKhau = async (req, res) => {
     try {
         const { email, resettoken, matkhaumoi } = req.body; // 👈 tên biến trùng với body

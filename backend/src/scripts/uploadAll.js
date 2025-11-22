@@ -119,3 +119,4 @@ async function run() {
 }
 
 run();
+//C:\wamp64\www\hehe\backend>node src/scripts/uploadAll.js

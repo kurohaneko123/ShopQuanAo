@@ -77,6 +77,7 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [vouchers, setVouchers] = useState([]);
+  const [categories, setCategories] = useState({ nam: [], nu: [] });
 
   /* ====== Cấu hình slider ====== */
   const settings = {
@@ -110,7 +111,8 @@ export default function HomePage() {
   }, []);
   //Nút coppy
   const copyVoucher = (code) => {
-    navigator.clipboard.writeText(code)
+    navigator.clipboard
+      .writeText(code)
       .then(() => {
         alert(`Đã copy mã: ${code} ✔`);
       })
@@ -129,35 +131,15 @@ export default function HomePage() {
         ]);
 
         const apiData = productRes.data.data || [];
-        const mapped = apiData.map((item) => {
-          let img = Aothunbasic; // ảnh mặc định nếu không khớp tên
-
-          // Gán ảnh theo tên sản phẩm (có thể chỉnh tùy ý)
-          const lowerName = item.tensanpham.toLowerCase();
-          if (lowerName.includes("cotton")) {
-            img = lowerName.includes("đen") ? Aocottonden : Aocottontrang;
-          } else if (lowerName.includes("polo")) {
-            img = Aopolo;
-          } else if (lowerName.includes("khoác")) {
-            img = Aokhoac;
-          } else if (lowerName.includes("jean")) {
-            img = Quanjean;
-          } else if (lowerName.includes("jogger")) {
-            img = QuanjoogerTrang;
-          } else if (lowerName.includes("short")) {
-            img = Quanshort;
-          }
-
-          return {
-            id: item.masanpham,
-            name: item.tensanpham,
-            price: Math.floor(Math.random() * 400000) + 150000,
-            img, // 👉 gán ảnh đã chọn ở trên
-            brand: item.thuonghieu,
-            mota: item.mota,
-            categoryId: item.madanhmuc,
-          };
-        });
+        const mapped = apiData.map((item) => ({
+          id: item.masanpham,
+          name: item.tensanpham,
+          price: Math.floor(Math.random() * 400000) + 150000,
+          img: item.anhdaidien || "", // 👉 ảnh từ Cloudinary
+          brand: item.thuonghieu,
+          mota: item.mota,
+          categoryId: item.madanhmuc,
+        }));
 
         setDailyProducts(mapped.slice(0, 6));
         setHighlightProducts(mapped.slice(6, 12));
@@ -171,6 +153,79 @@ export default function HomePage() {
     };
 
     fetchData();
+  }, []);
+  const categoryNameMap = {
+    aothun: "Áo Thun",
+    somi: "Áo Sơ Mi",
+    quanjean: "Quần Jean",
+    khoac: "Áo Khoác",
+    polo: "Áo Polo",
+    dam: "Đầm",
+    vay: "Váy",
+    quantay: "Quần Tây",
+    quanshort: "Quần Short",
+    quanhogi: "Quần Jogger",
+    khac: "Khác",
+  };
+
+  // Lấy danh mục từ ảnh đại diện
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/sanpham");
+        const data = res.data.data || [];
+
+        const male = {};
+        const female = {};
+
+        data.forEach((item) => {
+          const name = item.tensanpham.toLowerCase();
+          const url = item.anhdaidien?.toLowerCase() || "";
+
+          const isMale = url.includes("/nam/");
+          const isFemale = url.includes("/nu/");
+
+          if (!isMale && !isFemale) return;
+
+          let key = "";
+
+          if (name.includes("áo thun")) key = "aothun";
+          else if (name.includes("sơ mi") || name.includes("som i"))
+            key = "somi";
+          else if (name.includes("jean")) key = "quanjean";
+          else if (name.includes("khoác") || name.includes("khoac"))
+            key = "khoac";
+          else if (name.includes("polo")) key = "polo";
+          else if (name.includes("đầm") || name.includes("dam")) key = "dam";
+          else if (name.includes("váy") || name.includes("vay")) key = "vay";
+          else if (name.includes("quần tây") || name.includes("quan tay"))
+            key = "quantay";
+          else if (name.includes("short")) key = "quanshort";
+          else if (name.includes("jogger")) key = "quanjogger";
+          else key = "khac";
+
+          const displayName = categoryNameMap[key] || "Khác";
+
+          const entry = {
+            name: displayName,
+            img: item.anhdaidien,
+            slug: key,
+          };
+
+          if (isMale) male[displayName] = entry;
+          if (isFemale) female[displayName] = entry;
+        });
+
+        setCategories({
+          nam: Object.values(male),
+          nu: Object.values(female),
+        });
+      } catch (err) {
+        console.error("Lỗi tải danh mục:", err);
+      }
+    };
+
+    fetchCategories();
   }, []);
 
   /* ====== 🛒 Hàm thêm sản phẩm vào giỏ hàng ====== */
@@ -206,32 +261,34 @@ export default function HomePage() {
     }
   };
 
-  /* ====== Danh mục tĩnh ====== */
-  const maleCategories = [
-    { id: "m-1", name: "ÁO THUN", img: Aothunbasic, slug: "ao-thun-nam" },
-    { id: "m-2", name: "ÁO POLO", img: Aopolo, slug: "ao-polo-nam" },
-    { id: "m-3", name: "QUẦN SHORT", img: Quanshort, slug: "quan-short" },
-    { id: "m-4", name: "QUẦN JEAN", img: Quanjean, slug: "quan-jean" },
-    { id: "m-5", name: "ÁO KHOÁC", img: Aokhoac, slug: "ao-khoac" },
-    {
-      id: "m-6",
-      name: "QUẦN JOGGER",
-      img: QuanjoogerTrang,
-      slug: "quan-jogger",
-    },
-  ];
+  // /* ====== Danh mục tĩnh ====== */
+  // const maleCategories = [
+  //   { id: "m-1", name: "ÁO THUN", img: Aothunbasic, slug: "ao-thun-nam" },
+  //   { id: "m-2", name: "ÁO POLO", img: Aopolo, slug: "ao-polo-nam" },
+  //   { id: "m-3", name: "QUẦN SHORT", img: Quanshort, slug: "quan-short" },
+  //   { id: "m-4", name: "QUẦN JEAN", img: Quanjean, slug: "quan-jean" },
+  //   { id: "m-5", name: "ÁO KHOÁC", img: Aokhoac, slug: "ao-khoac" },
+  //   {
+  //     id: "m-6",
+  //     name: "QUẦN JOGGER",
+  //     img: QuanjoogerTrang,
+  //     slug: "quan-jogger",
+  //   },
+  // ];
 
-  const femaleCategories = [
-    { id: "f-1", name: "ÁO THUN", img: Aopolo, slug: "ao-thun-nu" },
-    { id: "f-2", name: "VÁY", img: Aosomi, slug: "vay" },
-    { id: "f-3", name: "QUẦN TÂY", img: Quanjean, slug: "quan-tay" },
-    { id: "f-4", name: "QUẦN JEAN", img: Quanjean, slug: "quan-jean" },
-    { id: "f-5", name: "QUẦN JOGGER", img: Quanjooger, slug: "quan-jogger" },
-    { id: "f-6", name: "QUẦN SHORT", img: Aokhoac, slug: "quan-short" },
-  ];
+  // const femaleCategories = [
+  //   { id: "f-1", name: "ÁO THUN", img: Aopolo, slug: "ao-thun-nu" },
+  //   { id: "f-2", name: "VÁY", img: Aosomi, slug: "vay" },
+  //   { id: "f-3", name: "QUẦN TÂY", img: Quanjean, slug: "quan-tay" },
+  //   { id: "f-4", name: "QUẦN JEAN", img: Quanjean, slug: "quan-jean" },
+  //   { id: "f-5", name: "QUẦN JOGGER", img: Quanjooger, slug: "quan-jogger" },
+  //   { id: "f-6", name: "QUẦN SHORT", img: Aokhoac, slug: "quan-short" },
+  // ];
 
+  // const gridCategories =
+  //   selectedGender === "nam" ? maleCategories : femaleCategories;
   const gridCategories =
-    selectedGender === "nam" ? maleCategories : femaleCategories;
+    selectedGender === "nam" ? categories.nam : categories.nu;
 
   /* ====== Loading & Error ====== */
   if (loading)
@@ -257,19 +314,21 @@ export default function HomePage() {
           <nav className="flex justify-start gap-4">
             <button
               onClick={() => setSelectedGender("nam")}
-              className={`h-12 px-6 rounded-full font-semibold uppercase transition-all ${selectedGender === "nam"
-                ? "bg-neutral-900 text-white"
-                : "bg-neutral-200 text-neutral-800 hover:bg-neutral-300"
-                }`}
+              className={`h-12 px-6 rounded-full font-semibold uppercase transition-all ${
+                selectedGender === "nam"
+                  ? "bg-neutral-900 text-white"
+                  : "bg-neutral-200 text-neutral-800 hover:bg-neutral-300"
+              }`}
             >
               Nam
             </button>
             <button
               onClick={() => setSelectedGender("nu")}
-              className={`h-12 px-6 rounded-full font-semibold uppercase transition-all ${selectedGender === "nu"
-                ? "bg-neutral-900 text-white"
-                : "bg-neutral-200 text-neutral-800 hover:bg-neutral-300"
-                }`}
+              className={`h-12 px-6 rounded-full font-semibold uppercase transition-all ${
+                selectedGender === "nu"
+                  ? "bg-neutral-900 text-white"
+                  : "bg-neutral-200 text-neutral-800 hover:bg-neutral-300"
+              }`}
             >
               Nữ
             </button>
@@ -322,11 +381,13 @@ export default function HomePage() {
                     <img
                       src={p.img}
                       alt={p.name}
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      className="w-full h-full object-cover rounded-xl transition-transform duration-300 group-hover:scale-105"
                     />
                   </div>
                   <div className="p-4 text-center">
-                    <h3 className="font-semibold text-lg">{p.name}</h3>
+                    <h3 className="font-semibold text-lg line-clamp-1 leading-tight">
+                      {p.name}
+                    </h3>
                     <p className="text-red-600 font-bold">
                       {p.price.toLocaleString("vi-VN")}đ
                     </p>
@@ -373,11 +434,13 @@ export default function HomePage() {
                     <img
                       src={p.img}
                       alt={p.name}
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
                     />
                   </div>
                   <div className="p-4 text-center">
-                    <h3 className="font-semibold text-lg">{p.name}</h3>
+                    <h3 className="font-semibold text-lg line-clamp-1 leading-tight">
+                      {p.name}
+                    </h3>
                     <p className="text-red-600 font-bold">
                       {p.price.toLocaleString("vi-VN")}đ
                     </p>
@@ -459,7 +522,6 @@ export default function HomePage() {
                       >
                         Sử dụng ngay
                       </button>
-
                     </div>
                   </div>
                 </div>

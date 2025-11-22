@@ -15,7 +15,38 @@ export default function ChiTietSanPham() {
   const [loading, setLoading] = useState(true);
 
   const BASE_URL = "http://localhost:5000";
+  /* ====== 🛒 Hàm thêm sản phẩm vào giỏ hàng ====== */
+  const handleAddToCart = (product) => {
+    try {
+      const stored = JSON.parse(localStorage.getItem("cart")) || [];
 
+      const existing = stored.find((item) => item.id === product.id);
+      if (existing) {
+        existing.qty += 1;
+      } else {
+        stored.push({
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          qty: 1,
+          color: "Trắng",
+          size: "M",
+          img: product.img || "",
+        });
+      }
+
+      localStorage.setItem("cart", JSON.stringify(stored));
+
+      const toast = document.createElement("div");
+      toast.innerText = `🛒 Đã thêm "${product.name}" vào giỏ hàng!`;
+      toast.className =
+        "fixed bottom-6 right-6 bg-black text-white px-4 py-2 rounded-lg shadow-lg z-[9999]";
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 2000);
+    } catch (error) {
+      console.error("Lỗi khi thêm vào giỏ hàng:", error);
+    }
+  };
   // 🧠 Lấy chi tiết sản phẩm + biến thể
   useEffect(() => {
     const fetchProduct = async () => {
@@ -190,7 +221,17 @@ export default function ChiTietSanPham() {
               </div>
 
               {/* Add to cart */}
-              <button className="flex items-center justify-center gap-2 bg-black text-white py-4 w-full rounded-xl font-semibold hover:bg-gray-800 transition">
+              <button
+                onClick={() =>
+                  handleAddToCart({
+                    id: product.masanpham,
+                    name: product.tensanpham,
+                    price: product.giaban || 150000, // hoặc tùy backend
+                    img: product.anhdaidien,
+                  })
+                }
+                className="flex items-center justify-center gap-2 bg-black text-white py-4 w-full rounded-xl font-semibold hover:bg-gray-800 transition"
+              >
                 <ShoppingBag size={20} />
                 Thêm vào giỏ hàng
               </button>

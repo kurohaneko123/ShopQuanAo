@@ -20,7 +20,7 @@ import ProductManagement from "./Admin/Sanpham/Quanlysp.jsx";
 import OrderManagement from "./Admin/Donhang/Quanlydh.jsx";
 import UserManagement from "./Admin/Users/Quanlyngdung.jsx";
 import Dashboard from "./Admin/Dashboard/Dashboard.jsx";
-import Voucher from "./Admin/Voucher/Quanlyvoucher.jsx";
+import Voucher from "./Admin/Voucher/index.jsx";
 import ChiTietSanPhamAdmin from "./Admin/Sanpham/Quanlychitietsp.jsx";
 export default function App() {
   const location = useLocation();

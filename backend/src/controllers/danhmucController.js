@@ -1,9 +1,9 @@
 
-// 🎯 Controller: Xử lý logic và phản hồi API
+//  Controller: Xử lý logic và phản hồi API
 // Import hàm từ model
 import { layTatCaDanhMuc } from "../models/danhmucModel.js";
 
-// 🧩 Hiển thị toàn bộ danh mục
+//  Hiển thị toàn bộ danh mục
 export const hienThiDanhMuc = async (req, res) => {
     try {
         const danhmucs = await layTatCaDanhMuc();

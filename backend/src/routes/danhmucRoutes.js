@@ -1,5 +1,5 @@
 
-// 🚏 Route: Định tuyến API
+//  Route: Định tuyến API
 import express from "express";
 import { hienThiDanhMuc } from "../controllers/danhmucController.js";
 

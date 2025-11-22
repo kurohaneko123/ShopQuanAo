@@ -13,10 +13,10 @@ const router = express.Router();
 // Khi người dùng truy cập GET /api/sanpham → chạy hàm hienThiSanPham
 router.get("/", hienThiSanPham);
 
-// 🟠 GET /api/sanpham/:id → chi tiết sản phẩm
+//  GET /api/sanpham/:id → chi tiết sản phẩm
 router.get("/:id", layChiTietSanPham);
 
-// 🟢 POST upload ảnh đại diện
+//  POST upload ảnh đại diện
 router.post("/upanhdaidien", uploadAnhDaiDien);
 
 // Export router để server.js có thể dùng

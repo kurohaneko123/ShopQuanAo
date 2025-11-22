@@ -7,16 +7,16 @@ import { themHinhAnh } from "../models/hinhanhModel.js";
 
 export const uploadHinhAnhTheoBienThe = async (req, res) => {
   try {
-    // 👉 B1: KHÔNG đọc req.body ở đây
+    //  B1: KHÔNG đọc req.body ở đây
 
-    // 👉 B2: tạo multer storage trước
+    //  B2: tạo multer storage trước
     const upload = multer({
       storage: new CloudinaryStorage({
         cloudinary,
         params: async (req, file) => {
           const { mabienthe } = req.body;
 
-          console.log("➡️ BODY:", req.body);
+          console.log(" BODY:", req.body);
 
           if (!mabienthe) throw new Error("Thiếu mã biến thể");
 
@@ -25,7 +25,7 @@ export const uploadHinhAnhTheoBienThe = async (req, res) => {
             [mabienthe]
           );
 
-          console.log("➡️ Mã sản phẩm:", btRows);
+          console.log(" Mã sản phẩm:", btRows);
 
           const masanpham = btRows[0]?.masanpham;
           if (!masanpham) throw new Error("Không tìm thấy masanpham");
@@ -35,7 +35,7 @@ export const uploadHinhAnhTheoBienThe = async (req, res) => {
             [masanpham]
           );
 
-          console.log("➡️ Mã danh mục:", spRows);
+          console.log(" Mã danh mục:", spRows);
 
           const madanhmuc = spRows[0]?.madanhmuc;
           if (!madanhmuc) throw new Error("Không tìm thấy madanhmuc");
@@ -46,15 +46,15 @@ export const uploadHinhAnhTheoBienThe = async (req, res) => {
           );
 
           const tendanhmuc = dmRows[0]?.tendanhmuc;
-          console.log("➡️ Tên danh mục:", tendanhmuc);
+          console.log(" Tên danh mục:", tendanhmuc);
 
           if (!tendanhmuc) throw new Error("Không tìm thấy tendanhmuc");
 
           const gioitinh = tendanhmuc.includes("Nam") ? "Nam" : "Nu";
-          console.log("➡️ Giới tính:", gioitinh);
+          console.log(" Giới tính:", gioitinh);
 
           const folder = getCloudinaryFolder(gioitinh, tendanhmuc);
-          console.log("➡️ FolderPath:", folder);
+          console.log(" FolderPath:", folder);
 
           return {
             folder,
@@ -65,7 +65,7 @@ export const uploadHinhAnhTheoBienThe = async (req, res) => {
       }),
     }).single("image");
 
-    // 👉 B3: chạy multer, lúc này mới có req.body
+    //  B3: chạy multer, lúc này mới có req.body
     upload(req, res, async (err) => {
       if (err)
         return res.status(500).json({ message: "Upload lỗi Cloudinary", err });

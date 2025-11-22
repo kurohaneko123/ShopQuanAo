@@ -2,13 +2,14 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import pool from "./src/config/db.js"; // 🧠 Kết nối MySQL
-import sanphamRoutes from "./src/routes/sanphamRoutes.js"; // 🧩 Route sản phẩm
-import danhmucRoutes from "./src/routes/danhmucRoutes.js"; // 🧩 Route danh mục
-import voucherRoutes from "./src/routes/voucherRoutes.js"; // 🧩 Route voucher
-import nguoidungRoutes from "./src/routes/nguoidungRoutes.js"; // 🧩 Route người dùng (đăng nhập + đăng ký)
-import hinhanhRoutes from "./src/routes/hinhanhRoutes.js"; // 🧩 Route hình ảnh
-
+import pool from "./src/config/db.js"; //  Kết nối MySQL
+import sanphamRoutes from "./src/routes/sanphamRoutes.js"; //  Route sản phẩm
+import danhmucRoutes from "./src/routes/danhmucRoutes.js"; //  Route danh mục
+import voucherRoutes from "./src/routes/voucherRoutes.js"; //  Route voucher
+import nguoidungRoutes from "./src/routes/nguoidungRoutes.js"; //  Route người dùng (đăng nhập + đăng ký)
+import hinhanhRoutes from "./src/routes/hinhanhRoutes.js"; //  Route hình ảnh
+import kichthuocRoutes from "./src/routes/kichthuocRoutes.js"; //Route kích thước
+import mausacRoutes from "./src/routes/mausacRoutes.js"; //Route màu sắc
 dotenv.config();
 
 const app = express();
@@ -37,8 +38,10 @@ app.get("/test-db", async (req, res) => {
 app.use("/api/sanpham", sanphamRoutes);
 app.use("/api/danhmuc", danhmucRoutes);
 app.use("/api/voucher", voucherRoutes);
-app.use("/api/nguoidung", nguoidungRoutes); // ✅ Thêm route người dùng (JWT login/register)
+app.use("/api/nguoidung", nguoidungRoutes); //  Thêm route người dùng (JWT login/register)
 app.use("/api/hinhanh", hinhanhRoutes);
+app.use("/api/kichthuoc", kichthuocRoutes);
+app.use("/api/mausac", mausacRoutes);
 app.use("/images", express.static("public/images"));
 
 // ⚙️ Lắng nghe server

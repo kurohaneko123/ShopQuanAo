@@ -1,11 +1,15 @@
-
-// 🚏 Route: Định tuyến API voucher
 import express from "express";
-import { hienThiVoucher } from "../controllers/voucherController.js";
+import {
+    hienThiVoucher,
+    themVoucher,
+    suaVoucher,
+    xoaMotVoucher
+} from "../controllers/voucherController.js";
 
 const router = express.Router();
 
-// GET /api/voucher → Hiển thị tất cả voucher đang hoạt động
 router.get("/", hienThiVoucher);
-
+router.post("/themvoucher", themVoucher);
+router.put("/suavoucher/:id", suaVoucher);
+router.delete("/xoavoucher/:id", xoaMotVoucher);
 export default router;

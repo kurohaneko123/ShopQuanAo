@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: 127.0.0.1:3306
--- Thời gian đã tạo: Th10 19, 2025 lúc 06:56 PM
+-- Thời gian đã tạo: Th10 21, 2025 lúc 02:43 PM
 -- Phiên bản máy phục vụ: 8.3.0
 -- Phiên bản PHP: 8.2.18
 
@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS `bienthesanpham` (
   `soluongton` int DEFAULT '0',
   `giaban` decimal(10,2) DEFAULT NULL,
   `ngaytao` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `trangthaihoatdongbtsp` enum('hoạt động','không hoạt động') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'hoạt động',
+  `trangthaihoatdongbtsp` enum('hoạt động','không hoạt động') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'hoạt động',
   PRIMARY KEY (`mabienthe`),
   KEY `masanpham` (`masanpham`),
   KEY `makichthuoc` (`makichthuoc`),
@@ -52,26 +52,26 @@ INSERT INTO `bienthesanpham` (`mabienthe`, `masanpham`, `makichthuoc`, `mamausac
 (10, 1, 3, 1, 50, 199000.00, '2025-11-04 18:29:05', 'hoạt động'),
 (11, 1, 2, 2, 50, 199000.00, '2025-11-04 18:29:05', 'hoạt động'),
 (12, 1, 3, 2, 50, 199000.00, '2025-11-04 18:29:05', 'hoạt động'),
-(13, 2, 2, 1, 50, 199000.00, '2025-11-19 18:37:54', 'hoạt động'),
-(14, 2, 2, 2, 50, 199000.00, '2025-11-19 18:37:54', 'hoạt động'),
-(15, 2, 3, 1, 50, 199000.00, '2025-11-19 18:37:54', 'hoạt động'),
-(16, 2, 3, 2, 50, 199000.00, '2025-11-19 18:37:54', 'hoạt động'),
-(17, 3, 2, 1, 50, 199000.00, '2025-11-19 18:38:13', 'hoạt động'),
-(18, 3, 2, 2, 50, 199000.00, '2025-11-19 18:38:13', 'hoạt động'),
-(19, 3, 3, 1, 50, 199000.00, '2025-11-19 18:38:13', 'hoạt động'),
-(20, 3, 3, 2, 50, 199000.00, '2025-11-19 18:38:13', 'hoạt động'),
-(21, 4, 2, 1, 50, 199000.00, '2025-11-19 18:38:25', 'hoạt động'),
-(22, 4, 2, 2, 50, 199000.00, '2025-11-19 18:38:25', 'hoạt động'),
-(23, 4, 3, 1, 50, 199000.00, '2025-11-19 18:38:25', 'hoạt động'),
-(24, 4, 3, 2, 50, 199000.00, '2025-11-19 18:38:25', 'hoạt động'),
-(25, 5, 2, 1, 50, 199000.00, '2025-11-19 18:38:39', 'hoạt động'),
-(26, 5, 2, 2, 50, 199000.00, '2025-11-19 18:38:39', 'hoạt động'),
-(27, 5, 3, 1, 50, 199000.00, '2025-11-19 18:38:39', 'hoạt động'),
-(28, 5, 3, 2, 50, 199000.00, '2025-11-19 18:38:39', 'hoạt động'),
-(29, 8, 2, 1, 50, 199000.00, '2025-11-19 18:38:48', 'hoạt động'),
-(30, 8, 2, 2, 50, 199000.00, '2025-11-19 18:38:48', 'hoạt động'),
-(31, 8, 3, 1, 50, 199000.00, '2025-11-19 18:38:48', 'hoạt động'),
-(32, 8, 3, 2, 50, 199000.00, '2025-11-19 18:38:48', 'hoạt động');
+(13, 2, 2, 2, 50, 199000.00, '2025-11-19 18:37:54', 'hoạt động'),
+(14, 2, 2, 5, 50, 199000.00, '2025-11-19 18:37:54', 'hoạt động'),
+(15, 2, 3, 2, 50, 199000.00, '2025-11-19 18:37:54', 'hoạt động'),
+(16, 2, 3, 5, 50, 199000.00, '2025-11-19 18:37:54', 'hoạt động'),
+(17, 3, 2, 2, 50, 199000.00, '2025-11-19 18:38:13', 'hoạt động'),
+(18, 3, 2, 5, 50, 199000.00, '2025-11-19 18:38:13', 'hoạt động'),
+(19, 3, 3, 2, 50, 199000.00, '2025-11-19 18:38:13', 'hoạt động'),
+(20, 3, 3, 5, 50, 199000.00, '2025-11-19 18:38:13', 'hoạt động'),
+(21, 4, 2, 4, 50, 199000.00, '2025-11-19 18:38:25', 'hoạt động'),
+(22, 4, 2, 5, 50, 199000.00, '2025-11-19 18:38:25', 'hoạt động'),
+(23, 4, 3, 4, 50, 199000.00, '2025-11-19 18:38:25', 'hoạt động'),
+(24, 4, 3, 5, 50, 199000.00, '2025-11-19 18:38:25', 'hoạt động'),
+(25, 5, 2, 2, 50, 199000.00, '2025-11-19 18:38:39', 'hoạt động'),
+(26, 5, 2, 4, 50, 199000.00, '2025-11-19 18:38:39', 'hoạt động'),
+(27, 5, 3, 2, 50, 199000.00, '2025-11-19 18:38:39', 'hoạt động'),
+(28, 5, 3, 4, 50, 199000.00, '2025-11-19 18:38:39', 'hoạt động'),
+(29, 8, 2, 2, 50, 199000.00, '2025-11-19 18:38:48', 'hoạt động'),
+(30, 8, 2, 5, 50, 199000.00, '2025-11-19 18:38:48', 'hoạt động'),
+(31, 8, 3, 2, 50, 199000.00, '2025-11-19 18:38:48', 'hoạt động'),
+(32, 8, 3, 5, 50, 199000.00, '2025-11-19 18:38:48', 'hoạt động');
 
 -- --------------------------------------------------------
 
@@ -109,6 +109,7 @@ CREATE TABLE IF NOT EXISTS `danhmuc` (
   `tendanhmuc` varchar(250) NOT NULL,
   `ngaytao` timestamp NOT NULL,
   `slug` varchar(250) NOT NULL,
+  `gioitinh` enum('Nam','Nu') NOT NULL,
   PRIMARY KEY (`madanhmuc`)
 ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -116,13 +117,13 @@ CREATE TABLE IF NOT EXISTS `danhmuc` (
 -- Đang đổ dữ liệu cho bảng `danhmuc`
 --
 
-INSERT INTO `danhmuc` (`madanhmuc`, `tendanhmuc`, `ngaytao`, `slug`) VALUES
-(1, 'Áo thun nam', '2025-10-27 16:04:32', 'ao-thun-nam'),
-(2, 'Áo sơ mi nữ', '2025-10-27 16:04:32', 'ao-so-mi-nu'),
-(3, 'Quần jeans', '2025-10-27 16:04:32', 'quan-jeans'),
-(4, 'Áo khoác', '2025-10-27 16:04:32', 'ao-khoac'),
-(5, 'Đầm váy', '2025-10-27 16:04:32', 'dam-vay'),
-(8, 'Áo polo', '2025-10-27 16:04:32', 'ao-polo');
+INSERT INTO `danhmuc` (`madanhmuc`, `tendanhmuc`, `ngaytao`, `slug`, `gioitinh`) VALUES
+(1, 'Áo thun nam', '2025-11-20 07:07:54', 'aothun-nam', 'Nam'),
+(2, 'Áo sơ mi nữ', '2025-11-20 07:08:00', 'aosomi-nu', 'Nu'),
+(3, 'Quần jeans nam', '2025-11-20 07:08:04', 'quanjeans-nam', 'Nam'),
+(4, 'Áo khoác nam', '2025-11-20 07:08:10', 'aokhoac-nam', 'Nam'),
+(5, 'Đầm váy nữ', '2025-11-20 07:08:16', 'damvay-nu', 'Nu'),
+(8, 'Áo polo nam', '2025-11-20 07:08:21', 'aopolo-nam', 'Nam');
 
 -- --------------------------------------------------------
 
@@ -163,66 +164,66 @@ DROP TABLE IF EXISTS `hinhanh`;
 CREATE TABLE IF NOT EXISTS `hinhanh` (
   `mahinhanh` int NOT NULL AUTO_INCREMENT,
   `mabienthe` int DEFAULT NULL,
-  `urlhinhanh` varchar(250) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `urlhinhanh` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `ngaytao` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `stt` int DEFAULT NULL,
   PRIMARY KEY (`mahinhanh`),
   KEY `mabienthe` (`mabienthe`)
-) ENGINE=InnoDB AUTO_INCREMENT=65 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=123 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `hinhanh`
 --
 
 INSERT INTO `hinhanh` (`mahinhanh`, `mabienthe`, `urlhinhanh`, `ngaytao`, `stt`) VALUES
-(17, 9, '/images/aothuncottontrang1.jpg', '2025-11-04 19:05:32', 1),
-(18, 9, '/images/aothuncottontrang2.jpg', '2025-11-04 19:05:32', 2),
-(19, 10, '/images/aothuncottontrang1.jpg', '2025-11-04 19:05:32', 1),
-(20, 10, '/images/aothuncottontrang2.jpg', '2025-11-04 19:05:32', 2),
-(21, 11, '/images/aothuncottonden1.jpg', '2025-11-04 19:05:32', 1),
-(22, 11, '/images/aothuncottonden2.jpg', '2025-11-04 19:05:32', 2),
-(23, 12, '/images/aothuncottonden1.jpg', '2025-11-04 19:05:32', 1),
-(24, 12, '/images/aothuncottonden2.jpg', '2025-11-04 19:05:32', 2),
-(25, 13, '/images/aosominutaydaiden1.jpg', '2025-11-19 18:52:43', 1),
-(26, 13, '/images/aosominutaydaiden2.jpg', '2025-11-19 18:52:43', 2),
-(27, 14, '/images/aosominutaydaixam1.jpg', '2025-11-19 18:52:43', 1),
-(28, 14, '/images/aosominutaydaixam2.jpg', '2025-11-19 18:52:43', 2),
-(29, 15, '/images/aosominutaydaiden1.jpg', '2025-11-19 18:52:43', 1),
-(30, 15, '/images/aosominutaydaiden2.jpg', '2025-11-19 18:52:43', 2),
-(31, 16, '/images/aosominutaydaixam1.jpg', '2025-11-19 18:52:43', 1),
-(32, 16, '/images/aosominutaydaixam2.jpg', '2025-11-19 18:52:43', 2),
-(33, 17, '/images/quanjeannamrachnheden1.jpg', '2025-11-19 18:53:00', 1),
-(34, 17, '/images/quanjeannamrachnheden2.jpg', '2025-11-19 18:53:00', 2),
-(35, 18, '/images/quanjeanrachnhexam1.jpg', '2025-11-19 18:53:00', 1),
-(36, 18, '/images/quanjeanrachnhexam2.jpg', '2025-11-19 18:53:00', 2),
-(37, 19, '/images/quanjeannamrachnheden1.jpg', '2025-11-19 18:53:00', 1),
-(38, 19, '/images/quanjeannamrachnheden2.jpg', '2025-11-19 18:53:00', 2),
-(39, 20, '/images/quanjeanrachnhexam1.jpg', '2025-11-19 18:53:00', 1),
-(40, 20, '/images/quanjeanrachnhexam2.jpg', '2025-11-19 18:53:00', 2),
-(41, 21, '/images/aokhoacnamden1.jpg', '2025-11-19 18:53:11', 1),
-(42, 21, '/images/aokhoacnamden2.jpg', '2025-11-19 18:53:11', 2),
-(43, 22, '/images/aokhoacnamxam1.jpg', '2025-11-19 18:53:11', 1),
-(44, 22, '/images/aokhoacnamxam2.jpg', '2025-11-19 18:53:11', 2),
-(45, 23, '/images/aokhoacnamden1.jpg', '2025-11-19 18:53:11', 1),
-(46, 23, '/images/aokhoacnamden2.jpg', '2025-11-19 18:53:11', 2),
-(47, 24, '/images/aokhoacnamxam1.jpg', '2025-11-19 18:53:11', 1),
-(48, 24, '/images/aokhoacnamxam2.jpg', '2025-11-19 18:53:11', 2),
-(49, 25, '/images/damnuhoanhiden1.jpg', '2025-11-19 18:53:31', 1),
-(50, 25, '/images/damnuhoanhiden2.jpg', '2025-11-19 18:53:31', 2),
-(51, 26, '/images/damnuhoanhixam1.jpg', '2025-11-19 18:53:31', 1),
-(52, 26, '/images/damnuhoanhixam2.jpg', '2025-11-19 18:53:31', 2),
-(53, 27, '/images/damnuhoanhiden1.jpg', '2025-11-19 18:53:31', 1),
-(54, 27, '/images/damnuhoanhiden2.jpg', '2025-11-19 18:53:31', 2),
-(55, 28, '/images/damnuhoanhixam1.jpg', '2025-11-19 18:53:31', 1),
-(56, 28, '/images/damnuhoanhixam2.jpg', '2025-11-19 18:53:31', 2),
-(57, 29, '/images/aopolonamden1.jpg', '2025-11-19 18:53:39', 1),
-(58, 29, '/images/aopolonamden2.jpg', '2025-11-19 18:53:39', 2),
-(59, 30, '/images/aopolonamxam1.jpg', '2025-11-19 18:53:39', 1),
-(60, 30, '/images/aopolonamxam2.jpg', '2025-11-19 18:53:39', 2),
-(61, 31, '/images/aopolonamden1.jpg', '2025-11-19 18:53:39', 1),
-(62, 31, '/images/aopolonamden2.jpg', '2025-11-19 18:53:39', 2),
-(63, 32, '/images/aopolonamxam1.jpg', '2025-11-19 18:53:39', 1),
-(64, 32, '/images/aopolonamxam2.jpg', '2025-11-19 18:53:39', 2);
+(71, 21, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763624394/ShopQuanAo/Nam/Khoac/ax7etutrwtlvl6ue2xmb.jpg', '2025-11-20 07:39:55', 1),
+(72, 23, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763624394/ShopQuanAo/Nam/Khoac/ax7etutrwtlvl6ue2xmb.jpg', '2025-11-20 07:39:55', 1),
+(73, 21, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763624395/ShopQuanAo/Nam/Khoac/t9zptzkg8o6jwj9fqvlv.jpg', '2025-11-20 07:39:56', 1),
+(74, 23, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763624395/ShopQuanAo/Nam/Khoac/t9zptzkg8o6jwj9fqvlv.jpg', '2025-11-20 07:39:56', 1),
+(75, 22, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763624396/ShopQuanAo/Nam/Khoac/whusgkofdbdxurwunxni.jpg', '2025-11-20 07:39:57', 1),
+(76, 24, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763624396/ShopQuanAo/Nam/Khoac/whusgkofdbdxurwunxni.jpg', '2025-11-20 07:39:57', 1),
+(77, 22, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763624397/ShopQuanAo/Nam/Khoac/ba8dxoubwrgjfhxt3gcl.jpg', '2025-11-20 07:39:58', 1),
+(78, 24, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763624397/ShopQuanAo/Nam/Khoac/ba8dxoubwrgjfhxt3gcl.jpg', '2025-11-20 07:39:58', 1),
+(79, 29, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763624398/ShopQuanAo/Nam/Khac/qqpyzyxxntpdpz2dlazz.webp', '2025-11-20 07:39:59', 1),
+(80, 31, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763624398/ShopQuanAo/Nam/Khac/qqpyzyxxntpdpz2dlazz.webp', '2025-11-20 07:39:59', 1),
+(81, 29, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763624399/ShopQuanAo/Nam/Khac/jvpowbo87epiyztl8ip5.webp', '2025-11-20 07:40:00', 1),
+(82, 31, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763624399/ShopQuanAo/Nam/Khac/jvpowbo87epiyztl8ip5.webp', '2025-11-20 07:40:00', 1),
+(83, 30, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763624400/ShopQuanAo/Nam/Khac/klrajmplxlssdk9k7nbz.jpg', '2025-11-20 07:40:01', 1),
+(84, 32, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763624400/ShopQuanAo/Nam/Khac/klrajmplxlssdk9k7nbz.jpg', '2025-11-20 07:40:01', 1),
+(85, 30, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763624401/ShopQuanAo/Nam/Khac/vubzrh3f0pwtfmg8dfn7.jpg', '2025-11-20 07:40:02', 1),
+(86, 32, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763624401/ShopQuanAo/Nam/Khac/vubzrh3f0pwtfmg8dfn7.jpg', '2025-11-20 07:40:02', 1),
+(87, 13, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763624402/ShopQuanAo/Nu/SoMi/vhrmxy5rmoezpzlygyoh.webp', '2025-11-20 07:40:03', 1),
+(88, 15, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763624402/ShopQuanAo/Nu/SoMi/vhrmxy5rmoezpzlygyoh.webp', '2025-11-20 07:40:03', 1),
+(89, 13, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763624404/ShopQuanAo/Nu/SoMi/myiougwkeogsh2lsxaih.webp', '2025-11-20 07:40:05', 1),
+(90, 15, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763624404/ShopQuanAo/Nu/SoMi/myiougwkeogsh2lsxaih.webp', '2025-11-20 07:40:05', 1),
+(91, 14, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763624405/ShopQuanAo/Nu/SoMi/xbmmgijcclrmah6qqjbe.webp', '2025-11-20 07:40:06', 1),
+(92, 16, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763624405/ShopQuanAo/Nu/SoMi/xbmmgijcclrmah6qqjbe.webp', '2025-11-20 07:40:06', 1),
+(93, 14, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763624406/ShopQuanAo/Nu/SoMi/uylcdjypxa6pcxkh4dcb.webp', '2025-11-20 07:40:08', 1),
+(94, 16, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763624406/ShopQuanAo/Nu/SoMi/uylcdjypxa6pcxkh4dcb.webp', '2025-11-20 07:40:08', 1),
+(99, 25, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763624409/ShopQuanAo/Nu/Dam/nlj9a8d4pim5o84up5rq.webp', '2025-11-20 07:40:11', 1),
+(100, 27, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763624409/ShopQuanAo/Nu/Dam/nlj9a8d4pim5o84up5rq.webp', '2025-11-20 07:40:11', 1),
+(101, 25, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763624411/ShopQuanAo/Nu/Dam/izf43kslu1qqxnfok8bo.webp', '2025-11-20 07:40:11', 1),
+(102, 27, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763624411/ShopQuanAo/Nu/Dam/izf43kslu1qqxnfok8bo.webp', '2025-11-20 07:40:11', 1),
+(103, 26, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763624411/ShopQuanAo/Nu/Dam/nczx5mkpbfql6nxgcr58.jpg', '2025-11-20 07:40:12', 1),
+(104, 28, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763624411/ShopQuanAo/Nu/Dam/nczx5mkpbfql6nxgcr58.jpg', '2025-11-20 07:40:12', 1),
+(105, 26, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763624412/ShopQuanAo/Nu/Dam/jonfksnzr1ti8cwy86ai.jpg', '2025-11-20 07:40:14', 1),
+(106, 28, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763624412/ShopQuanAo/Nu/Dam/jonfksnzr1ti8cwy86ai.jpg', '2025-11-20 07:40:14', 1),
+(107, 17, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763624414/ShopQuanAo/Nam/QuanJean/a9ijgnmgyzaukiwa81g5.jpg', '2025-11-20 07:40:15', 1),
+(108, 19, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763624414/ShopQuanAo/Nam/QuanJean/a9ijgnmgyzaukiwa81g5.jpg', '2025-11-20 07:40:15', 1),
+(109, 17, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763624415/ShopQuanAo/Nam/QuanJean/xoygcxphvhonzsxqkys7.jpg', '2025-11-20 07:40:16', 1),
+(110, 19, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763624415/ShopQuanAo/Nam/QuanJean/xoygcxphvhonzsxqkys7.jpg', '2025-11-20 07:40:16', 1),
+(111, 18, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763624416/ShopQuanAo/Nam/QuanJean/kflqafri4ykgnzuwfk8y.png', '2025-11-20 07:40:17', 1),
+(112, 20, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763624416/ShopQuanAo/Nam/QuanJean/kflqafri4ykgnzuwfk8y.png', '2025-11-20 07:40:17', 1),
+(113, 18, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763624417/ShopQuanAo/Nam/QuanJean/jzjmk6qdraavtqoum85o.png', '2025-11-20 07:40:18', 1),
+(114, 20, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763624417/ShopQuanAo/Nam/QuanJean/jzjmk6qdraavtqoum85o.png', '2025-11-20 07:40:18', 1),
+(115, 9, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763628699/ShopQuanAo/Nam/AoThun/rpesa2ncaclzoq8it4bo.webp', '2025-11-20 08:51:40', 1),
+(116, 10, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763628699/ShopQuanAo/Nam/AoThun/rpesa2ncaclzoq8it4bo.webp', '2025-11-20 08:51:40', 1),
+(117, 9, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763628700/ShopQuanAo/Nam/AoThun/we8c7ffdy2kn17ywcde8.webp', '2025-11-20 08:51:41', 1),
+(118, 10, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763628700/ShopQuanAo/Nam/AoThun/we8c7ffdy2kn17ywcde8.webp', '2025-11-20 08:51:41', 1),
+(119, 11, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763629393/ShopQuanAo/Nam/AoThun/owv9pd0kufimbrmodkvh.jpg', '2025-11-20 09:03:13', 1),
+(120, 12, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763629393/ShopQuanAo/Nam/AoThun/owv9pd0kufimbrmodkvh.jpg', '2025-11-20 09:03:13', 1),
+(121, 11, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763629394/ShopQuanAo/Nam/AoThun/orxkfgzyl3kbqgjk3mbc.jpg', '2025-11-20 09:03:14', 1),
+(122, 12, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763629394/ShopQuanAo/Nam/AoThun/orxkfgzyl3kbqgjk3mbc.jpg', '2025-11-20 09:03:14', 1);
 
 -- --------------------------------------------------------
 
@@ -233,8 +234,8 @@ INSERT INTO `hinhanh` (`mahinhanh`, `mabienthe`, `urlhinhanh`, `ngaytao`, `stt`)
 DROP TABLE IF EXISTS `kichthuoc`;
 CREATE TABLE IF NOT EXISTS `kichthuoc` (
   `makichthuoc` int NOT NULL AUTO_INCREMENT,
-  `tenkichthuoc` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `mota` text COLLATE utf8mb4_unicode_ci,
+  `tenkichthuoc` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `mota` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `ngaytao` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`makichthuoc`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -259,9 +260,9 @@ INSERT INTO `kichthuoc` (`makichthuoc`, `tenkichthuoc`, `mota`, `ngaytao`) VALUE
 DROP TABLE IF EXISTS `mausac`;
 CREATE TABLE IF NOT EXISTS `mausac` (
   `mamausac` int NOT NULL AUTO_INCREMENT,
-  `tenmausac` varchar(250) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `mota` text COLLATE utf8mb4_unicode_ci,
-  `hexcode` varchar(250) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `tenmausac` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `mota` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `hexcode` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `ngaytao` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`mamausac`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -286,16 +287,16 @@ INSERT INTO `mausac` (`mamausac`, `tenmausac`, `mota`, `hexcode`, `ngaytao`) VAL
 DROP TABLE IF EXISTS `nguoidung`;
 CREATE TABLE IF NOT EXISTS `nguoidung` (
   `manguoidung` int NOT NULL AUTO_INCREMENT,
-  `email` varchar(250) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `matkhau` varchar(250) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `hoten` varchar(250) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `sodienthoai` varchar(250) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `diachi` text COLLATE utf8mb4_unicode_ci,
-  `vaitro` enum('client','admin') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'client',
-  `trangthai` enum('hoạt động','không hoạt động') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'hoạt động',
+  `email` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `matkhau` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `hoten` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `sodienthoai` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `diachi` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `vaitro` enum('client','admin') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'client',
+  `trangthai` enum('hoạt động','không hoạt động') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'hoạt động',
   `ngaytao` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `ngaycapnhat` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `resettoken` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `resettoken` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `thoigianhethan` datetime DEFAULT NULL,
   PRIMARY KEY (`manguoidung`),
   UNIQUE KEY `email` (`email`)
@@ -338,12 +339,12 @@ CREATE TABLE IF NOT EXISTS `sanpham` (
 --
 
 INSERT INTO `sanpham` (`masanpham`, `tensanpham`, `thuonghieu`, `mota`, `chatlieu`, `kieudang`, `baoquan`, `ngaytao`, `ngaycapnhat`, `madanhmuc`, `anhdaidien`) VALUES
-(1, 'Áo Thun Nam Basic Cotton', 'Coolmate', 'Áo thun cotton thoáng mát, form rộng trẻ trung.', 'Cotton 100%', 'Regular Fit', 'Giặt máy, không tẩy', '2025-11-08 18:03:03', NULL, 1, 'assets/aothuncottonden1.jpg'),
-(2, 'Áo Sơ Mi Nữ Tay Dài ', 'Routine', 'Thiết kế thanh lịch, dễ phối đồ, phù hợp môi trường công sở.', 'Vải lanh pha polyester', 'Slim Fit', 'Giặt tay, không vắt mạnh', '2025-11-19 18:04:59', NULL, 2, ''),
-(3, 'Quần Jeans Nam  Rách Nhẹ', 'Levis', 'Chất denim co giãn nhẹ, phong cách năng động.', 'Denim co giãn', 'Slim Taper', 'Giặt trong nước lạnh', '2025-11-19 18:05:12', NULL, 3, ''),
-(4, 'Áo Khoác Nam Dù Chống Nước', 'YODY', 'Áo khoác chống gió, chống nước nhẹ, thích hợp đi chơi hoặc đi học.', 'Polyester cao cấp', 'Bomber', 'Phơi nơi thoáng mát', '2025-10-27 16:06:48', NULL, 4, ''),
-(5, 'Đầm Nữ Hoa Nhí Dáng Xòe', 'IVY Moda', 'Đầm hoa nhí dịu dàng, tôn dáng, phù hợp đi dạo hoặc dự tiệc nhẹ.', 'Voan mềm', 'Xòe', 'Giặt nhẹ, không sấy', '2025-10-27 16:06:48', NULL, 5, ''),
-(8, 'Áo Polo Nam Cá Sấu ', 'Lacoste', 'Áo polo chất cá sấu cao cấp, logo thêu tinh tế.', 'Cotton pique', 'Regular Fit', 'Giặt nhẹ, không ủi trực tiếp lên logo', '2025-11-19 18:05:31', NULL, 8, '');
+(1, 'Áo Thun Nam Basic Cotton', 'Coolmate', 'Áo thun cotton thoáng mát, form rộng trẻ trung.', 'Cotton 100%', 'Regular Fit', 'Giặt máy, không tẩy', '2025-11-20 08:27:47', NULL, 1, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763735738/ShopQuanAo/Nam/AoThun/avatar_1_1763735740080.jpg'),
+(2, 'Áo Sơ Mi Nữ Tay Dài ', 'Routine', 'Thiết kế thanh lịch, dễ phối đồ, phù hợp môi trường công sở.', 'Vải lanh pha polyester', 'Slim Fit', 'Giặt tay, không vắt mạnh', '2025-11-19 18:04:59', NULL, 2, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763735752/ShopQuanAo/Nu/SoMi/avatar_2_1763735754595.jpg'),
+(3, 'Quần Jeans Nam  Rách Nhẹ', 'Levis', 'Chất denim co giãn nhẹ, phong cách năng động.', 'Denim co giãn', 'Slim Taper', 'Giặt trong nước lạnh', '2025-11-19 18:05:12', NULL, 3, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763735769/ShopQuanAo/Nam/QuanJean/avatar_3_1763735771366.jpg'),
+(4, 'Áo Khoác Nam Dù Chống Nước', 'YODY', 'Áo khoác chống gió, chống nước nhẹ, thích hợp đi chơi hoặc đi học.', 'Polyester cao cấp', 'Bomber', 'Phơi nơi thoáng mát', '2025-11-21 14:35:14', NULL, 4, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763735783/ShopQuanAo/Nam/Khoac/avatar_4_1763735785497.webp'),
+(5, 'Đầm Nữ Hoa Nhí Dáng Xòe', 'IVY Moda', 'Đầm hoa nhí dịu dàng, tôn dáng, phù hợp đi dạo hoặc dự tiệc nhẹ.', 'Voan mềm', 'Xòe', 'Giặt nhẹ, không sấy', '2025-10-27 16:06:48', NULL, 5, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763735809/ShopQuanAo/Nu/Dam/avatar_5_1763735804018.jpg'),
+(8, 'Áo Polo Nam Cá Sấu ', 'Lacoste', 'Áo polo chất cá sấu cao cấp, logo thêu tinh tế.', 'Cotton pique', 'Regular Fit', 'Giặt nhẹ, không ủi trực tiếp lên logo', '2025-11-19 18:05:31', NULL, 8, 'https://res.cloudinary.com/dt3ol8mcr/image/upload/v1763735825/ShopQuanAo/Nam/Khac/avatar_8_1763735826958.jpg');
 
 -- --------------------------------------------------------
 
@@ -354,9 +355,9 @@ INSERT INTO `sanpham` (`masanpham`, `tensanpham`, `thuonghieu`, `mota`, `chatlie
 DROP TABLE IF EXISTS `voucher`;
 CREATE TABLE IF NOT EXISTS `voucher` (
   `mavoucher` int NOT NULL AUTO_INCREMENT,
-  `magiamgia` varchar(250) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `mota` varchar(250) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `loaikhuyenmai` enum('tiền','%') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'tiền',
+  `magiamgia` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `mota` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `loaikhuyenmai` enum('tiền','%') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'tiền',
   `giatrigiam` int DEFAULT NULL,
   `giantoida` int DEFAULT NULL,
   `dontoithieu` int DEFAULT NULL,
@@ -365,7 +366,7 @@ CREATE TABLE IF NOT EXISTS `voucher` (
   `madanhmuc` int DEFAULT NULL,
   `ngaybatdau` timestamp NULL DEFAULT NULL,
   `ngayketthuc` timestamp NULL DEFAULT NULL,
-  `trangthai` enum('hoạt động','hết hạn','vô hiệu') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'hoạt động',
+  `trangthai` enum('hoạt động','hết hạn','vô hiệu') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'hoạt động',
   `ngaytao` timestamp NOT NULL,
   PRIMARY KEY (`mavoucher`),
   UNIQUE KEY `magiamgia` (`magiamgia`),

@@ -13,7 +13,7 @@ const router = express.Router();
 router.post("/dangnhap", dangNhapNguoiDung);
 router.post("/dangky", dangKyNguoiDung);
 
-// 🟢 API này chỉ xem được nếu có token hợp lệ
+//  API này chỉ xem được nếu có token hợp lệ
 router.get("/thongtin", xacthucToken, layThongTinCaNhan);
 
 // API Quên mật khẩu và đặt lại mật khẩu

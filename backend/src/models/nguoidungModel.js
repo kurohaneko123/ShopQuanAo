@@ -1,7 +1,7 @@
 import pool from "../config/db.js";
 import bcrypt from "bcryptjs";
 
-// 🟢 Tạo người dùng mới
+//  Tạo người dùng mới
 export const taoNguoiDung = async ({ email, matkhau, hoten, sodienthoai }) => {
     const [kiemTra] = await pool.query("SELECT * FROM nguoidung WHERE email = ?", [email]);
     if (kiemTra.length > 0) throw new Error("Email đã tồn tại!");
@@ -14,13 +14,13 @@ export const taoNguoiDung = async ({ email, matkhau, hoten, sodienthoai }) => {
     );
 };
 
-// 🟣 Tìm người dùng theo email
+//  Tìm người dùng theo email
 export const timNguoiDungTheoEmail = async (email) => {
     const [rows] = await pool.query("SELECT * FROM nguoidung WHERE email = ?", [email]);
     return rows.length > 0 ? rows[0] : null;
 };
 
-// 🔵 Kiểm tra mật khẩu
+//  Kiểm tra mật khẩu
 export const kiemTraMatKhau = async (matkhauNhap, matkhauDB) => {
     return await bcrypt.compare(matkhauNhap, matkhauDB);
 };

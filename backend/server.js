@@ -8,7 +8,7 @@ import danhmucRoutes from "./src/routes/danhmucRoutes.js"; //  Route danh mục
 import voucherRoutes from "./src/routes/voucherRoutes.js"; //  Route voucher
 import nguoidungRoutes from "./src/routes/nguoidungRoutes.js"; //  Route người dùng (đăng nhập + đăng ký)
 import hinhanhRoutes from "./src/routes/hinhanhRoutes.js"; //  Route hình ảnh
-
+import kichthuocRoutes from "./src/routes/kichthuocRoutes.js"; //Route kích thước
 dotenv.config();
 
 const app = express();
@@ -39,6 +39,7 @@ app.use("/api/danhmuc", danhmucRoutes);
 app.use("/api/voucher", voucherRoutes);
 app.use("/api/nguoidung", nguoidungRoutes); //  Thêm route người dùng (JWT login/register)
 app.use("/api/hinhanh", hinhanhRoutes);
+app.use("/api/kichthuoc", kichthuocRoutes);
 app.use("/images", express.static("public/images"));
 
 // ⚙️ Lắng nghe server

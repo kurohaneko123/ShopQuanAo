@@ -6,6 +6,7 @@ export const layTatCaSanPham = async () => {
         SELECT 
             masanpham,
             tensanpham,
+            slug,
             thuonghieu,
             mota,
             chatlieu,
@@ -52,4 +53,144 @@ export const layHinhTheoBienThe = async (id) => {
     [id]
   );
   return rows;
+};
+
+// Model: Thêm sản phẩm mới
+//  Hàm tạo slug chuẩn SEO
+const taoSlug = (text) => {
+  return text
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-");
+};
+
+// ===============================
+//  TẠO SẢN PHẨM + BIẾN THỂ
+// ===============================
+export const taoSanPhamMoi = async (data) => {
+  const connection = await db.getConnection(); // transaction
+  try {
+    await connection.beginTransaction();
+
+    // ---- Tạo slug ----
+    const slug = taoSlug(data.tensanpham);
+
+    const [check] = await connection.query(
+      "SELECT masanpham FROM sanpham WHERE slug = ?",
+      [slug]
+    );
+    if (check.length > 0) {
+      throw new Error("Sản phẩm đã tồn tại (slug bị trùng)");
+    }
+
+    // ---- Insert sản phẩm ----
+    const sqlSP = `
+        INSERT INTO sanpham 
+        (tensanpham, slug, thuonghieu, mota, chatlieu, kieudang, baoquan, madanhmuc, anhdaidien, ngaytao)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+    `;
+    const [resultSP] = await connection.query(sqlSP, [
+      data.tensanpham,
+      slug,
+      data.thuonghieu,
+      data.mota,
+      data.chatlieu,
+      data.kieudang,
+      data.baoquan,
+      data.madanhmuc,
+      data.anhdaidien
+    ]);
+
+    const masanpham = resultSP.insertId;
+
+    // -----------------------
+    //  Thêm các biến thể
+    // -----------------------
+    const sqlBT = `
+        INSERT INTO bienthesanpham
+        (masanpham, makichthuoc, mamausac, soluongton, giaban, ngaytao, trangthaihoatdongbtsp)
+        VALUES (?, ?, ?, ?, ?, NOW(), 'hoạt động')
+    `;
+
+    for (const bt of data.bienthe) {
+      await connection.query(sqlBT, [
+        masanpham,
+        bt.makichthuoc,
+        bt.mamausac,
+        bt.soluongton,
+        bt.giaban
+      ]);
+    }
+
+    await connection.commit();
+
+    return { masanpham };
+  } catch (err) {
+    await connection.rollback();
+    throw err;
+  } finally {
+    connection.release();
+  }
+};
+
+//Xóa sản phẩm
+export const xoaSanPham = async (masanpham) => {
+  const sql = `
+      DELETE FROM sanpham
+      WHERE masanpham = ?
+  `;
+
+  const [result] = await db.query(sql, [masanpham]);
+  return result;
+};
+
+// ============================
+//  UPDATE SẢN PHẨM
+// ============================
+export const capNhatSanPham = async (id, data) => {
+  const slug = taoSlug(data.tensanpham);
+
+  //  Kiểm tra slug trùng của sản phẩm khác
+  const [check] = await db.query(
+    "SELECT masanpham FROM sanpham WHERE slug = ? AND masanpham != ?",
+    [slug, id]
+  );
+
+  if (check.length > 0) {
+    throw new Error("Slug đã tồn tại! Tên sản phẩm bị trùng.");
+  }
+
+  const sql = `
+      UPDATE sanpham 
+      SET 
+        tensanpham = ?, 
+        slug = ?, 
+        thuonghieu = ?, 
+        mota = ?, 
+        chatlieu = ?, 
+        kieudang = ?, 
+        baoquan = ?, 
+        madanhmuc = ?, 
+        anhdaidien = ?, 
+        ngaycapnhat = NOW()
+      WHERE masanpham = ?
+  `;
+
+  const [result] = await db.query(sql, [
+    data.tensanpham,
+    slug,
+    data.thuonghieu,
+    data.mota,
+    data.chatlieu,
+    data.kieudang,
+    data.baoquan,
+    data.madanhmuc,
+    data.anhdaidien,
+    id
+  ]);
+
+  return result;
 };

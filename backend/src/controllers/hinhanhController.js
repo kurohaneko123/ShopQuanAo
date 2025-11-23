@@ -4,7 +4,7 @@ import cloudinary from "../config/cloudinary.js";
 import { getCloudinaryFolder } from "../utils/locnamnucloudinary.js";
 import db from "../config/db.js";
 import { themHinhAnh } from "../models/hinhanhModel.js";
-
+import { xoaHinhAnh } from "../models/hinhanhModel.js";
 export const uploadHinhAnhTheoBienThe = async (req, res) => {
   try {
     //  B1: KHÔNG đọc req.body ở đây
@@ -86,5 +86,38 @@ export const uploadHinhAnhTheoBienThe = async (req, res) => {
   } catch (err) {
     console.log(err);
     res.status(500).json({ message: "Lỗi server" });
+  }
+};
+
+//Xóa hình ảnh
+export const xoaHinh = async (req, res) => {
+  try {
+    const { mahinhanh } = req.params;
+
+    if (!mahinhanh) {
+      return res.status(400).json({
+        message: "Thiếu mã hình (mahinhanh)!"
+      });
+    }
+
+    const result = await xoaHinhAnh(mahinhanh);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        message: "Không tìm thấy hình để xoá!"
+      });
+    }
+
+    res.json({
+      message: "Xoá hình ảnh thành công!",
+      deleted: mahinhanh
+    });
+
+  } catch (error) {
+    console.error("Lỗi khi xoá hình ảnh:", error);
+    res.status(500).json({
+      message: "Lỗi máy chủ",
+      error: error.message
+    });
   }
 };

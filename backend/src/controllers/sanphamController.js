@@ -4,6 +4,9 @@ import {
   laySanPhamTheoID,
   layBienTheTheoSanPham,
   layHinhTheoBienThe,
+  taoSanPhamMoi,
+  xoaSanPham,
+  capNhatSanPham,
 } from "../models/sanphamModel.js";
 //  Controller: Hiển thị toàn bộ sản phẩm
 export const hienThiSanPham = async (req, res) => {
@@ -136,5 +139,101 @@ export const uploadAnhDaiDien = async (req, res) => {
   } catch (error) {
     console.log("❌ Lỗi backend:", error);
     res.status(500).json({ message: "Lỗi server", error: error.message });
+  }
+};
+
+
+
+//  Controller: Thêm sản phẩm mới
+export const themSanPham = async (req, res) => {
+  try {
+    const data = req.body;
+
+    // ⚠️ Check dữ liệu bắt buộc
+    if (!data.tensanpham || !data.madanhmuc) {
+      return res.status(400).json({
+        message: "Thiếu tên sản phẩm hoặc mã danh mục!"
+      });
+    }
+
+    // ⚠️ Check phải có ít nhất 1 biến thể
+    if (!data.bienthe || !Array.isArray(data.bienthe) || data.bienthe.length === 0) {
+      return res.status(400).json({
+        message: "Sản phẩm phải có ít nhất 1 biến thể!"
+      });
+    }
+
+    // 🧠 Gọi model tạo sản phẩm + biến thể
+    const result = await taoSanPhamMoi(data);
+
+    res.status(201).json({
+      message: "Thêm sản phẩm và biến thể thành công!",
+      productId: result.masanpham
+    });
+
+  } catch (error) {
+    console.error("Lỗi khi thêm sản phẩm:", error);
+    res.status(500).json({
+      message: "Lỗi máy chủ",
+      error: error.message
+    });
+  }
+};
+//Xóa sản phẩm
+export const xoaSanPhamController = async (req, res) => {
+  try {
+    const masanpham = req.params.id;
+
+    if (!masanpham) {
+      return res.status(400).json({ message: "Thiếu mã sản phẩm!" });
+    }
+
+    const result = await xoaSanPham(masanpham);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Không tìm thấy sản phẩm để xoá!" });
+    }
+
+    res.status(200).json({
+      message: "Xoá sản phẩm thành công!"
+    });
+
+  } catch (error) {
+    console.error("Lỗi khi xoá sản phẩm:", error);
+    res.status(500).json({
+      message: "Lỗi máy chủ",
+      error: error.message
+    });
+  }
+};
+//Sửa sản phẩm
+export const suaSanPham = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const data = req.body;
+
+    if (!data.tensanpham || !data.madanhmuc) {
+      return res.status(400).json({
+        message: "Thiếu tên sản phẩm hoặc mã danh mục!"
+      });
+    }
+
+    const result = await capNhatSanPham(id, data);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Không tìm thấy sản phẩm để sửa!" });
+    }
+
+    res.status(200).json({
+      message: "Cập nhật sản phẩm thành công!",
+      updated: true
+    });
+
+  } catch (error) {
+    console.error("Lỗi khi sửa sản phẩm:", error);
+    res.status(500).json({
+      message: "Lỗi máy chủ",
+      error: error.message
+    });
   }
 };

@@ -20,3 +20,11 @@ export const layHinhAnhTheoBienThe = async (mabienthe) => {
     const [rows] = await db.query("SELECT * FROM hinhanh WHERE mabienthe = ?", [mabienthe]);
     return rows;
 };
+
+// Xóa ảnh theo mã hình
+export const xoaHinhAnh = async (mahinhanh) => {
+    const sql = `DELETE FROM hinhanh WHERE mahinhanh = ?`;
+
+    const [result] = await db.query(sql, [mahinhanh]);
+    return result;
+};

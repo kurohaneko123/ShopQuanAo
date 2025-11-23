@@ -5,6 +5,9 @@ import {
   hienThiSanPham,
   layChiTietSanPham,
   uploadAnhDaiDien,
+  themSanPham,
+  xoaSanPhamController,
+  suaSanPham,
 } from "../controllers/sanphamController.js";
 
 // Khởi tạo router
@@ -16,8 +19,18 @@ router.get("/", hienThiSanPham);
 //  GET /api/sanpham/:id → chi tiết sản phẩm
 router.get("/:id", layChiTietSanPham);
 
+//POST thêm sản phẩm
+router.post("/them", themSanPham);
+
+// PUT sửa sản phẩm
+router.put("/sua/:id", suaSanPham);
+
+//DELETE xóa sản phẩm
+router.delete("/:id", xoaSanPhamController);
+
 //  POST upload ảnh đại diện
 router.post("/upanhdaidien", uploadAnhDaiDien);
+
 
 // Export router để server.js có thể dùng
 export default router;

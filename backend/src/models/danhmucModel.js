@@ -7,7 +7,8 @@ export const layTatCaDanhMuc = async () => {
         SELECT 
             madanhmuc,
             tendanhmuc,
-            slug
+            slug,
+            gioitinh
         FROM danhmuc
     `);
     return rows;

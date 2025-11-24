@@ -165,7 +165,37 @@ export default function AddProductModal({
       }
 
       alert("Thêm sản phẩm thành công!");
+
+      // Gọi load() để cập nhật bảng ngoài
       onSuccess();
+
+      // RESET FORM để lần sau mở modal không bị dính data cũ
+      setData({
+        tensanpham: "",
+        madanhmuc: "",
+        thuonghieu: "",
+        mota: "",
+        chatlieu: "",
+        kieudang: "",
+        baoquan: "",
+      });
+
+      // RESET biến thể
+      setVariants([
+        {
+          size: "",
+          color: "",
+          giaban: "",
+          ton: "",
+          image1: null,
+          image2: null,
+        },
+      ]);
+
+      // RESET ảnh
+      setAvatarFile(null);
+
+      // Đóng modal
       onClose();
     } catch (err) {
       console.error("Lỗi thêm sản phẩm:", err);

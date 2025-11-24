@@ -16,12 +16,13 @@ import ChiTietSanPham from "./View/Chitietsp.jsx";
 import ThongTinKhachHang from "./Chucnang/Thongtinkh.jsx";
 //Admin
 import AdminLayout from "./Admin/Admin.jsx";
-import ProductManagement from "./Admin/Sanpham/Quanlysp.jsx";
+import ProductManagement from "./Admin/Sanpham/index.jsx";
 import OrderManagement from "./Admin/Donhang/Quanlydh.jsx";
 import UserManagement from "./Admin/Users/Quanlyngdung.jsx";
 import Dashboard from "./Admin/Dashboard/Dashboard.jsx";
 import Voucher from "./Admin/Voucher/index.jsx";
 import ChiTietSanPhamAdmin from "./Admin/Sanpham/Quanlychitietsp.jsx";
+import Danhmuc from "./Admin/Danhmuc/index.jsx";
 export default function App() {
   const location = useLocation();
 
@@ -67,6 +68,7 @@ export default function App() {
           <Route index element={<Dashboard />} />
           <Route path="products" element={<ProductManagement />} />
           <Route path="products/:id" element={<ChiTietSanPhamAdmin />} />
+          <Route path="categories" element={<Danhmuc />} />
           <Route path="voucher" element={<Voucher />} />
           <Route path="orders" element={<OrderManagement />} />
           <Route path="users" element={<UserManagement />} />

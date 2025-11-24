@@ -55,6 +55,19 @@ export default function AdminLayout() {
               <Package size={18} /> Sản phẩm
             </NavLink>
             <NavLink
+              to="/admin/categories"
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-3 py-2 rounded-lg font-semibold transition ${
+                  isActive
+                    ? "bg-cyan-100 text-cyan-700"
+                    : "text-gray-700 hover:bg-cyan-100 hover:text-cyan-700"
+                }`
+              }
+            >
+              <Package size={18} /> Danh mục
+            </NavLink>
+
+            <NavLink
               to="/admin/voucher"
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2 rounded-lg font-semibold transition ${
@@ -66,6 +79,7 @@ export default function AdminLayout() {
             >
               <Package size={18} /> Khuyến mãi
             </NavLink>
+
             <NavLink
               to="/admin/users"
               className={({ isActive }) =>

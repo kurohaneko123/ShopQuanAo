@@ -3,29 +3,6 @@ import React, { useEffect, useState } from "react";
 import { X, Trash2, Plus, Minus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-const SAMPLE_CART = [
-  {
-    id: "p1",
-    name: "Combo 2 áo mặc nhà bé gái",
-    sku: "1LA25W001-FP074-110",
-    price: 179000,
-    qty: 1,
-    size: "110",
-    color: "Tím",
-    img: "/img/sp1.jpg",
-  },
-  {
-    id: "p2",
-    name: "Áo thun promox flexline",
-    sku: "TPX-002",
-    price: 239000,
-    qty: 1,
-    size: "M",
-    color: "Đen",
-    img: "/img/sp2.jpg",
-  },
-];
-
 export default function CartSlidebar({ onClose }) {
   const navigate = useNavigate();
   const [cart, setCart] = useState([]);
@@ -49,12 +26,11 @@ export default function CartSlidebar({ onClose }) {
           color: it.color || "Trắng",
           size: it.size || "M",
           sku: it.sku || `SP-${it.id || it.masanpham || "001"}`,
-          img: it.img || it.image || it.hinhanh || "/img/placeholder.png",
+          img: it.img || it.hinhanh || "/img/placeholder.png",
         }));
-
         setCart(normalized);
       } else {
-        setCart(SAMPLE_CART);
+        setCart([]); // ⭐ GIỎ HÀNG RỖNG THÌ ĐỂ RỖNG — KHÔNG NHÉT SAMPLE CART
       }
     } catch (err) {
       console.error("Lỗi khi đọc localStorage cart:", err);

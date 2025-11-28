@@ -14,6 +14,7 @@ import ClassBanner from "./View/ClassBanner.jsx";
 import ChiTietSanPham from "./View/Chitietsp.jsx";
 //User
 import ThongTinKhachHang from "./Chucnang/Thongtinkh.jsx";
+import DonHang from "./Chucnang/DonHang.jsx";
 //Admin
 import AdminLayout from "./Admin/Admin.jsx";
 import ProductManagement from "./Admin/Sanpham/index.jsx";
@@ -52,6 +53,7 @@ export default function App() {
         <Route path="/all/:category" element={<TatCaSanPham />} />
         <Route path="/all/:gender" element={<TatCaSanPham />} />
         <Route path="/product/:id" element={<ChiTietSanPham />} />
+        <Route path="/donhang" element={<DonHang />} />
         <Route path="/lienhe" element={<LienHe />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/aolop-kyyeu" element={<AoLopKyYeuPage />} />

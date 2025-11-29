@@ -7,6 +7,9 @@ import {
     taoNguoiDung,
     timNguoiDungTheoEmail,
     kiemTraMatKhau,
+    capNhatThongTinModel,
+    layTatCaNguoiDung,
+    adminCapNhatNguoiDungModel
 } from "../models/nguoidungModel.js";
 
 dotenv.config();
@@ -178,5 +181,92 @@ export const datLaiMatKhau = async (req, res) => {
     } catch (error) {
         console.error("❌ Lỗi đặt lại mật khẩu:", error);
         res.status(500).json({ message: "Lỗi máy chủ khi đặt lại mật khẩu." });
+    }
+};
+
+//Sửa thông tin người dùng ( khách hàng )
+export const capNhatThongTinNguoiDung = async (req, res) => {
+    try {
+        //  LẤY ID TỪ TOKEN (THEO MIDDLEWARE CỦA ANH)
+        const maNguoiDung = req.nguoidung.id;
+
+        const { hoTen, soDienThoai, diaChi } = req.body;
+
+        // Nếu không có gì để cập nhật
+        if (!hoTen && !soDienThoai && !diaChi) {
+            return res.status(400).json({
+                message: "Không có dữ liệu nào để cập nhật!"
+            });
+        }
+
+        const ok = await capNhatThongTinModel(
+            maNguoiDung,
+            hoTen,
+            soDienThoai,
+            diaChi
+        );
+
+        if (!ok) {
+            return res.status(400).json({
+                message: "Không có trường hợp hợp lệ để cập nhật!"
+            });
+        }
+
+        return res.json({
+            message: "Cập nhật thông tin thành công!"
+        });
+
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({
+            message: "Lỗi server!",
+            error: err.message
+        });
+    }
+};
+//Lấy tất cả người dùng ( dashboard )
+export const layDanhSachNguoiDung = async (req, res) => {
+    try {
+        const data = await layTatCaNguoiDung();
+
+        res.json({
+            message: "Lấy danh sách người dùng thành công!",
+            total: data.length,
+            nguoidung: data,
+        });
+    } catch (error) {
+        console.error("❌ Lỗi lấy danh sách người dùng:", error);
+        res.status(500).json({ message: "Lỗi server!" });
+    }
+};
+
+//Cập nhật thông tin của người dùng ( admin )
+export const adminCapNhatNguoiDung = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const admin = req.nguoidung;
+
+        // Chỉ admin mới được dùng API này
+        if (admin.vaitro !== "admin") {
+            return res.status(403).json({
+                message: "Chỉ admin mới có quyền sửa thông tin người dùng!"
+            });
+        }
+
+        const { hoten, sodienthoai, diachi, email, vaitro, trangthai } = req.body;
+
+        const data = { hoten, sodienthoai, diachi, email, vaitro, trangthai };
+
+        const ok = await adminCapNhatNguoiDungModel(id, data);
+
+        return res.json({
+            message: "Admin đã cập nhật thông tin người dùng thành công!"
+        });
+
+    } catch (error) {
+        return res.status(400).json({
+            message: "Cập nhật thất bại!",
+            error: error.message
+        });
     }
 };

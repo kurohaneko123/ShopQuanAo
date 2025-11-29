@@ -24,3 +24,107 @@ export const timNguoiDungTheoEmail = async (email) => {
 export const kiemTraMatKhau = async (matkhauNhap, matkhauDB) => {
     return await bcrypt.compare(matkhauNhap, matkhauDB);
 };
+
+// CẬP NHẬT THÔNG TIN NGƯỜI DÙNG(User)
+export const capNhatThongTinModel = async (maNguoiDung, hoTen, soDienThoai, diaChi) => {
+    const fields = [];
+    const values = [];
+
+    if (hoTen) {
+        fields.push("hoten = ?");
+        values.push(hoTen);
+    }
+
+    if (soDienThoai) {
+        fields.push("sodienthoai = ?");
+        values.push(soDienThoai);
+    }
+
+    if (diaChi) {
+        fields.push("diachi = ?");
+        values.push(diaChi);
+    }
+
+    if (fields.length === 0) return false;
+
+    values.push(maNguoiDung);
+
+    const sql = `
+        UPDATE nguoidung
+        SET ${fields.join(", ")}, ngaycapnhat = NOW()
+        WHERE manguoidung = ?
+    `;
+
+    // ⭐ Dùng pool (KHÔNG PHẢI db)
+    await pool.query(sql, values);
+
+    return true;
+};
+//Lấy tất cả danh sách người dùng (dashboard)
+export const layTatCaNguoiDung = async () => {
+    const [rows] = await pool.query("SELECT * FROM nguoidung ORDER BY manguoidung DESC");
+    return rows;
+};
+
+//Cập nhật thông tin người dùng(Admin)
+export const adminCapNhatNguoiDungModel = async (id, data) => {
+    const fields = [];
+    const values = [];
+
+    // Các trường admin được phép sửa
+    if (data.hoten) {
+        fields.push("hoten = ?");
+        values.push(data.hoten);
+    }
+
+    if (data.sodienthoai) {
+        fields.push("sodienthoai = ?");
+        values.push(data.sodienthoai);
+    }
+
+    if (data.diachi) {
+        fields.push("diachi = ?");
+        values.push(data.diachi);
+    }
+
+    if (data.vaitro) {
+        fields.push("vaitro = ?");
+        values.push(data.vaitro);
+    }
+
+    if (data.trangthai) {
+        fields.push("trangthai = ?");
+        values.push(data.trangthai);
+    }
+
+    if (data.email) {
+        // Kiểm tra email chưa tồn tại
+        const [check] = await pool.query(
+            "SELECT * FROM nguoidung WHERE email = ? AND manguoidung != ?",
+            [data.email, id]
+        );
+
+        if (check.length > 0) {
+            throw new Error("Email mới đã tồn tại!");
+        }
+
+        fields.push("email = ?");
+        values.push(data.email);
+    }
+
+    if (fields.length === 0) {
+        throw new Error("Không có dữ liệu hợp lệ để cập nhật!");
+    }
+
+    values.push(id);
+
+    const sql = `
+        UPDATE nguoidung
+        SET ${fields.join(", ")}, ngaycapnhat = NOW()
+        WHERE manguoidung = ?
+    `;
+
+    await pool.query(sql, values);
+
+    return true;
+};

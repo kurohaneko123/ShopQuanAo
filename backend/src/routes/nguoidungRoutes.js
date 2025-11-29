@@ -4,7 +4,10 @@ import {
     dangKyNguoiDung,
     layThongTinCaNhan,
     guiMaXacNhan,
-    datLaiMatKhau
+    datLaiMatKhau,
+    capNhatThongTinNguoiDung,
+    layDanhSachNguoiDung,
+    adminCapNhatNguoiDung
 } from "../controllers/nguoidungController.js";
 import { xacthucToken } from "../middleware/xacthuctoken.js";
 
@@ -20,4 +23,12 @@ router.get("/thongtin", xacthucToken, layThongTinCaNhan);
 router.post("/quenmatkhau", guiMaXacNhan);
 router.post("/datlaimatkhau", datLaiMatKhau);
 
+//API cập nhật thông tin người dùng (user)
+router.put("/capnhat", xacthucToken, capNhatThongTinNguoiDung);
+
+//API lấy danh sách người dùng ( dashboard admin)
+router.get("/danhsach", xacthucToken, layDanhSachNguoiDung);
+
+//API cập nhật thông tin người dùng (admin)
+router.put("/admin/sua/:id", xacthucToken, adminCapNhatNguoiDung);
 export default router;

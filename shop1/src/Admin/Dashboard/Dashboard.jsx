@@ -6,6 +6,8 @@ export default function Dashboard() {
   const [orders, setOrders] = useState([]);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [users, setUsers] = useState([]);
+  const API_USER = "http://localhost:5000/api/nguoidung/danhsach";
 
   const API_ORDER = "http://localhost:5000/api/donhang";
   const API_PRODUCT = "http://localhost:5000/api/sanpham";
@@ -13,15 +15,32 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchAll = async () => {
       try {
-        const [o, p] = await Promise.all([
-          axios.get(API_ORDER),
-          axios.get(API_PRODUCT),
+        const rawToken = localStorage.getItem("token");
+
+        if (!rawToken || rawToken === "null" || rawToken === "undefined") {
+          console.log("❌ Không có token — dừng dashboard");
+          return;
+        }
+
+        const token = rawToken.trim();
+
+        const [o, p, u] = await Promise.all([
+          axios.get(API_ORDER, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get(API_PRODUCT, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get(API_USER, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
         ]);
 
         setOrders(o.data.data || []);
         setProducts(p.data || []);
+        setUsers(u.data.nguoidung || []);
       } catch (err) {
-        console.error("Lỗi Dashboard:", err);
+        console.error("Dashboard error:", err);
       } finally {
         setLoading(false);
       }
@@ -35,6 +54,7 @@ export default function Dashboard() {
   // ==== TÍNH TOÁN ====
   const totalOrder = orders.length;
   const totalProduct = products.length;
+  const totalUser = users.length;
 
   const totalRevenue = orders.reduce(
     (sum, o) => sum + Number(o.tongthanhtoan || 0),
@@ -83,7 +103,8 @@ export default function Dashboard() {
       <h1 className="text-3xl font-extrabold mb-8">Dashboard Tổng Quan</h1>
 
       {/* ===== SUMMARY CARDS ===== */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        {/* Sản phẩm */}
         <div className="bg-white rounded-xl p-6 flex items-center gap-4 shadow hover:shadow-lg transition">
           <div className="p-3 rounded-lg bg-cyan-100 text-cyan-700">
             <Package />
@@ -94,6 +115,7 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* Đơn hàng */}
         <div className="bg-white rounded-xl p-6 flex items-center gap-4 shadow hover:shadow-lg transition">
           <div className="p-3 rounded-lg bg-green-100 text-green-700">
             <DollarSign />
@@ -104,6 +126,7 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* Doanh thu */}
         <div className="bg-white rounded-xl p-6 flex items-center gap-4 shadow hover:shadow-lg transition">
           <div className="p-3 rounded-lg bg-purple-100 text-purple-700">
             <TrendingUp />
@@ -113,6 +136,17 @@ export default function Dashboard() {
             <h3 className="text-2xl font-bold">
               {totalRevenue.toLocaleString()}
             </h3>
+          </div>
+        </div>
+
+        {/* 🟦 Người dùng */}
+        <div className="bg-white rounded-xl p-6 flex items-center gap-4 shadow hover:shadow-lg transition">
+          <div className="p-3 rounded-lg bg-blue-100 text-blue-700">
+            <BarChart2 />
+          </div>
+          <div>
+            <p className="text-sm text-gray-500">Người dùng</p>
+            <h3 className="text-2xl font-bold">{totalUser}</h3>
           </div>
         </div>
       </div>

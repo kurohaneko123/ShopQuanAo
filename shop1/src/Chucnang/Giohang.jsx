@@ -18,23 +18,27 @@ export default function CartSlidebar({ onClose }) {
       const stored = localStorage.getItem("cart");
       if (stored) {
         const parsed = JSON.parse(stored);
+
         const normalized = parsed.map((it) => ({
-          id: it.id || it.masanpham || `sp-${Date.now()}`,
-          name: it.name || it.tensanpham || "Sản phẩm không tên",
-          price: Number(it.price) || 0,
-          qty: it.qty || 1,
-          color: it.color || "Trắng",
-          size: it.size || "M",
-          sku: it.sku || `SP-${it.id || it.masanpham || "001"}`,
-          img: it.img || it.hinhanh || "/img/placeholder.png",
+          mabienthe: Number(it.mabienthe), // chỉ dùng mabienthe
+
+          tensanpham: it.tensanpham || it.name || "Sản phẩm",
+          giagoc: Number(it.giagoc), // GIÁ LẤY TỪ it.giagoc
+          giakhuyenmai: Number(it.giakhuyenmai), // GIÁ KM LẤY TỪ it.giakhuyenmai
+          soluong: Number(it.soluong || it.qty || 1),
+          mausac: it.mausac || it.color || "",
+          size: it.size || "",
+          hinhanh: it.hinhanh || it.img || "/img/placeholder.png",
+          sku: it.sku,
         }));
+
         setCart(normalized);
       } else {
-        setCart([]); // ⭐ GIỎ HÀNG RỖNG THÌ ĐỂ RỖNG — KHÔNG NHÉT SAMPLE CART
+        setCart([]);
       }
     } catch (err) {
       console.error("Lỗi khi đọc localStorage cart:", err);
-      setCart(SAMPLE_CART);
+      setCart([]);
     }
   }, []);
 
@@ -44,21 +48,24 @@ export default function CartSlidebar({ onClose }) {
     }
   }, [cart]);
 
-  const updateQty = (id, delta) => {
+  const updateQty = (variantId, delta) => {
     setCart((prev) =>
-      prev
-        .map((it) =>
-          it.id === id ? { ...it, qty: Math.max(1, it.qty + delta) } : it
-        )
-        .filter(Boolean)
+      prev.map((it) =>
+        it.mabienthe === variantId
+          ? { ...it, soluong: Math.max(1, it.soluong + delta) }
+          : it
+      )
     );
   };
 
-  const removeItem = (id) => {
-    setCart((prev) => prev.filter((it) => it.id !== id));
+  const removeItem = (variantId) => {
+    setCart((prev) => prev.filter((it) => it.mabienthe !== variantId));
   };
 
-  const subtotal = cart.reduce((s, it) => s + it.price * it.qty, 0);
+  const subtotal = cart.reduce(
+    (s, it) => s + Number(it.giakhuyenmai) * Number(it.soluong),
+    0
+  );
 
   const computeDiscount = () => {
     if (!appliedCoupon) return 0;
@@ -78,7 +85,7 @@ export default function CartSlidebar({ onClose }) {
   const shippingFee = () => {
     if (appliedCoupon?.type === "freeship") return 0;
     if (subtotal - computeDiscount() >= 500000) return 0;
-    return subtotal === 0 ? 0 : 30000;
+    return subtotal === 0 ? 0 : 20000;
   };
 
   const discountValue = computeDiscount();
@@ -284,16 +291,17 @@ export default function CartSlidebar({ onClose }) {
               </div>
             )}
 
-            {cart.map((it) => (
-              <div key={it.id} className="flex gap-3 items-start">
-                <div className="w-20 h-20 bg-gray-100 rounded-md flex-shrink-0 flex items-center justify-center overflow-hidden border">
+            {cart.map((it, index) => (
+              <div key={it.mabienthe} className="flex gap-3 items-start">
+                {/* Ảnh */}
+                <div className="w-20 h-20 bg-gray-100 rounded-md overflow-hidden border flex-center">
                   <img
-                    src={it.img || "/img/placeholder.png"}
-                    alt={it.name}
+                    src={it.hinhanh || "/img/placeholder.png"}
                     onError={(e) => {
-                      e.currentTarget.onerror = null;
-                      e.currentTarget.src = "/img/placeholder.png";
+                      e.target.onerror = null;
+                      e.target.src = "/img/placeholder.png";
                     }}
+                    alt={it.tensanpham}
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -301,42 +309,48 @@ export default function CartSlidebar({ onClose }) {
                 <div className="flex-1">
                   <div className="flex justify-between items-start">
                     <div>
-                      <h4 className="text-sm font-medium">{it.name}</h4>
+                      <h4 className="text-sm font-medium">{it.tensanpham}</h4>
                       <p className="text-xs text-gray-500 mt-1">
-                        {it.sku} • {it.color} • {it.size}
+                        {it.sku} • {it.mausac} • {it.size}
                       </p>
                     </div>
 
                     <button
-                      onClick={() => removeItem(it.id)}
+                      onClick={() => removeItem(it.mabienthe)}
                       className="text-gray-400 hover:text-red-600 p-1"
-                      title="Xóa"
                     >
                       <Trash2 size={16} />
                     </button>
                   </div>
 
-                  <div className="flex items-center justify-between mt-3">
+                  {/* Số lượng */}
+                  <div className="flex justify-between items-center mt-3">
                     <div className="flex items-center gap-2">
                       <button
-                        onClick={() => updateQty(it.id, -1)}
+                        onClick={() => updateQty(it.mabienthe, -1)}
                         className="p-1 border rounded-md hover:bg-gray-100"
                       >
                         <Minus size={14} />
                       </button>
+
                       <div className="px-3 py-1 border rounded text-sm">
-                        {it.qty}
+                        {it.soluong}
                       </div>
+
                       <button
-                        onClick={() => updateQty(it.id, +1)}
+                        onClick={() => updateQty(it.mabienthe, +1)}
                         className="p-1 border rounded-md hover:bg-gray-100"
                       >
                         <Plus size={14} />
                       </button>
                     </div>
 
+                    {/* Giá */}
                     <div className="text-sm font-semibold text-red-600">
-                      {(it.price * it.qty).toLocaleString("vi-VN")} đ
+                      {(
+                        Number(it.giakhuyenmai) * Number(it.soluong)
+                      ).toLocaleString("vi-VN")}{" "}
+                      đ
                     </div>
                   </div>
                 </div>

@@ -16,29 +16,49 @@ export default function ChiTietSanPham() {
 
   const BASE_URL = "http://localhost:5000";
   /* ====== 🛒 Hàm thêm sản phẩm vào giỏ hàng ====== */
-  const handleAddToCart = (product) => {
+  const handleAddToCart = () => {
     try {
       const stored = JSON.parse(localStorage.getItem("cart")) || [];
 
-      const existing = stored.find((item) => item.id === product.id);
+      // 👉 Lấy đúng variant theo màu + size
+      const variant = variants.find(
+        (v) => v.tenmausac === selectedColor && v.tenkichthuoc === selectedSize
+      );
+
+      if (!variant) {
+        alert("Không tìm thấy biến thể sản phẩm!");
+        return;
+      }
+
+      const newItem = {
+        mabienthe: variant.mabienthe,
+        tensanpham: product.tensanpham,
+
+        // GIÁ ĐÚNG CHUẨN TỪ BACKEND
+        giagoc: Number(variant.giaban),
+        giakhuyenmai: Number(variant.giaban),
+
+        soluong: 1,
+        mausac: variant.tenmausac,
+        size: variant.tenkichthuoc,
+        hinhanh: variant.hinhanh?.[0] || product.anhdaidien,
+        sku: variant.sku,
+      };
+
+      // 👉 Nếu đã có cùng mabienthe thì + số lượng
+      const existing = stored.find((i) => i.mabienthe === newItem.mabienthe);
+
       if (existing) {
-        existing.qty += 1;
+        existing.soluong += 1;
       } else {
-        stored.push({
-          id: product.id,
-          name: product.name,
-          price: product.price,
-          qty: 1,
-          color: "Trắng",
-          size: "M",
-          img: product.img || "",
-        });
+        stored.push(newItem);
       }
 
       localStorage.setItem("cart", JSON.stringify(stored));
 
+      // Toast
       const toast = document.createElement("div");
-      toast.innerText = `🛒 Đã thêm "${product.name}" vào giỏ hàng!`;
+      toast.innerText = `🛒 Đã thêm "${product.tensanpham}" (${newItem.mausac}, ${newItem.size})`;
       toast.className =
         "fixed bottom-6 right-6 bg-black text-white px-4 py-2 rounded-lg shadow-lg z-[9999]";
       document.body.appendChild(toast);
@@ -47,6 +67,7 @@ export default function ChiTietSanPham() {
       console.error("Lỗi khi thêm vào giỏ hàng:", error);
     }
   };
+
   // 🧠 Lấy chi tiết sản phẩm + biến thể
   useEffect(() => {
     const fetchProduct = async () => {
@@ -222,14 +243,7 @@ export default function ChiTietSanPham() {
 
               {/* Add to cart */}
               <button
-                onClick={() =>
-                  handleAddToCart({
-                    id: product.masanpham,
-                    name: product.tensanpham,
-                    price: product.giaban || 150000, // hoặc tùy backend
-                    img: product.anhdaidien,
-                  })
-                }
+                onClick={handleAddToCart}
                 className="flex items-center justify-center gap-2 bg-black text-white py-4 w-full rounded-xl font-semibold hover:bg-gray-800 transition"
               >
                 <ShoppingBag size={20} />

@@ -15,6 +15,7 @@ import ChiTietSanPham from "./View/Chitietsp.jsx";
 //User
 import ThongTinKhachHang from "./Chucnang/Thongtinkh.jsx";
 import DonHang from "./Chucnang/DonHang.jsx";
+import ZaloPayPage from "./Chucnang/Zalopay.jsx";
 //Admin
 import AdminLayout from "./Admin/Admin.jsx";
 import ProductManagement from "./Admin/Sanpham/index.jsx";
@@ -56,6 +57,7 @@ export default function App() {
         <Route path="/donhang" element={<DonHang />} />
         <Route path="/lienhe" element={<LienHe />} />
         <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/zalopay" element={<ZaloPayPage />} />
         <Route path="/aolop-kyyeu" element={<AoLopKyYeuPage />} />
 
         {/* ====== TRANG ADMIN ====== */}

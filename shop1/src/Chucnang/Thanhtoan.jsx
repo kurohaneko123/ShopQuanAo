@@ -8,23 +8,6 @@ import axios from "axios";
  *    - Nếu format khác thì anh chỉnh lại trong hàm này
  * ===================================================== */
 // Lấy biến thể đúng size + màu từ backend
-const fetchVariantId = async (productId, size, color) => {
-  try {
-    const res = await axios.get(`${API_SANPHAM}/${productId}`);
-    const variants = res.data.bienthe.find((v) => v.mabienthe === variantId);
-
-    const match = variants.find(
-      (v) =>
-        String(v.kichthuoc).toLowerCase() === String(size).toLowerCase() &&
-        String(v.mausac).toLowerCase() === String(color).toLowerCase()
-    );
-
-    return match ? match.mabienthe : null;
-  } catch (err) {
-    console.error("Lỗi fetch biến thể:", err);
-    return null;
-  }
-};
 
 const fetchVariantBySku = async (sku) => {
   if (!sku) return null;
@@ -77,16 +60,15 @@ export default function Checkout() {
       const parsed = JSON.parse(stored);
 
       const normalized = parsed.map((it) => ({
-        // giữ lại sku để convert sang mabienthe
-        sku: it.sku,
-        mabienthe: it.mabienthe || it.id || null,
-        tensanpham: it.tensanpham || it.name || "Sản phẩm",
-        giakhuyenmai: Number(it.giakhuyenmai || it.price || 0),
+        mabienthe: it.mabienthe, // phải có từ lúc Add to Cart
+        tensanpham: it.tensanpham || it.name,
+        giagoc: Number(it.giagoc || it.price),
+        giakhuyenmai: Number(it.giakhuyenmai || it.price),
         soluong: Number(it.soluong || it.qty || 1),
-        mausac: it.mausac || it.color || "",
-        size: it.size || "",
-        hinhanh: it.hinhanh || it.img || "/img/placeholder.png",
-        giagoc: Number(it.giagoc || it.price || 0),
+        mausac: it.mausac || it.color,
+        size: it.size,
+        hinhanh: it.hinhanh || it.img,
+        sku: it.sku,
       }));
 
       setCart(normalized);
@@ -134,6 +116,12 @@ export default function Checkout() {
    *    - Có await Promise.all map cart
    *    - Chắc chắn không gửi null cho mabienthe, tennguoinhan, v.v.
    * ===================================================== */
+  /* =====================================================
+   * 6. GỬI ĐƠN HÀNG + ZALOPAY
+   * ===================================================== */
+  /* =====================================================
+   * 6. GỬI ĐƠN HÀNG + ZALOPAY
+   * ===================================================== */
   const handleOrder = async (e) => {
     e.preventDefault();
 
@@ -146,6 +134,7 @@ export default function Checkout() {
 
       if (!validateForm()) return;
 
+      // ===== CHUẨN BỊ DỮ LIỆU ĐƠN HÀNG =====
       const payload = {
         manguoidung: user.manguoidung,
         tennguoinhan: formData.tennguoinhan.trim(),
@@ -155,7 +144,6 @@ export default function Checkout() {
         donvivanchuyen: formData.donvivanchuyen,
         hinhthucthanhtoan: formData.hinhthucthanhtoan,
 
-        // ⭐ THÊM CHO ĐÚNG VOUCHER
         magiamgia: coupon?.code || null,
         giamgia: discount,
 
@@ -163,24 +151,72 @@ export default function Checkout() {
         phivanchuyen: shippingCost,
         tongthanhtoan: total,
 
-        danhsach: await Promise.all(
-          cart.map(async (item) => ({
-            mabienthe: await fetchVariantId(item.id, item.size, item.color),
-            soluong: item.qty,
-            giagoc: item.price,
-            giakhuyenmai: item.price,
-          }))
-        ),
+        danhsach: cart.map((item) => ({
+          mabienthe: item.mabienthe,
+          soluong: item.soluong,
+          giagoc: item.giagoc,
+          giakhuyenmai: item.giakhuyenmai,
+        })),
       };
 
-      // Lưu thử payload để debug nếu cần
-      localStorage.setItem("checkoutPayload", JSON.stringify(payload));
+      // ===== 1) GỬI ĐƠN LÊN BACKEND =====
+      const res = await axios.post(
+        "http://localhost:5000/api/donhang/them",
+        payload
+      );
 
-      await axios.post("http://localhost:5000/api/donhang/them", payload);
+      const orderId = res.data?.madonhang;
+      if (!orderId) {
+        alert("Không lấy được mã đơn hàng!");
+        return;
+      }
 
-      alert("Đặt hàng thành công!");
-      localStorage.removeItem("cart");
-      navigate("/donhang");
+      // ============================
+      // ======= 2) COD ============
+      // ============================
+      if (formData.hinhthucthanhtoan === "COD") {
+        alert("Đặt hàng thành công!");
+        localStorage.removeItem("cart");
+        navigate("/donhang");
+        return;
+      }
+
+      // ============================
+      // ====== 3) ZALOPAY =========
+      // ============================
+      if (formData.hinhthucthanhtoan === "ZALOPAY") {
+        try {
+          const zaloRes = await axios.post(
+            "http://localhost:5000/api/payment/zalopay/create",
+            {
+              amount: total, // FE gửi số tiền FE muốn
+              orderId: orderId, // FE gửi mã đơn vừa tạo
+            }
+          );
+
+          // Bắt tất cả kiểu trả về có thể xảy ra
+          const payUrl =
+            zaloRes.data?.order_url ||
+            zaloRes.data?.orderurl ||
+            zaloRes.data?.zp_trans_url ||
+            zaloRes.data?.orderUrl;
+
+          if (!payUrl) {
+            console.error("BE trả về:", zaloRes.data);
+            alert("Không lấy được link thanh toán ZaloPay!");
+            return;
+          }
+
+          // Xóa giỏ → chuyển sang trang thanh toán ZaloPay
+          localStorage.removeItem("cart");
+          window.location.href = payUrl;
+          return;
+        } catch (error) {
+          console.error("ZaloPay error:", error);
+          alert("Không thể tạo thanh toán ZaloPay!");
+          return;
+        }
+      }
     } catch (err) {
       console.error("Lỗi tạo đơn:", err);
       alert("Không thể tạo đơn hàng!");

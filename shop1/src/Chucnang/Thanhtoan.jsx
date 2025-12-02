@@ -40,6 +40,17 @@ const fetchVariantBySku = async (sku) => {
 
 export default function Checkout() {
   const navigate = useNavigate();
+  const [discount, setDiscount] = useState(0);
+  const [coupon, setCoupon] = useState(null);
+
+  useEffect(() => {
+    const payload = localStorage.getItem("checkoutPayload");
+    if (payload) {
+      const data = JSON.parse(payload);
+      setDiscount(data.totals?.discountValue || 0);
+      setCoupon(data.coupon || null);
+    }
+  }, []);
 
   /* =====================================================
    * 2. STATE FORM – KHỞI TẠO KHÔNG BỊ NULL
@@ -93,7 +104,7 @@ export default function Checkout() {
   }, 0);
 
   const shippingCost = formData.donvivanchuyen === "Giao nhanh" ? 40000 : 20000;
-  const total = subtotal + shippingCost;
+  const total = Math.max(0, subtotal - discount + shippingCost);
 
   /* =====================================================
    * 5. VALIDATE FORM – KHÔNG ĐỂ GIÁ TRỊ RỖNG / NULL
@@ -143,6 +154,11 @@ export default function Checkout() {
         ghichu: formData.ghichu.trim(),
         donvivanchuyen: formData.donvivanchuyen,
         hinhthucthanhtoan: formData.hinhthucthanhtoan,
+
+        // ⭐ THÊM CHO ĐÚNG VOUCHER
+        magiamgia: coupon?.code || null,
+        giamgia: discount,
+
         tongtien: subtotal,
         phivanchuyen: shippingCost,
         tongthanhtoan: total,
@@ -347,8 +363,8 @@ export default function Checkout() {
           ))}
 
           <div className="flex justify-between text-sm mb-2">
-            <span>Tạm tính:</span>
-            <span>{subtotal.toLocaleString()}đ</span>
+            <span>Giảm giá:</span>
+            <span className="text-red-600">-{discount.toLocaleString()}đ</span>
           </div>
 
           <div className="flex justify-between text-sm mb-2">

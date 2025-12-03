@@ -196,36 +196,54 @@ export default function CartSlidebar({ onClose }) {
   // =================== UI ===================
 
   return (
-    <div className="fixed inset-0 z-[999]">
+    <div className="fixed inset-0 z-[999] flex justify-end">
+      {/* LAYER MỜ */}
       <div
-        className="absolute inset-0 bg-black/30"
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
         onClick={() => onClose && onClose()}
       />
 
-      <aside className="absolute right-0 top-0 h-full w-full md:w-[420px] bg-white shadow-2xl overflow-auto">
-        <div className="p-4 border-b flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Giỏ hàng ({cart.length})</h3>
+      {/* SLIDE BAR */}
+      <aside
+        className="
+        fixed top-[20px] right-[10px]
+        h-[95vh] w-full md:w-[420px]
+        bg-white/90 backdrop-blur-xl
+        rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.2)]
+        border border-gray-200
+        animate-slideIn
+        overflow-auto
+        z-[1000]
+      "
+      >
+        {/* HEADER */}
+        <div className="p-4 border-b bg-white/70 backdrop-blur-xl rounded-t-2xl flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-gray-800">
+            Giỏ hàng ({cart.length})
+          </h3>
+
           <button
             onClick={() => onClose && onClose()}
-            className="p-2 rounded-full hover:bg-gray-100"
+            className="p-2 rounded-full hover:bg-gray-100 transition"
           >
             <X size={18} />
           </button>
         </div>
 
+        {/* BODY */}
         <div className="p-4 space-y-4">
-          {/* coupon */}
-          <div className="bg-gray-50 p-3 rounded-md">
+          {/* ==== COUPON BOX ==== */}
+          <div className="bg-gray-50/80 backdrop-blur-sm p-3 rounded-xl border border-gray-200">
             <div className="flex items-center gap-2">
               <input
                 value={coupon}
                 onChange={(e) => setCoupon(e.target.value)}
-                className="flex-1 border rounded-md px-3 py-2 outline-none"
+                className="flex-1 border rounded-lg px-3 py-2 outline-none bg-white"
                 placeholder="Nhập mã ưu đãi"
               />
               <button
                 onClick={applyCoupon}
-                className="bg-black text-white px-3 py-2 rounded-md"
+                className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition"
               >
                 Áp dụng
               </button>
@@ -249,41 +267,9 @@ export default function CartSlidebar({ onClose }) {
             )}
 
             {error && <div className="mt-2 text-sm text-red-600">{error}</div>}
-
-            {/*    GỢI Ý MÃ GIẢM GIÁ  */}
-            {suggested.length > 0 && (
-              <div className="mt-3 bg-blue-50 p-3 rounded-md border border-blue-200">
-                <div className="text-sm font-semibold text-blue-700 mb-2">
-                  Gợi ý mã giảm giá phù hợp
-                </div>
-
-                <div className="space-y-2">
-                  {suggested.map((v) => (
-                    <div
-                      key={v.magiamgia}
-                      onClick={() => setCoupon(v.magiamgia)}
-                      className="p-2 bg-white rounded-md shadow-sm border cursor-pointer hover:bg-blue-100 transition"
-                    >
-                      <div className="font-bold">{v.magiamgia}</div>
-                      <div className="text-sm text-gray-600">
-                        {v.loaikhuyenmai === "%"
-                          ? `Giảm ${v.giatrigiam}%`
-                          : `Giảm ${v.giatrigiam.toLocaleString("vi-VN")}đ`}
-                        {v.giantoida
-                          ? ` • tối đa ${v.giantoida.toLocaleString("vi-VN")}đ`
-                          : ""}
-                      </div>
-                      <div className="text-xs text-gray-400">
-                        Đơn tối thiểu: {v.dontoithieu.toLocaleString("vi-VN")}đ
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
 
-          {/* items */}
+          {/* DANH SÁCH SẢN PHẨM */}
           <div className="space-y-3">
             {cart.length === 0 && (
               <div className="text-center text-gray-500 py-12">
@@ -291,17 +277,14 @@ export default function CartSlidebar({ onClose }) {
               </div>
             )}
 
-            {cart.map((it, index) => (
-              <div key={it.mabienthe} className="flex gap-3 items-start">
-                {/* Ảnh */}
-                <div className="w-20 h-20 bg-gray-100 rounded-md overflow-hidden border flex-center">
+            {cart.map((it) => (
+              <div
+                key={it.mabienthe}
+                className="flex gap-3 items-start bg-white/80 p-3 rounded-xl border backdrop-blur-sm"
+              >
+                <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden border">
                   <img
                     src={it.hinhanh || "/img/placeholder.png"}
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = "/img/placeholder.png";
-                    }}
-                    alt={it.tensanpham}
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -309,8 +292,8 @@ export default function CartSlidebar({ onClose }) {
                 <div className="flex-1">
                   <div className="flex justify-between items-start">
                     <div>
-                      <h4 className="text-sm font-medium">{it.tensanpham}</h4>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <h4 className="text-sm font-semibold">{it.tensanpham}</h4>
+                      <p className="text-xs text-gray-500">
                         {it.sku} • {it.mausac} • {it.size}
                       </p>
                     </div>
@@ -323,7 +306,6 @@ export default function CartSlidebar({ onClose }) {
                     </button>
                   </div>
 
-                  {/* Số lượng */}
                   <div className="flex justify-between items-center mt-3">
                     <div className="flex items-center gap-2">
                       <button
@@ -333,7 +315,7 @@ export default function CartSlidebar({ onClose }) {
                         <Minus size={14} />
                       </button>
 
-                      <div className="px-3 py-1 border rounded text-sm">
+                      <div className="px-3 py-1 border rounded-md text-sm">
                         {it.soluong}
                       </div>
 
@@ -345,11 +327,10 @@ export default function CartSlidebar({ onClose }) {
                       </button>
                     </div>
 
-                    {/* Giá */}
-                    <div className="text-sm font-semibold text-red-600">
-                      {(
-                        Number(it.giakhuyenmai) * Number(it.soluong)
-                      ).toLocaleString("vi-VN")}{" "}
+                    <div className="text-sm font-bold text-red-600">
+                      {(Number(it.giakhuyenmai) * it.soluong).toLocaleString(
+                        "vi-VN"
+                      )}{" "}
                       đ
                     </div>
                   </div>
@@ -358,45 +339,40 @@ export default function CartSlidebar({ onClose }) {
             ))}
           </div>
 
-          {/* summary */}
+          {/* TỔNG KẾT */}
           <div className="border-t pt-3 space-y-2">
             <div className="flex justify-between text-sm">
               <span>Tạm tính</span>
               <span>{subtotal.toLocaleString("vi-VN")} đ</span>
             </div>
+
             <div className="flex justify-between text-sm">
               <span>Giảm giá</span>
               <span className="text-red-600">
                 -{discountValue.toLocaleString("vi-VN")} đ
               </span>
             </div>
+
             <div className="flex justify-between text-sm">
               <span>Phí vận chuyển</span>
               <span>{shipping.toLocaleString("vi-VN")} đ</span>
             </div>
 
-            <div className="flex justify-between items-center pt-3 border-t mt-2">
+            <div className="flex justify-between items-center pt-3 border-t">
               <div>
-                <div className="text-sm text-gray-500">Tổng thanh toán</div>
-                <div className="text-lg font-bold text-red-600">
+                <div className="text-xs text-gray-500">Tổng thanh toán</div>
+                <div className="text-xl font-bold text-red-600">
                   {total.toLocaleString("vi-VN")} đ
                 </div>
               </div>
 
-              <div className="w-36">
-                <button
-                  onClick={handleCheckout}
-                  className="w-full bg-red-600 text-white py-2 rounded-md font-medium hover:bg-red-700 transition"
-                >
-                  THANH TOÁN
-                </button>
-              </div>
+              <button
+                onClick={handleCheckout}
+                className="bg-red-600 text-white px-5 py-2 rounded-lg hover:bg-red-700 transition font-medium"
+              >
+                THANH TOÁN
+              </button>
             </div>
-          </div>
-
-          <div className="text-xs text-gray-500">
-            * Miễn phí vận chuyển cho đơn hàng từ 500.000 đ hoặc sử dụng mã
-            FREESHIP
           </div>
         </div>
       </aside>

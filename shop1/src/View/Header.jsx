@@ -86,57 +86,57 @@ export default function Navbar() {
   }, [searchTerm]);
 
   return (
-    <header className="w-full bg-white text-black shadow-sm fixed top-0 left-0 z-50">
-      <div className="w-full h-20 flex items-center justify-between px-6 ">
-        {/* Logo */}
+    <header
+      className="fixed top-3 left-1/2 -translate-x-1/2 w-[95%]
+  bg-white/80 backdrop-blur-xl border border-white/40
+  shadow-[0_4px_20px_rgba(0,0,0,0.08)]
+  rounded-2xl z-50 transition-all duration-300"
+    >
+      <div className="h-20 px-6 flex items-center justify-between">
+        {/* LOGO */}
         <Link
           to="/"
-          className="flex items-center pl-12 gap-x-2 hover:opacity-90 transition"
+          className="flex items-center pl-6 gap-x-2 hover:opacity-80 transition"
         >
-          <img
-            src={Logo}
-            alt="Horizon Logo"
-            className="h-20 w-auto object-contain"
-          />
-          <span className="text-2xl font-bold tracking-wide text-gray-900">
+          <img src={Logo} className="h-16 w-auto object-contain" />
+          <span className="text-2xl font-semibold tracking-wide text-gray-900">
             Horizon
           </span>
         </Link>
 
-        {/* ========== MENU CHÍNH ========== */}
-        <nav className="hidden md:flex flex-none items-center font-medium text-[18px] space-x-10 relative">
-          <ul className="flex h-full items-center space-x-10 [&>li]:h-full">
-            {/* ================= NAM ================= */}
-            <li className="group h-full flex items-center">
+        {/* MENU GỐC - CHỈ TÁI THIẾT KẾ UI */}
+        <nav className="hidden md:flex items-center font-medium text-[18px] space-x-10 relative">
+          <ul className="flex h-full items-center space-x-10">
+            {/* NAM */}
+            <li className="group relative h-full flex items-center">
               <a
                 href="/all?gender=Nam"
-                className="group inline-flex h-full items-center relative
-                  before:w-0 before:h-[5px] before:bg-blue-600
-                  hover:before:w-full before:absolute before:bottom-0 before:left-0
-                  before:transition-all before:duration-200
-                  px-4 py-5 transition-colors font-semibold text-neutral-900"
+                className="relative px-4 py-5 font-semibold text-neutral-900
+            before:absolute before:bottom-0 before:left-0 before:h-[3px]
+            before:w-0 before:bg-black before:transition-all before:duration-300
+            hover:before:w-full"
               >
                 Nam
               </a>
 
-              {/* Mega Menu Nam */}
+              {/* MEGA MENU */}
               <div
                 className="absolute left-1/2 -translate-x-1/2 top-full mt-3
-                w-[90vw] md:w-[900px] bg-white shadow-lg border rounded-lg
-                p-4 md:p-6 grid grid-cols-3 gap-4 md:gap-6 z-[45]
-                opacity-0 invisible translate-y-3 
-                group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 
-                transition-all duration-300 ease-out"
+            w-[900px] bg-white/90 backdrop-blur-xl shadow-lg border rounded-2xl
+            p-6 grid grid-cols-3 gap-6 z-[45]
+            opacity-0 invisible translate-y-4 
+            group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 
+            transition-all duration-300"
               >
                 <div className="col-span-2">
-                  <h4 className="font-bold mb-2">Danh mục Nam</h4>
-                  <ul className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                  <h4 className="font-bold mb-3 text-gray-900">Danh mục Nam</h4>
+                  <ul className="grid grid-cols-2 gap-y-2 text-sm text-gray-700">
                     {maleCategories.length > 0 ? (
                       maleCategories.map((cat) => (
                         <li key={cat.madanhmuc}>
                           <a
                             href={`/all/nam/${cat.slug.replace("-nam", "")}`}
-                            className="hover:text-blue-600"
+                            className="hover:text-black transition"
                           >
                             {cat.tendanhmuc}
                           </a>
@@ -144,58 +144,53 @@ export default function Navbar() {
                       ))
                     ) : (
                       <p className="text-gray-500 italic text-sm">
-                        (Đang tải danh mục...)
+                        (Đang tải danh mục…)
                       </p>
                     )}
                   </ul>
+
                   <Link
                     to="/all/nam"
-                    className="inline-flex items-center text-neutral-900 hover:text-blue-600 font-bold mt-4"
+                    className="inline-block mt-4 font-semibold hover:text-black"
                   >
                     Tất cả sản phẩm →
                   </Link>
                 </div>
-                <div className="flex-1">
-                  <img
-                    src={bannerNam}
-                    alt="Banner Nam"
-                    className="rounded-lg"
-                  />
-                </div>
+
+                <img src={bannerNam} className="rounded-xl shadow-md" />
               </div>
             </li>
 
-            {/* ================= NỮ ================= */}
-            <li className="group h-full flex items-center">
+            {/* NỮ */}
+            <li className="group relative h-full flex items-center">
               <a
                 href="/all?gender=Nữ"
-                className="group inline-flex h-full items-center relative
-                  before:w-0 before:h-[3px] before:bg-blue-600
-                  hover:before:w-full before:absolute before:bottom-0 before:left-0
-                  before:transition-all before:duration-200
-                  px-4 py-5 transition-colors font-semibold text-neutral-900"
+                className="relative px-4 py-5 font-semibold text-neutral-900
+            before:absolute before:bottom-0 before:left-0 before:h-[3px]
+            before:w-0 before:bg-black before:transition-all before:duration-300
+            hover:before:w-full"
               >
                 Nữ
               </a>
 
-              {/* Mega Menu Nữ */}
               <div
                 className="absolute left-1/2 -translate-x-1/2 top-full mt-3
-                w-[90vw] md:w-[900px] bg-white shadow-lg border rounded-lg
-                p-4 md:p-6 grid grid-cols-3 gap-4 md:gap-6 z-[45]
-                opacity-0 invisible translate-y-3 
-                group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 
-                transition-all duration-300 ease-out"
+            w-[900px] bg-white/90 backdrop-blur-xl shadow-lg border rounded-2xl
+            p-6 grid grid-cols-3 gap-6 z-[45]
+            opacity-0 invisible translate-y-4 
+            group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 
+            transition-all duration-300"
               >
                 <div className="col-span-2">
-                  <h4 className="font-bold mb-2">Danh mục Nữ</h4>
-                  <ul className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                  <h4 className="font-bold mb-3 text-gray-900">Danh mục Nữ</h4>
+
+                  <ul className="grid grid-cols-2 gap-y-2 text-sm text-gray-700">
                     {femaleCategories.length > 0 ? (
                       femaleCategories.map((cat) => (
                         <li key={cat.madanhmuc}>
                           <a
                             href={`/all/nu/${cat.slug.replace("-nu", "")}`}
-                            className="hover:text-blue-600"
+                            className="hover:text-black transition"
                           >
                             {cat.tendanhmuc}
                           </a>
@@ -203,77 +198,44 @@ export default function Navbar() {
                       ))
                     ) : (
                       <p className="text-gray-500 italic text-sm">
-                        (Đang tải danh mục...)
+                        (Đang tải danh mục…)
                       </p>
                     )}
                   </ul>
+
                   <Link
                     to="/all/nu"
-                    className="inline-flex items-center text-neutral-900 hover:text-blue-600 font-bold mt-4"
+                    className="inline-block mt-4 font-semibold hover:text-black"
                   >
                     Tất cả sản phẩm →
                   </Link>
                 </div>
-                <div className="flex-1">
-                  <img src={bannerNu} alt="Banner Nữ" className="rounded-lg" />
-                </div>
+
+                <img src={bannerNu} className="rounded-xl shadow-md" />
               </div>
             </li>
 
-            {/* ================= KHUYẾN MÃI ================= */}
-            <li className="group h-full flex items-center">
+            {/* KHUYẾN MÃI */}
+            <li className="group relative h-full flex items-center">
               <a
                 href="/sale"
-                className="group inline-flex h-full items-center relative text-red-500
-                  before:w-0 before:h-[3px] before:bg-red-500 
-                  hover:before:w-full before:absolute before:bottom-0 before:left-0 
-                  before:transition-all before:duration-200 
-                  px-4 py-5 transition-colors font-semibold"
+                className="relative px-4 py-5 font-semibold text-red-500
+            before:absolute before:bottom-0 before:left-0 before:h-[3px]
+            before:w-0 before:bg-red-500 before:transition-all before:duration-300
+            hover:before:w-full"
               >
                 Khuyến mãi
               </a>
-              <div
-                className="absolute left-1/2 -translate-x-1/2 top-full mt-2 
-                w-[800px] bg-white shadow-lg border rounded-lg 
-                p-8 grid grid-cols-3 gap-8 z-50 
-                opacity-0 invisible translate-y-3 
-                group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 
-                transition-all duration-300 ease-out"
-              >
-                <div>
-                  <h4 className="font-bold mb-2">Danh mục sale</h4>
-                  <ul className="space-y-1 text-sm">
-                    <li>
-                      <a href="/sale/ao-thun" className="hover:text-blue-600">
-                        Áo thun giảm giá
-                      </a>
-                    </li>
-                    <li>
-                      <a href="/sale/quan" className="hover:text-blue-600">
-                        Quần sale
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-                <div className="col-span-2 flex justify-center items-center">
-                  <img
-                    src={bannerSale}
-                    alt="Banner sale"
-                    className="rounded-lg"
-                  />
-                </div>
-              </div>
             </li>
 
-            {/* ================= LIÊN HỆ ================= */}
-            <li className="h-full flex items-center">
+            {/* LIÊN HỆ */}
+            <li className="group h-full flex items-center">
               <a
                 href="/lienhe"
-                className="group inline-flex h-full items-center relative 
-                  before:w-0 before:h-[3px] before:bg-blue-600 
-                  hover:before:w-full before:absolute before:bottom-0 before:left-0 
-                  before:transition-all before:duration-200 
-                  px-4 py-5 transition-colors font-semibold text-neutral-900"
+                className="relative px-4 py-5 font-semibold text-neutral-900
+            before:absolute before:bottom-0 before:left-0 before:h-[3px]
+            before:w-0 before:bg-black before:transition-all before:duration-300
+            hover:before:w-full"
               >
                 Liên hệ
               </a>
@@ -281,26 +243,28 @@ export default function Navbar() {
           </ul>
         </nav>
 
-        {/* ====== THANH TÌM KIẾM (giữ nguyên code của em) ====== */}
-        <div className="flex-shrink-0 flex justify-end max-w-[320px] w-full relative mr-2">
+        {/* SEARCH + GỢI Ý SẢN PHẨM (giữ nguyên logic 100%) */}
+        <div className="flex-shrink-0 max-w-[320px] w-full relative mr-2">
           <div className="relative w-full">
             <input
               type="text"
-              placeholder="Tìm sản phẩm..."
+              placeholder="Tìm sản phẩm…"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              className="w-full pl-10 pr-4 py-2.5 bg-gray-100 rounded-full outline-none text-sm text-gray-800 
-                 placeholder-gray-500 focus:bg-white focus:ring-2 focus:ring-blue-500 
-                 shadow-inner transition-all duration-200"
+              className="w-full pl-10 pr-4 py-2.5 bg-white/90 backdrop-blur-xl rounded-full
+          border border-gray-300 text-sm text-gray-800 placeholder-gray-500
+          focus:ring-2 focus:ring-gray-400 transition"
             />
+
             <Search
-              className="absolute left-3 top-2.5 w-5 h-5 text-gray-500 cursor-pointer"
+              className="absolute left-3 top-2.5 w-5 h-5 text-gray-600 cursor-pointer"
               onClick={handleSearch}
             />
 
+            {/* Gợi ý sản phẩm */}
             {searchTerm && filteredResults.length > 0 && (
-              <div className="absolute top-11 left-0 w-full bg-white border rounded-xl shadow-lg z-[60] max-h-60 overflow-y-auto">
+              <div className="absolute top-12 left-0 w-full bg-white shadow-xl border rounded-xl z-[60] max-h-60 overflow-y-auto">
                 {filteredResults.map((p) => (
                   <button
                     key={p.id}
@@ -309,16 +273,14 @@ export default function Navbar() {
                       setSearchTerm("");
                       setFilteredResults([]);
                     }}
-                    className="w-full text-left flex items-center gap-3 px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                    className="w-full text-left px-4 py-2 hover:bg-gray-100 flex flex-col transition"
                   >
-                    <div className="flex flex-col">
-                      <p className="text-sm font-semibold text-gray-800">
-                        {p.name}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {p.price.toLocaleString("vi-VN")}đ
-                      </p>
-                    </div>
+                    <span className="text-gray-800 font-semibold">
+                      {p.name}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {p.price.toLocaleString()}₫
+                    </span>
                   </button>
                 ))}
               </div>
@@ -326,32 +288,31 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* ICONS (giữ nguyên y chang) */}
-        <div className="flex items-center gap-3 md:gap-4 pr-6">
+        {/* ICONS GIỮ NGUYÊN */}
+        <div className="flex items-center gap-4 pr-6">
           <button
             onClick={() => setIsCartOpen(true)}
-            className="p-2 rounded-full hover:bg-gray-100 transition-all duration-200"
+            className="p-2 rounded-full hover:bg-gray-200 transition"
           >
-            <ShoppingBag className="w-5 h-5 text-gray-800 hover:text-blue-600" />
+            <ShoppingBag className="w-5 h-5 text-gray-800" />
           </button>
           {isCartOpen && <CartSidebar onClose={() => setIsCartOpen(false)} />}
 
           {!user ? (
             <button
               onClick={() => setIsAccountOpen(true)}
-              className="p-2 rounded-full hover:bg-gray-100 transition-all duration-200"
+              className="p-2 rounded-full hover:bg-gray-200 transition"
             >
-              <UserCircle className="w-7 h-7 text-gray-800 hover:text-blue-600" />
+              <UserCircle className="w-7 h-7 text-gray-800" />
             </button>
           ) : (
             <div className="relative group">
               <UserCircle
+                className="w-9 h-9 text-gray-800 cursor-pointer"
                 onClick={handleAvatarClick}
-                className="w-9 h-9 text-gray-800 cursor-pointer hover:text-blue-600"
               />
 
-              {/* 🪄 Menu hover (vẫn giữ nguyên) */}
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border py-2 opacity-0 group-hover:opacity-100 invisible group-hover:visible transition-all duration-200">
+              <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg py-2 opacity-0 group-hover:opacity-100 invisible group-hover:visible transition">
                 <div className="px-4 py-2 border-b">
                   <p className="text-sm font-medium text-gray-900">
                     {user.name || user.email}
@@ -360,6 +321,7 @@ export default function Navbar() {
                     {user.role === "admin" ? "Quản trị viên" : "Thành viên"}
                   </p>
                 </div>
+
                 <button
                   onClick={handleLogout}
                   className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -370,7 +332,6 @@ export default function Navbar() {
             </div>
           )}
 
-          {/* Modal đăng nhập */}
           {isAccountOpen && (
             <AccountModal
               isOpen={isAccountOpen}

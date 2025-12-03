@@ -5,7 +5,12 @@ export default {
     "./src/**/*.{js,jsx,ts,tsx}", // 👈 Dòng này cực kỳ quan trọng
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        sans: ["Manrope", "sans-serif"],
+      },
+    },
   },
+
   plugins: [],
 };

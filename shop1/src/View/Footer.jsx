@@ -3,105 +3,102 @@ import { Facebook, Instagram, Phone, Mail, MapPin } from "lucide-react";
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-900 text-gray-300 pt-12 pb-6 mt-16">
-      <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-10">
-        {/* 1️⃣ Giới thiệu thương hiệu */}
+    <footer className="bg-[#0c0d0f] text-gray-300 pt-16 pb-10 mt-20 border-t border-white/10 font-sans">
+      <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12">
+        {/* 1️⃣ GIỚI THIỆU */}
         <div>
-          <h2 className="text-2xl font-bold text-white mb-4">HORIZON</h2>
-          <p className="text-sm leading-relaxed mb-4">
+          <h2 className="text-2xl font-semibold text-white mb-4 tracking-wide">
+            HORIZON
+          </h2>
+
+          <p className="text-sm leading-relaxed mb-5 opacity-80">
             HORIZON mang đến trải nghiệm mua sắm thời trang tiện lợi, hiện đại
-            và chất lượng. Chúng tôi hướng đến việc giúp bạn tự tin mỗi ngày!
+            và chất lượng. Chúng tôi giúp bạn tự tin mỗi ngày!
           </p>
-          <div className="flex gap-3">
-            <a href="#" className="hover:text-blue-500 transition">
+
+          <div className="flex gap-4 text-gray-400">
+            <a className="hover:text-white transition">
               <Facebook size={20} />
             </a>
-            <a href="#" className="hover:text-pink-500 transition">
+            <a className="hover:text-white transition">
               <Instagram size={20} />
             </a>
-            <a href="#" className="hover:text-green-400 transition">
-              Zalo
-            </a>
+            <a className="hover:text-white transition">Zalo</a>
           </div>
         </div>
 
-        {/* 2️⃣ Thông tin liên hệ */}
+        {/* 2️⃣ LIÊN HỆ */}
         <div>
-          <h3 className="text-xl font-semibold text-white mb-4">
+          <h3 className="text-lg font-semibold text-white mb-4 tracking-wide">
             Liên hệ chúng tôi
           </h3>
-          <ul className="space-y-3 text-sm">
-            <li className="flex items-start gap-2">
-              <MapPin size={18} className="text-blue-400 mt-1" />
+
+          <ul className="space-y-3 text-sm opacity-90">
+            <li className="flex gap-3">
+              <MapPin size={18} className="text-indigo-400 mt-1" />
               <span>
                 180 Cao Lỗ, Phường Chánh Hưng, Quận 8, TP. Hồ Chí Minh
               </span>
             </li>
-            <li className="flex items-start gap-2">
-              <Phone size={18} className="text-blue-400 mt-1" />
+            <li className="flex gap-3">
+              <Phone size={18} className="text-indigo-400 mt-1" />
               <span>Hotline: 0901 234 567 – 0938 765 432</span>
             </li>
-            <li className="flex items-start gap-2">
-              <Mail size={18} className="text-blue-400 mt-1" />
+            <li className="flex gap-3">
+              <Mail size={18} className="text-indigo-400 mt-1" />
               <span>Email: support@HORIZON.vn</span>
             </li>
           </ul>
         </div>
 
-        {/* 3️⃣ Chính sách & hỗ trợ */}
+        {/* 3️⃣ HỖ TRỢ */}
         <div>
-          <h3 className="text-xl font-semibold text-white mb-4">
+          <h3 className="text-lg font-semibold text-white mb-4 tracking-wide">
             Hỗ trợ khách hàng
           </h3>
-          <ul className="space-y-3 text-sm">
+
+          <ul className="space-y-3 text-sm opacity-90">
             <li>
-              <a href="#" className="hover:text-white transition">
-                Chính sách đổi trả
-              </a>
+              <a className="hover:text-white transition">Chính sách đổi trả</a>
             </li>
             <li>
-              <a href="#" className="hover:text-white transition">
-                Chính sách bảo mật
-              </a>
+              <a className="hover:text-white transition">Chính sách bảo mật</a>
             </li>
             <li>
-              <a href="#" className="hover:text-white transition">
-                Điều khoản sử dụng
-              </a>
+              <a className="hover:text-white transition">Điều khoản sử dụng</a>
             </li>
             <li>
-              <a href="#" className="hover:text-white transition">
-                Hướng dẫn mua hàng
-              </a>
+              <a className="hover:text-white transition">Hướng dẫn mua hàng</a>
             </li>
           </ul>
         </div>
 
-        {/* 4️⃣ Đăng ký nhận tin */}
+        {/* 4️⃣ ĐĂNG KÝ NHẬN TIN */}
         <div>
-          <h3 className="text-xl font-semibold text-white mb-4">
+          <h3 className="text-lg font-semibold text-white mb-4 tracking-wide">
             Đăng ký nhận tin
           </h3>
-          <p className="text-sm mb-3">
+          <p className="text-sm mb-4 opacity-80">
             Nhận thông tin ưu đãi, bộ sưu tập mới và tin tức độc quyền từ
             HORIZON.
           </p>
+
           <div className="flex">
             <input
               type="email"
               placeholder="Nhập email của bạn"
-              className="px-3 py-2 rounded-l-lg w-full outline-none text-gray-800"
+              className="px-4 py-2 rounded-l-lg w-full outline-none text-gray-800 text-sm"
             />
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 transition">
+            <button className="bg-indigo-600 text-white px-4 py-2 rounded-r-lg hover:bg-indigo-700 transition">
               Gửi
             </button>
           </div>
         </div>
       </div>
 
-      {/* 5️⃣ Dòng bản quyền cuối trang */}
-      <div className="border-t border-gray-700 mt-10 pt-4 text-center text-sm text-gray-400">
-        © {new Date().getFullYear()} HORIZON- Đại học Công Nghệ Sài Gòn (STU).
+      {/* 5️⃣ COPYRIGHT */}
+      <div className="mt-12 text-center text-xs text-gray-500 border-t border-white/10 pt-6">
+        © {new Date().getFullYear()} HORIZON – Đại học Công Nghệ Sài Gòn (STU).
         All rights reserved.
       </div>
     </footer>

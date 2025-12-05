@@ -84,6 +84,29 @@ export default function Navbar() {
       setFilteredResults(results);
     }
   }, [searchTerm]);
+  //================ GIỎ HÀNG ================
+  const [cartCount, setCartCount] = useState(0);
+  useEffect(() => {
+    const syncCart = () => {
+      try {
+        const stored = JSON.parse(localStorage.getItem("cart")) || [];
+        const totalQty = stored.reduce(
+          (s, item) => s + Number(item.soluong || 1),
+          0
+        );
+        setCartCount(totalQty);
+      } catch (err) {
+        console.error("Lỗi khi đọc cart:", err);
+      }
+    };
+
+    syncCart();
+
+    // Lắng nghe sự kiện từ thêm giỏ hàng
+    window.addEventListener("cartUpdated", syncCart);
+
+    return () => window.removeEventListener("cartUpdated", syncCart);
+  }, []);
 
   return (
     <header
@@ -292,10 +315,25 @@ export default function Navbar() {
         <div className="flex items-center gap-4 pr-6">
           <button
             onClick={() => setIsCartOpen(true)}
-            className="p-2 rounded-full hover:bg-gray-200 transition"
+            className="relative p-2 rounded-full hover:bg-gray-200 transition"
           >
             <ShoppingBag className="w-5 h-5 text-gray-800" />
+
+            {cartCount > 0 && (
+              <span
+                className="
+        absolute -top-1 -right-1
+        bg-red-600 text-white
+        text-[10px] font-bold
+        w-5 h-5 flex items-center justify-center
+        rounded-full shadow
+      "
+              >
+                {cartCount}
+              </span>
+            )}
           </button>
+
           {isCartOpen && <CartSidebar onClose={() => setIsCartOpen(false)} />}
 
           {!user ? (

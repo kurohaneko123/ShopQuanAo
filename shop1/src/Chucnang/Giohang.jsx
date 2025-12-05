@@ -2,6 +2,14 @@
 import React, { useEffect, useState } from "react";
 import { X, Trash2, Plus, Minus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+function removeVietnameseTones(str) {
+  return str
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "D")
+    .toLowerCase();
+}
 
 export default function CartSlidebar({ onClose }) {
   const navigate = useNavigate();
@@ -142,26 +150,31 @@ export default function CartSlidebar({ onClose }) {
     setError("");
   };
 
-  // ⭐⭐ THÊM HÀM GỢI Ý
-  const loadSuggestedVouchers = async () => {
+  //  THÊM HÀM GỢI Ý
+  const loadSuggestedVouchers = async (forceSubtotal) => {
     try {
       const res = await fetch("http://localhost:5000/api/voucher");
       const json = await res.json();
       const vouchers = json.data || [];
 
       const now = new Date();
+      const currentSubtotal = forceSubtotal ?? subtotal; // ĐẢM BẢO LẤY TỔNG TIỀN MỚI NHẤT
+
+      console.log("Subtotal dùng để lọc voucher:", currentSubtotal);
 
       const filtered = vouchers.filter((v) => {
         const start = new Date(v.ngaybatdau);
         const end = new Date(v.ngayketthuc);
 
         return (
-          v.trangthai === "hoạt động" &&
-          subtotal >= v.dontoithieu &&
+          removeVietnameseTones(v.trangthai) === "hoat dong" && // CHUẨN HẠT
+          currentSubtotal >= v.dontoithieu &&
           now >= start &&
           now <= end
         );
       });
+
+      console.log("Gợi ý voucher:", filtered);
 
       setSuggested(filtered);
     } catch (err) {
@@ -169,10 +182,27 @@ export default function CartSlidebar({ onClose }) {
     }
   };
 
-  // ⭐⭐ GỌI KHI GIỎ HÀNG THAY ĐỔI
+  // GỌI KHI GIỎ HÀNG THAY ĐỔI
   useEffect(() => {
-    loadSuggestedVouchers();
-  }, [subtotal]);
+    const syncCart = () => {
+      try {
+        const stored = JSON.parse(localStorage.getItem("cart")) || [];
+        setCart(stored);
+
+        const newSubtotal = stored.reduce(
+          (s, it) => s + Number(it.giakhuyenmai) * Number(it.soluong),
+          0
+        );
+
+        loadSuggestedVouchers(newSubtotal);
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    window.addEventListener("cartUpdated", syncCart);
+    return () => window.removeEventListener("cartUpdated", syncCart);
+  }, []);
 
   //HÀM CHECKOUT
   const handleCheckout = () => {
@@ -248,6 +278,57 @@ export default function CartSlidebar({ onClose }) {
                 Áp dụng
               </button>
             </div>
+            {/* ⭐ GỢI Ý VOUCHER – LUXURY STYLE */}
+            {suggested.length > 0 && (
+              <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+                <h4 className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                  Gợi ý mã ưu đãi
+                </h4>
+
+                <div className="space-y-3">
+                  {suggested.map((v) => (
+                    <div
+                      key={v.magiamgia}
+                      className="
+            p-4 flex justify-between items-center
+            bg-gray-50 border border-gray-200 rounded-xl
+            hover:shadow-lg hover:bg-white
+            transition-all cursor-pointer
+          "
+                      onClick={() => {
+                        setCoupon(v.magiamgia);
+                        applyCoupon();
+                      }}
+                    >
+                      <div className="flex-1">
+                        <div className="font-bold text-gray-900 text-sm">
+                          {v.magiamgia}
+                        </div>
+
+                        <p className="text-xs text-gray-500 leading-5">
+                          {v.mota}
+                        </p>
+
+                        <p className="text-[11px] text-green-600 mt-1 font-medium">
+                          Đơn tối thiểu: {v.dontoithieu.toLocaleString("vi-VN")}
+                          đ
+                        </p>
+                      </div>
+
+                      <button
+                        className="
+              ml-3 px-3 py-1.5 text-xs
+              bg-black text-white rounded-lg
+              hover:bg-gray-800 transition
+            "
+                      >
+                        Áp dụng
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {appliedCoupon && (
               <div className="mt-2 text-sm text-green-700">

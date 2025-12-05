@@ -261,32 +261,6 @@ export default function HomePage() {
     }
   };
 
-  // /* ====== Danh mục tĩnh ====== */
-  // const maleCategories = [
-  //   { id: "m-1", name: "ÁO THUN", img: Aothunbasic, slug: "ao-thun-nam" },
-  //   { id: "m-2", name: "ÁO POLO", img: Aopolo, slug: "ao-polo-nam" },
-  //   { id: "m-3", name: "QUẦN SHORT", img: Quanshort, slug: "quan-short" },
-  //   { id: "m-4", name: "QUẦN JEAN", img: Quanjean, slug: "quan-jean" },
-  //   { id: "m-5", name: "ÁO KHOÁC", img: Aokhoac, slug: "ao-khoac" },
-  //   {
-  //     id: "m-6",
-  //     name: "QUẦN JOGGER",
-  //     img: QuanjoogerTrang,
-  //     slug: "quan-jogger",
-  //   },
-  // ];
-
-  // const femaleCategories = [
-  //   { id: "f-1", name: "ÁO THUN", img: Aopolo, slug: "ao-thun-nu" },
-  //   { id: "f-2", name: "VÁY", img: Aosomi, slug: "vay" },
-  //   { id: "f-3", name: "QUẦN TÂY", img: Quanjean, slug: "quan-tay" },
-  //   { id: "f-4", name: "QUẦN JEAN", img: Quanjean, slug: "quan-jean" },
-  //   { id: "f-5", name: "QUẦN JOGGER", img: Quanjooger, slug: "quan-jogger" },
-  //   { id: "f-6", name: "QUẦN SHORT", img: Aokhoac, slug: "quan-short" },
-  // ];
-
-  // const gridCategories =
-  //   selectedGender === "nam" ? maleCategories : femaleCategories;
   const gridCategories =
     selectedGender === "nam" ? categories.nam : categories.nu;
 
@@ -461,7 +435,7 @@ export default function HomePage() {
         {/* ===== Ưu đãi nổi bật ===== */}
         <section className="pb-28">
           <div className="flex items-center justify-between mb-10">
-            <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">
+            <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
               Ưu đãi nổi bật
             </h2>
 

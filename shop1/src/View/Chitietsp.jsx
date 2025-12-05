@@ -33,11 +33,8 @@ export default function ChiTietSanPham() {
       const newItem = {
         mabienthe: variant.mabienthe,
         tensanpham: product.tensanpham,
-
-        // GIÁ ĐÚNG CHUẨN TỪ BACKEND
         giagoc: Number(variant.giaban),
         giakhuyenmai: Number(variant.giaban),
-
         soluong: 1,
         mausac: variant.tenmausac,
         size: variant.tenkichthuoc,
@@ -47,22 +44,47 @@ export default function ChiTietSanPham() {
 
       // 👉 Nếu đã có cùng mabienthe thì + số lượng
       const existing = stored.find((i) => i.mabienthe === newItem.mabienthe);
-
-      if (existing) {
-        existing.soluong += 1;
-      } else {
-        stored.push(newItem);
-      }
+      if (existing) existing.soluong += 1;
+      else stored.push(newItem);
 
       localStorage.setItem("cart", JSON.stringify(stored));
 
-      // Toast
+      // 🔔 Gửi sự kiện để Header cập nhật badge
+      window.dispatchEvent(new Event("cartUpdated"));
+
+      // ================================
+      // ⭐ TOAST CAO CẤP – ZARA STYLE
+      // ================================
       const toast = document.createElement("div");
-      toast.innerText = `🛒 Đã thêm "${product.tensanpham}" (${newItem.mausac}, ${newItem.size})`;
-      toast.className =
-        "fixed bottom-6 right-6 bg-black text-white px-4 py-2 rounded-lg shadow-lg z-[9999]";
+      toast.className = `
+  fixed z-[9999]
+  bg-white border border-gray-200 shadow-xl
+  rounded-xl p-4 w-[320px]
+  flex items-center gap-3
+  animate-fadeIn
+
+  top-[90px]       /* ĐẨY XUỐNG DƯỚI ICON */
+  right-[110px]    /* CANH THEO VỊ TRÍ GIỎ HÀNG */
+`;
+
+      toast.innerHTML = `
+      <img src="${newItem.hinhanh}" 
+           class="w-14 h-14 rounded-md object-cover border" />
+
+      <div class="flex-1">
+        <p class="text-sm font-semibold text-gray-900">
+          Đã thêm vào giỏ hàng
+        </p>
+
+        <p class="text-xs text-gray-500 mt-0.5">
+          ${product.tensanpham} • ${newItem.mausac}, ${newItem.size}
+        </p>
+      </div>
+
+    `;
+
       document.body.appendChild(toast);
-      setTimeout(() => toast.remove(), 2000);
+      setTimeout(() => toast.remove(), 3000);
     } catch (error) {
       console.error("Lỗi khi thêm vào giỏ hàng:", error);
     }
@@ -120,7 +142,7 @@ export default function ChiTietSanPham() {
       </div>
     );
 
-  // 👉 Lấy danh sách màu
+  //  Lấy danh sách màu
   const colorList = [...new Set(variants.map((v) => v.tenmausac))];
 
   return (

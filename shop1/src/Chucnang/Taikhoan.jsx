@@ -5,6 +5,7 @@ import { auth, provider } from "./firebaseConfig.jsx";
 import { API_URL } from "../config/app.js"; //  import API backend
 import { useNavigate } from "react-router-dom";
 import Logo from "../assets/logo_header/logo.png";
+import { createPortal } from "react-dom";
 
 export default function AccountModal({ isOpen, onClose }) {
   const [mode, setMode] = useState("login");
@@ -148,9 +149,24 @@ export default function AccountModal({ isOpen, onClose }) {
     }
   };
 
-  return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[999]">
-      <div className="bg-white w-[420px] md:w-[480px] rounded-2xl shadow-2xl p-8 relative">
+  return createPortal(
+    <div
+      className="
+      fixed inset-0 
+      bg-black/50 backdrop-blur-md
+      flex items-center justify-center
+      z-[99999]
+    "
+    >
+      <div
+        className="
+        w-[430px] md:w-[480px]
+        bg-white/90 backdrop-blur-2xl
+        rounded-3xl 
+        border border-white/40 shadow-2xl
+        p-10 relative
+      "
+      >
         {/* Nút đóng */}
         <button
           onClick={onClose}
@@ -160,118 +176,106 @@ export default function AccountModal({ isOpen, onClose }) {
         </button>
 
         {/* Logo */}
-        <h2 className="text-center mb-2">
+        <div className="flex flex-col items-center mb-6">
           <img
             src={Logo}
-            alt="Horizon Logo"
-            className="mx-auto w-32 md:w-40 hover:scale-105 transition-transform duration-300"
+            className="w-24 md:w-28 drop-shadow-sm opacity-90 hover:scale-105 transition-transform duration-300"
           />
-        </h2>
+          <p className="text-gray-700 text-[15px] mt-3 font-medium tracking-wide">
+            {mode === "login"
+              ? "Chào mừng bạn quay trở lại "
+              : mode === "register"
+              ? "Tạo tài khoản để nhận ưu đãi"
+              : resetStep === 1
+              ? "Nhập email để nhận mã xác nhận"
+              : "Đặt lại mật khẩu"}
+          </p>
+        </div>
 
-        <p className="text-center text-base text-gray-600 mb-5">
-          {mode === "login"
-            ? "Đăng nhập để nhận ưu đãi thành viên"
-            : mode === "register"
-            ? "Tạo tài khoản để nhận quà độc quyền"
-            : resetStep === 1
-            ? "Nhập email để nhận mã xác nhận"
-            : "Nhập mã xác nhận và mật khẩu mới"}
-        </p>
-
-        {/* Đăng nhập MXH */}
+        {/* MXH */}
         {mode !== "forgot" && (
           <>
-            <p className="text-center text-sm mb-2 font-medium">
+            <p className="text-center text-sm font-medium text-gray-500 mb-3">
               Đăng nhập bằng mạng xã hội
             </p>
-            <div className="flex justify-center gap-3 mb-5">
+
+            <div className="flex justify-center gap-4 mb-7">
               <button
                 disabled={loading}
                 onClick={handleGoogleLogin}
-                className="border rounded-md px-4 py-2 flex items-center gap-2 hover:bg-gray-50 transition disabled:opacity-60"
+                className="
+      flex items-center gap-2 px-4 py-2.5 rounded-xl 
+      border border-gray-300 bg-white
+      hover:bg-gray-50 transition
+      shadow-sm
+    "
               >
                 <img
                   src="https://www.svgrepo.com/show/475656/google-color.svg"
-                  alt="google"
                   className="w-5 h-5"
                 />
-                Google
+                <span className="text-sm font-medium text-gray-700">
+                  Google
+                </span>
               </button>
+
               <button
-                className="border rounded-md px-4 py-2 flex items-center gap-2 opacity-50 cursor-not-allowed"
                 disabled
+                className="
+      flex items-center gap-2 px-4 py-2.5 rounded-xl 
+      border border-gray-200 bg-gray-100 
+      opacity-60 cursor-not-allowed shadow-sm
+    "
               >
                 <img
                   src="https://www.svgrepo.com/show/475647/facebook-color.svg"
-                  alt="facebook"
                   className="w-5 h-5"
                 />
-                Facebook
+                <span className="text-sm font-medium text-gray-700">
+                  Facebook
+                </span>
               </button>
             </div>
           </>
         )}
 
-        {/* Gạch ngang */}
-        <div className="relative mb-5">
-          <hr />
-          <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white px-2 text-sm text-gray-400">
+        {/* Gạch chia */}
+        <div className="relative mb-6">
+          <hr className="border-gray-300/60" />
+          <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white px-3 text-xs text-gray-400">
             Hoặc
           </span>
         </div>
 
         {/* FORM */}
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          {/* Bước 1: Nhập email */}
-          {mode === "forgot" && resetStep === 1 && (
-            <input
-              name="email"
-              type="email"
-              placeholder="Nhập email để đặt lại mật khẩu"
-              required
-              className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
-            />
-          )}
-
-          {/* Bước 2: Nhập mã + mật khẩu mới */}
-          {mode === "forgot" && resetStep === 2 && (
-            <>
-              <input
-                name="token"
-                type="text"
-                placeholder="Nhập mã xác nhận"
-                required
-                className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
-              />
-              <input
-                name="newpassword"
-                type="password"
-                placeholder="Nhập mật khẩu mới"
-                required
-                className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
-              />
-            </>
-          )}
-
-          {/* Đăng ký */}
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {mode === "register" && (
-            <div className="flex gap-2">
+            <div className="flex gap-6">
               <input
                 name="hoten"
-                type="text"
                 placeholder="Họ và tên"
-                className="border rounded-lg px-3 py-2 w-1/2 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                className="
+  w-full px-6 py-6 text-[15px]
+  rounded-xl border border-gray-300 
+  bg-white focus:border-blue-500
+  focus:ring-2 focus:ring-blue-300 
+  transition shadow-sm
+"
               />
               <input
                 name="sodienthoai"
-                type="text"
                 placeholder="Số điện thoại"
-                className="border rounded-lg px-3 py-2 w-1/2 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                className="
+  w-full px-6 py-6 text-[15px]
+  rounded-xl border border-gray-300 
+  bg-white focus:border-blue-500
+  focus:ring-2 focus:ring-blue-300 
+  transition shadow-sm
+"
               />
             </div>
           )}
 
-          {/* Email + mật khẩu cho login/register */}
           {mode !== "forgot" && (
             <>
               <input
@@ -279,77 +283,89 @@ export default function AccountModal({ isOpen, onClose }) {
                 type="email"
                 placeholder="Email của bạn"
                 required
-                className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                className="w-full px-4 py-3.5 text-[15px]
+    rounded-xl border border-gray-300 
+    bg-white
+    focus:border-blue-500 focus:ring-2 focus:ring-blue-300
+    transition shadow-sm"
               />
               <input
                 name="password"
                 type="password"
                 placeholder="Mật khẩu"
                 required
-                className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                className="w-full px-4 py-3.5 text-[15px]
+    rounded-xl border border-gray-300 
+    bg-white
+    focus:border-blue-500 focus:ring-2 focus:ring-blue-300
+    transition shadow-sm"
               />
             </>
           )}
 
-          {/* Nút gửi */}
+          {mode === "forgot" && resetStep === 1 && (
+            <input
+              name="email"
+              placeholder="Nhập email để đặt lại mật khẩu"
+              className="floating-input"
+              required
+            />
+          )}
+
+          {mode === "forgot" && resetStep === 2 && (
+            <>
+              <input
+                name="token"
+                placeholder="Mã xác nhận"
+                className="floating-input"
+                required
+              />
+              <input
+                name="newpassword"
+                type="password"
+                placeholder="Mật khẩu mới"
+                className="floating-input"
+                required
+              />
+            </>
+          )}
+
           <button
             type="submit"
             disabled={loading}
-            className="bg-blue-600 text-white font-semibold py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-60"
+            className="w-full py-3 mt-2 font-semibold text-white rounded-xl
+      bg-gradient-to-r from-blue-600 to-blue-500 
+      hover:from-blue-700 hover:to-blue-600 transition disabled:opacity-60 shadow-lg"
           >
             {loading
               ? "Đang xử lý..."
               : mode === "login"
-              ? "ĐĂNG NHẬP"
+              ? "Đăng nhập"
               : mode === "register"
-              ? "TẠO TÀI KHOẢN"
+              ? "Tạo tài khoản"
               : resetStep === 1
-              ? "GỬI MÃ XÁC NHẬN"
-              : "ĐẶT LẠI MẬT KHẨU"}
+              ? "Gửi mã xác nhận"
+              : "Đặt lại mật khẩu"}
           </button>
         </form>
 
-        {/* Liên kết chuyển chế độ */}
-        <div className="flex justify-between text-sm mt-4">
-          {mode === "login" && (
-            <>
-              <button
-                onClick={() => setMode("register")}
-                className="text-blue-600 hover:underline"
-              >
-                Đăng ký tài khoản mới
-              </button>
-              <button
-                onClick={() => setMode("forgot")}
-                className="text-blue-600 hover:underline"
-              >
-                Quên mật khẩu
-              </button>
-            </>
-          )}
-
-          {mode === "register" && (
-            <button
-              onClick={() => setMode("login")}
-              className="text-blue-600 hover:underline"
-            >
-              Đã có tài khoản? Đăng nhập
-            </button>
-          )}
-
-          {mode === "forgot" && (
-            <button
-              onClick={() => {
-                setMode("login");
-                setResetStep(1);
-              }}
-              className="text-blue-600 hover:underline"
-            >
-              Quay lại đăng nhập
-            </button>
-          )}
+        {/* Link */}
+        <div className="flex justify-between mt-5 text-sm text-gray-600 font-medium">
+          <button
+            onClick={() => setMode("register")}
+            className="hover:text-blue-600 transition"
+          >
+            Tạo tài khoản
+          </button>
+          <button
+            onClick={() => setMode("forgot")}
+            className="hover:text-blue-600 transition"
+          >
+            Quên mật khẩu?
+          </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

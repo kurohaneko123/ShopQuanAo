@@ -2,7 +2,14 @@
 import { Link, useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Search, ShoppingBag, User, LogOut, UserCircle } from "lucide-react";
+import {
+  Search,
+  ShoppingBag,
+  User,
+  LogOut,
+  UserCircle,
+  ClipboardList, // ✅ thêm icon đơn hàng
+} from "lucide-react";
 
 import AccountModal from "../Chucnang/Taikhoan.jsx";
 import bannerNam from "../assets/ao.jpg";
@@ -18,7 +25,7 @@ export default function Navbar() {
   const [user, setUser] = useState(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
-  const [categories, setCategories] = useState([]); //  Dữ liệu danh mục từ API
+  const [categories, setCategories] = useState([]);
   const [maleCategories, setMaleCategories] = useState([]);
   const [femaleCategories, setFemaleCategories] = useState([]);
 
@@ -29,7 +36,6 @@ export default function Navbar() {
         const res = await axios.get("http://localhost:5000/api/danhmuc");
         const data = res.data.data || [];
 
-        // 🌟 Chia danh mục theo giới tính dựa trên slug
         const males = data.filter((d) => d.slug.includes("nam"));
         const females = data.filter((d) => d.slug.includes("nu"));
 
@@ -55,8 +61,9 @@ export default function Navbar() {
     alert("Đăng xuất thành công!");
     window.location.reload();
   };
+
   const handleAvatarClick = () => {
-    navigate("/thongtincanhan"); // chuyển hướng sang trang thông tin khách hàng
+    navigate("/thongtincanhan");
   };
 
   /* ===== THANH TÌM KIẾM ===== */
@@ -84,6 +91,7 @@ export default function Navbar() {
       setFilteredResults(results);
     }
   }, [searchTerm]);
+
   //================ GIỎ HÀNG ================
   const [cartCount, setCartCount] = useState(0);
   useEffect(() => {
@@ -101,8 +109,6 @@ export default function Navbar() {
     };
 
     syncCart();
-
-    // Lắng nghe sự kiện từ thêm giỏ hàng
     window.addEventListener("cartUpdated", syncCart);
 
     return () => window.removeEventListener("cartUpdated", syncCart);
@@ -111,9 +117,9 @@ export default function Navbar() {
   return (
     <header
       className="fixed top-3 left-1/2 -translate-x-1/2 w-[95%]
-  bg-white/80 backdrop-blur-xl border border-white/40
-  shadow-[0_4px_20px_rgba(0,0,0,0.08)]
-  rounded-2xl z-50 transition-all duration-300"
+      bg-white/80 backdrop-blur-xl border border-white/40
+      shadow-[0_4px_20px_rgba(0,0,0,0.08)]
+      rounded-2xl z-50 transition-all duration-300"
     >
       <div className="h-20 px-6 flex items-center justify-between">
         {/* LOGO */}
@@ -127,7 +133,7 @@ export default function Navbar() {
           </span>
         </Link>
 
-        {/* MENU GỐC - CHỈ TÁI THIẾT KẾ UI */}
+        {/* MENU */}
         <nav className="hidden md:flex items-center font-medium text-[18px] space-x-10 relative">
           <ul className="flex h-full items-center space-x-10">
             {/* NAM */}
@@ -135,21 +141,20 @@ export default function Navbar() {
               <a
                 href="/all?gender=Nam"
                 className="relative px-4 py-5 font-semibold text-neutral-900
-            before:absolute before:bottom-0 before:left-0 before:h-[3px]
-            before:w-0 before:bg-black before:transition-all before:duration-300
-            hover:before:w-full"
+                before:absolute before:bottom-0 before:left-0 before:h-[3px]
+                before:w-0 before:bg-black before:transition-all before:duration-300
+                hover:before:w-full"
               >
                 Nam
               </a>
 
-              {/* MEGA MENU */}
               <div
                 className="absolute left-1/2 -translate-x-1/2 top-full mt-3
-            w-[900px] bg-white/90 backdrop-blur-xl shadow-lg border rounded-2xl
-            p-6 grid grid-cols-3 gap-6 z-[45]
-            opacity-0 invisible translate-y-4 
-            group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 
-            transition-all duration-300"
+                w-[900px] bg-white/90 backdrop-blur-xl shadow-lg border rounded-2xl
+                p-6 grid grid-cols-3 gap-6 z-[45]
+                opacity-0 invisible translate-y-4 
+                group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 
+                transition-all duration-300"
               >
                 <div className="col-span-2">
                   <h4 className="font-bold mb-3 text-gray-900">Danh mục Nam</h4>
@@ -189,20 +194,20 @@ export default function Navbar() {
               <a
                 href="/all?gender=Nữ"
                 className="relative px-4 py-5 font-semibold text-neutral-900
-            before:absolute before:bottom-0 before:left-0 before:h-[3px]
-            before:w-0 before:bg-black before:transition-all before:duration-300
-            hover:before:w-full"
+                before:absolute before:bottom-0 before:left-0 before:h-[3px]
+                before:w-0 before:bg-black before:transition-all before:duration-300
+                hover:before:w-full"
               >
                 Nữ
               </a>
 
               <div
                 className="absolute left-1/2 -translate-x-1/2 top-full mt-3
-            w-[900px] bg-white/90 backdrop-blur-xl shadow-lg border rounded-2xl
-            p-6 grid grid-cols-3 gap-6 z-[45]
-            opacity-0 invisible translate-y-4 
-            group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 
-            transition-all duration-300"
+                w-[900px] bg-white/90 backdrop-blur-xl shadow-lg border rounded-2xl
+                p-6 grid grid-cols-3 gap-6 z-[45]
+                opacity-0 invisible translate-y-4 
+                group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 
+                transition-all duration-300"
               >
                 <div className="col-span-2">
                   <h4 className="font-bold mb-3 text-gray-900">Danh mục Nữ</h4>
@@ -243,9 +248,9 @@ export default function Navbar() {
               <a
                 href="/sale"
                 className="relative px-4 py-5 font-semibold text-red-500
-            before:absolute before:bottom-0 before:left-0 before:h-[3px]
-            before:w-0 before:bg-red-500 before:transition-all before:duration-300
-            hover:before:w-full"
+                before:absolute before:bottom-0 before:left-0 before:h-[3px]
+                before:w-0 before:bg-red-500 before:transition-all before:duration-300
+                hover:before:w-full"
               >
                 Khuyến mãi
               </a>
@@ -256,9 +261,9 @@ export default function Navbar() {
               <a
                 href="/lienhe"
                 className="relative px-4 py-5 font-semibold text-neutral-900
-            before:absolute before:bottom-0 before:left-0 before:h-[3px]
-            before:w-0 before:bg-black before:transition-all before:duration-300
-            hover:before:w-full"
+                before:absolute before:bottom-0 before:left-0 before:h-[3px]
+                before:w-0 before:bg-black before:transition-all before:duration-300
+                hover:before:w-full"
               >
                 Liên hệ
               </a>
@@ -266,7 +271,7 @@ export default function Navbar() {
           </ul>
         </nav>
 
-        {/* SEARCH + GỢI Ý SẢN PHẨM (giữ nguyên logic 100%) */}
+        {/* SEARCH */}
         <div className="flex-shrink-0 max-w-[320px] w-full relative mr-2">
           <div className="relative w-full">
             <input
@@ -276,8 +281,8 @@ export default function Navbar() {
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
               className="w-full pl-10 pr-4 py-2.5 bg-white/90 backdrop-blur-xl rounded-full
-          border border-gray-300 text-sm text-gray-800 placeholder-gray-500
-          focus:ring-2 focus:ring-gray-400 transition"
+              border border-gray-300 text-sm text-gray-800 placeholder-gray-500
+              focus:ring-2 focus:ring-gray-400 transition"
             />
 
             <Search
@@ -285,7 +290,6 @@ export default function Navbar() {
               onClick={handleSearch}
             />
 
-            {/* Gợi ý sản phẩm */}
             {searchTerm && filteredResults.length > 0 && (
               <div className="absolute top-12 left-0 w-full bg-white shadow-xl border rounded-xl z-[60] max-h-60 overflow-y-auto">
                 {filteredResults.map((p) => (
@@ -311,8 +315,9 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* ICONS GIỮ NGUYÊN */}
+        {/* ICONS */}
         <div className="flex items-center gap-4 pr-6">
+          {/* GIỎ HÀNG */}
           <button
             onClick={() => setIsCartOpen(true)}
             className="relative p-2 rounded-full hover:bg-gray-200 transition"
@@ -321,13 +326,9 @@ export default function Navbar() {
 
             {cartCount > 0 && (
               <span
-                className="
-        absolute -top-1 -right-1
-        bg-red-600 text-white
-        text-[10px] font-bold
-        w-5 h-5 flex items-center justify-center
-        rounded-full shadow
-      "
+                className="absolute -top-1 -right-1 bg-red-600 text-white
+                text-[10px] font-bold w-5 h-5 flex items-center justify-center
+                rounded-full shadow"
               >
                 {cartCount}
               </span>
@@ -336,6 +337,18 @@ export default function Navbar() {
 
           {isCartOpen && <CartSidebar onClose={() => setIsCartOpen(false)} />}
 
+          {/* ✅ ICON ĐƠN HÀNG – CHỈ KHI CÓ USER */}
+          {user && (
+            <button
+              onClick={() => navigate("/donhang")}
+              className="relative p-2 rounded-full hover:bg-gray-200 transition"
+              title="Đơn hàng của bạn"
+            >
+              <ClipboardList className="w-5 h-5 text-gray-800" />
+            </button>
+          )}
+
+          {/* ACCOUNT */}
           {!user ? (
             <button
               onClick={() => setIsAccountOpen(true)}

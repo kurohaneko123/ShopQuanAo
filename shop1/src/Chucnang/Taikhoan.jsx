@@ -255,7 +255,7 @@ export default function AccountModal({ isOpen, onClose }) {
                 name="hoten"
                 placeholder="Họ và tên"
                 className="
-  w-full px-6 py-6 text-[15px]
+  w-full px-4 py-3.5 text-[15px]
   rounded-xl border border-gray-300 
   bg-white focus:border-blue-500
   focus:ring-2 focus:ring-blue-300 
@@ -266,7 +266,7 @@ export default function AccountModal({ isOpen, onClose }) {
                 name="sodienthoai"
                 placeholder="Số điện thoại"
                 className="
-  w-full px-6 py-6 text-[15px]
+  w-full px-4 py-3.5 text-[15px]
   rounded-xl border border-gray-300 
   bg-white focus:border-blue-500
   focus:ring-2 focus:ring-blue-300 

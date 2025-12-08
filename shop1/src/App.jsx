@@ -8,9 +8,7 @@ import DailyProducts from "./View/Homepage.jsx";
 import TatCaSanPham from "./View/Sanpham.jsx";
 import LienHe from "./View/Lienhe.jsx";
 import CheckoutPage from "./Chucnang/Thanhtoan.jsx";
-import AoLopKyYeuPage from "./View/AoLop.jsx";
 import ProtectedRoute from "./routes/ProtectedRoute.jsx";
-import ClassBanner from "./View/ClassBanner.jsx";
 import ChiTietSanPham from "./View/Chitietsp.jsx";
 //User
 import ThongTinKhachHang from "./Chucnang/Thongtinkh.jsx";
@@ -44,7 +42,6 @@ export default function App() {
             <>
               <Banner />
               <DailyProducts />
-              <ClassBanner />
             </>
           }
         />
@@ -58,7 +55,6 @@ export default function App() {
         <Route path="/lienhe" element={<LienHe />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/zalopay" element={<ZaloPayPage />} />
-        <Route path="/aolop-kyyeu" element={<AoLopKyYeuPage />} />
 
         {/* ====== TRANG ADMIN ====== */}
         <Route

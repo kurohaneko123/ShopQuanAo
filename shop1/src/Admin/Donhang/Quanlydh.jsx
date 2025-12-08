@@ -37,7 +37,7 @@ export default function Quanlydh() {
   // ====================== SEARCH FILTER ======================
   useEffect(() => {
     const f = orders.filter((x) =>
-      `${x.madonhang}${x.nguoinhan}${x.sodienthoai}`
+      `${x.madonhang}${x.tennguoinhan}${x.sodienthoai}`
         .toLowerCase()
         .includes(search.toLowerCase())
     );
@@ -108,7 +108,7 @@ export default function Quanlydh() {
             {filtered.map((x) => (
               <tr key={x.madonhang} className="border-b hover:bg-gray-50">
                 <td className="p-3 font-semibold">{x.madonhang}</td>
-                <td className="p-3">{x.nguoinhan}</td>
+                <td className="p-3">{x.tennguoinhan}</td>
                 <td className="p-3">{x.sodienthoai}</td>
                 <td className="p-3 text-teal-600 font-semibold">
                   {Number(x.tongthanhtoan).toLocaleString()}đ

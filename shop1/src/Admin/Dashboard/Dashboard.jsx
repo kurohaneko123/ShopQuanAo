@@ -11,6 +11,8 @@ export default function Dashboard() {
 
   const API_ORDER = "http://localhost:5000/api/donhang";
   const API_PRODUCT = "http://localhost:5000/api/sanpham";
+  const [chartMode, setChartMode] = useState("column");
+  // "column" | "line" | "area"
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -37,7 +39,8 @@ export default function Dashboard() {
         ]);
 
         setOrders(o.data.data || []);
-        setProducts(p.data || []);
+        setProducts(Array.isArray(p.data.data) ? p.data.data : []);
+
         setUsers(u.data.nguoidung || []);
       } catch (err) {
         console.error("Dashboard error:", err);
@@ -67,6 +70,12 @@ export default function Dashboard() {
   orders.forEach((o) => {
     const m = new Date(o.ngaytao).getMonth();
     revenueByMonth[m] += Number(o.tongthanhtoan || 0);
+  });
+  const ordersByMonth = Array(12).fill(0);
+
+  orders.forEach((o) => {
+    const m = new Date(o.ngaytao).getMonth();
+    ordersByMonth[m]++;
   });
 
   const months = [
@@ -153,21 +162,152 @@ export default function Dashboard() {
 
       {/* ===== BIỂU ĐỒ DOANH THU ===== */}
       <div className="bg-white rounded-xl shadow p-6 mb-10">
-        <h2 className="text-xl font-bold mb-3">Doanh thu 12 tháng</h2>
+        <h2 className="text-xl font-bold mb-4">Doanh thu 12 tháng</h2>
 
-        <div className="flex items-end justify-between h-64 bg-gradient-to-r from-cyan-50 via-cyan-100 to-cyan-50 rounded-xl p-6">
-          {revenueByMonth.map((value, i) => (
-            <div key={i} className="flex flex-col items-center w-full">
-              <div
-                className="bg-cyan-500 rounded-t-lg w-6 transition"
-                style={{
-                  height: `${(value / Math.max(...revenueByMonth, 1)) * 100}%`,
-                }}
-              ></div>
-              <span className="text-xs mt-1">{months[i]}</span>
-            </div>
-          ))}
+        {/* Nút chuyển mode */}
+        <div className="flex gap-3 mb-4">
+          <button
+            onClick={() => setChartMode("column")}
+            className={`px-4 py-2 rounded-lg border ${
+              chartMode === "column" ? "bg-cyan-500 text-white" : "bg-white"
+            }`}
+          >
+            Cột
+          </button>
+
+          <button
+            onClick={() => setChartMode("line")}
+            className={`px-4 py-2 rounded-lg border ${
+              chartMode === "line" ? "bg-cyan-500 text-white" : "bg-white"
+            }`}
+          >
+            Đường
+          </button>
+
+          <button
+            onClick={() => setChartMode("area")}
+            className={`px-4 py-2 rounded-lg border ${
+              chartMode === "area" ? "bg-cyan-500 text-white" : "bg-white"
+            }`}
+          >
+            Area
+          </button>
         </div>
+
+        {/* BIỂU ĐỒ */}
+        <div className="relative h-72 bg-gradient-to-b from-cyan-50 to-white rounded-xl p-6">
+          <svg viewBox="0 0 1200 300" className="w-full h-full">
+            {/* VẼ AREA MODE */}
+            {chartMode === "area" && (
+              <path
+                d={`
+            M 0 300 
+            ${revenueByMonth
+              .map((v, i) => {
+                const x = (i / 11) * 1200;
+                const y = 300 - (v / Math.max(...revenueByMonth, 1)) * 260;
+                return `L ${x} ${y}`;
+              })
+              .join(" ")}
+            L 1200 300 Z
+          `}
+                fill="rgba(34,211,238,0.4)"
+                className="transition-all duration-500"
+              />
+            )}
+
+            {/* VẼ LINE MODE */}
+            {chartMode === "line" && (
+              <polyline
+                fill="none"
+                stroke="#06b6d4"
+                strokeWidth="4"
+                strokeLinecap="round"
+                points={revenueByMonth
+                  .map((v, i) => {
+                    const x = (i / 11) * 1200;
+                    const y = 300 - (v / Math.max(...revenueByMonth, 1)) * 260;
+                    return `${x},${y}`;
+                  })
+                  .join(" ")}
+                className="transition-all duration-500"
+              />
+            )}
+
+            {/* VẼ CỘT MODE */}
+            {chartMode === "column" &&
+              revenueByMonth.map((v, i) => {
+                const height = (v / Math.max(...revenueByMonth, 1)) * 260;
+                const x = (i / 12) * 1200 + 20;
+                return (
+                  <rect
+                    key={i}
+                    x={x}
+                    y={300 - height}
+                    width="60"
+                    height={height}
+                    fill="#06b6d4"
+                    className="transition-all duration-500 hover:opacity-70 cursor-pointer"
+                  />
+                );
+              })}
+
+            {/* TOOLTIP DOT + giá trị */}
+            {/* TOOLTIP DOT + FULL INFO */}
+            {revenueByMonth.map((v, i) => {
+              const x = (i / 11) * 1200;
+              const y = 300 - (v / Math.max(...revenueByMonth, 1)) * 260;
+
+              return (
+                <g key={i}>
+                  <circle cx={x} cy={y} r="6" fill="#06b6d4" />
+
+                  {/* Tooltip */}
+                  <g className="opacity-0 hover:opacity-100 transition">
+                    <rect
+                      x={x - 70}
+                      y={y - 80}
+                      width="140"
+                      height="65"
+                      rx="8"
+                      fill="white"
+                      stroke="#06b6d4"
+                      className="shadow-lg"
+                    />
+
+                    <text
+                      x={x}
+                      y={y - 60}
+                      textAnchor="middle"
+                      className="text-xs fill-gray-800 font-semibold"
+                    >
+                      {`Tháng ${i + 1}`}
+                    </text>
+
+                    <text
+                      x={x}
+                      y={y - 40}
+                      textAnchor="middle"
+                      className="text-xs fill-cyan-600 font-bold"
+                    >
+                      {`Doanh thu: ${v.toLocaleString()}đ`}
+                    </text>
+
+                    <text
+                      x={x}
+                      y={y - 22}
+                      textAnchor="middle"
+                      className="text-xs fill-gray-600"
+                    >
+                      {`Số đơn: ${ordersByMonth[i]} đơn`}
+                    </text>
+                  </g>
+                </g>
+              );
+            })}
+          </svg>
+        </div>
+
         {/* ====== PIE CHART ====== */}
         {/* ===== BIỂU ĐỒ TRÒN ĐẸP ===== */}
         <div className="bg-white rounded-2xl shadow p-8 mt-10">

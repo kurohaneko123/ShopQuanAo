@@ -99,7 +99,13 @@ export default function CartSlidebar({ onClose }) {
   const discountValue = computeDiscount();
   const shipping = shippingFee();
   const total = Math.max(0, subtotal - discountValue + shipping);
-
+  useEffect(() => {
+    if (subtotal > 0) {
+      loadSuggestedVouchers(subtotal);
+    } else {
+      setSuggested([]);
+    }
+  }, [subtotal]);
   // ⭐ HÀM ÁP DỤNG COUPON
   const applyCoupon = async () => {
     const code = (coupon || "").trim().toUpperCase();
@@ -166,8 +172,10 @@ export default function CartSlidebar({ onClose }) {
         const start = new Date(v.ngaybatdau);
         const end = new Date(v.ngayketthuc);
 
+        const status = removeVietnameseTones(v.trangthai || "");
+
         return (
-          removeVietnameseTones(v.trangthai) === "hoat dong" && // CHUẨN HẠT
+          status.includes("hoat") && // <— FIX KHÔNG ĐỤNG BACKEND
           currentSubtotal >= v.dontoithieu &&
           now >= start &&
           now <= end
@@ -278,7 +286,7 @@ export default function CartSlidebar({ onClose }) {
                 Áp dụng
               </button>
             </div>
-            {/* ⭐ GỢI Ý VOUCHER – LUXURY STYLE */}
+            {/*  GỢI Ý VOUCHER – LUXURY STYLE */}
             {suggested.length > 0 && (
               <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
                 <h4 className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">

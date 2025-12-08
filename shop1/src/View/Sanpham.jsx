@@ -270,7 +270,7 @@ export default function TatCaSanPham() {
                     </Link>
 
                     {/* Màu sắc chọn */}
-                    <div className="flex justify-center gap-3 mt-3">
+                    {/* <div className="flex justify-center gap-3 mt-3">
                       {p.colors.map((clr) => (
                         <button
                           key={clr}
@@ -285,7 +285,7 @@ export default function TatCaSanPham() {
                           style={{ backgroundColor: clr }}
                         />
                       ))}
-                    </div>
+                    </div> */}
                   </div>
                 ))}
               </div>

@@ -142,7 +142,7 @@ export default function HomePage() {
         }));
 
         setDailyProducts(mapped.slice(0, 6));
-        setHighlightProducts(mapped.slice(6, 12));
+        setHighlightProducts(mapped.slice(0, 6));
         setVouchers(voucherRes.data.data || []);
       } catch (err) {
         console.error("Lỗi khi tải dữ liệu:", err);
@@ -229,35 +229,63 @@ export default function HomePage() {
   }, []);
 
   /* ====== 🛒 Hàm thêm sản phẩm vào giỏ hàng ====== */
-  const handleAddToCart = (product) => {
+  /* ====== 🛒 Thêm nhanh vào giỏ hàng từ Homepage — BẢN XỊN ====== */
+  const handleAddToCart = async (p) => {
     try {
+      // 1️⃣ Lấy biến thể sản phẩm
+      const res = await axios.get(`http://localhost:5000/api/sanpham/${p.id}`);
+      const variants = res.data.bienthe || [];
+
+      if (variants.length === 0) {
+        alert("Sản phẩm chưa có biến thể!");
+        return;
+      }
+
+      // 2️⃣ Lấy biến thể đầu tiên (auto)
+      const v = variants[0];
+
+      const newItem = {
+        mabienthe: v.mabienthe,
+        tensanpham: p.name,
+        giagoc: Number(v.giaban),
+        giakhuyenmai: Number(v.giaban),
+        soluong: 1,
+        mausac: v.tenmausac,
+        size: v.tenkichthuoc,
+        hinhanh: v.hinhanh?.[0] || p.img,
+        sku: v.sku,
+      };
+
+      // 3️⃣ Lưu vào cart
       const stored = JSON.parse(localStorage.getItem("cart")) || [];
 
-      const existing = stored.find((item) => item.id === product.id);
-      if (existing) {
-        existing.qty += 1;
-      } else {
-        stored.push({
-          id: product.id,
-          name: product.name,
-          price: product.price,
-          qty: 1,
-          color: "Trắng",
-          size: "M",
-          img: product.img || "",
-        });
-      }
+      const exist = stored.find((i) => i.mabienthe === newItem.mabienthe);
+      if (exist) exist.soluong += 1;
+      else stored.push(newItem);
 
       localStorage.setItem("cart", JSON.stringify(stored));
 
+      // 4️⃣ Bắn event để Header cập nhật
+      window.dispatchEvent(new Event("cartUpdated"));
+
+      // ⭐ TOAST Luxury
       const toast = document.createElement("div");
-      toast.innerText = `🛒 Đã thêm "${product.name}" vào giỏ hàng!`;
-      toast.className =
-        "fixed bottom-6 right-6 bg-black text-white px-4 py-2 rounded-lg shadow-lg z-[9999]";
+      toast.className = `
+      fixed z-[9999] bg-white border border-gray-200 shadow-xl rounded-xl
+      p-4 w-[320px] flex items-center gap-3 animate-fadeIn
+      top-[90px] right-[110px]
+    `;
+      toast.innerHTML = `
+      <img src="${newItem.hinhanh}" class="w-14 h-14 rounded-md border object-cover"/>
+      <div class="flex-1">
+        <p class="text-sm font-semibold text-gray-900">Đã thêm vào giỏ hàng</p>
+        <p class="text-xs text-gray-500 mt-0.5">${newItem.tensanpham} • ${newItem.mausac}, ${newItem.size}</p>
+      </div>
+    `;
       document.body.appendChild(toast);
-      setTimeout(() => toast.remove(), 2000);
-    } catch (error) {
-      console.error("Lỗi khi thêm vào giỏ hàng:", error);
+      setTimeout(() => toast.remove(), 2500);
+    } catch (err) {
+      console.error("Lỗi thêm giỏ hàng:", err);
     }
   };
 
@@ -312,8 +340,11 @@ export default function HomePage() {
         {/* ===== Danh mục sản phẩm ===== */}
         <section className="pb-10">
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-6">
-            {gridCategories.map((cat) => (
-              <div key={cat.id} className="group flex flex-col items-center">
+            {gridCategories.map((cat, index) => (
+              <div
+                key={cat.slug || index}
+                className="group flex flex-col items-center"
+              >
                 <Link
                   to={`/all/${selectedGender}/${cat.slug
                     .replace("-nam", "")
@@ -401,7 +432,7 @@ export default function HomePage() {
 
         <section className="relative overflow-visible pb-20">
           <Slider {...settings}>
-            {dailyProducts.map((p) => (
+            {highlightProducts.map((p) => (
               <div key={p.id} className="px-3">
                 <div className="relative group bg-white border rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition">
                   <div className="h-72 bg-gray-50">
@@ -451,10 +482,10 @@ export default function HomePage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
               {vouchers.map((v) => (
                 <div
-                  key={v.mavoucher}
+                  key={v.magiamgia}
                   className="relative overflow-hidden rounded-3xl border border-blue-200 shadow-sm 
-                     bg-gradient-to-br from-blue-50 via-white to-blue-100
-                     hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+              bg-gradient-to-br from-blue-50 via-white to-blue-100
+              hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
                 >
                   {/* Mép rách kiểu phiếu giảm giá */}
                   <div className="absolute top-0 left-0 w-2 h-full bg-blue-600 rounded-l-3xl"></div>

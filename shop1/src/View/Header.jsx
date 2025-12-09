@@ -8,7 +8,7 @@ import {
   User,
   LogOut,
   UserCircle,
-  ClipboardList, // ✅ thêm icon đơn hàng
+  ClipboardList, // thêm icon đơn hàng
 } from "lucide-react";
 
 import AccountModal from "../Chucnang/Taikhoan.jsx";
@@ -63,7 +63,11 @@ export default function Navbar() {
   };
 
   const handleAvatarClick = () => {
-    navigate("/thongtincanhan");
+    if (user?.vaitro === "admin") {
+      navigate("/admin"); // nếu admin thì nhảy thẳng vào dashboard admin
+    } else {
+      navigate("/thongtincanhan"); // user thường vẫn vào trang cá nhân
+    }
   };
 
   /* ===== THANH TÌM KIẾM ===== */
@@ -369,7 +373,7 @@ export default function Navbar() {
                     {user.name || user.email}
                   </p>
                   <p className="text-xs text-gray-500">
-                    {user.role === "admin" ? "Quản trị viên" : "Thành viên"}
+                    {user.vaitro === "admin" ? "Quản trị viên" : "Thành viên"}
                   </p>
                 </div>
 

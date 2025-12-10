@@ -1,4 +1,3 @@
-// src/Admin/Sanpham/ProductTable.jsx
 import ProductItem from "./ProductItem";
 
 export default function ProductTable({
@@ -14,20 +13,22 @@ export default function ProductTable({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-x-auto">
-      <table className="w-full text-sm border-collapse">
-        <thead>
-          <tr className="bg-blue-50 text-gray-700 font-semibold">
-            <th className="p-3 border">Ảnh</th>
-            <th className="p-3 border">Tên sản phẩm</th>
-            <th className="p-3 border">Thương hiệu</th>
-            <th className="p-3 border">Chất liệu</th>
-            <th className="p-3 border">Kiểu dáng</th>
-            <th className="p-3 border">Danh mục</th>
-            <th className="p-3 border">Hành động</th>
+    <div className="bg-[#111111] border border-white/10 rounded-xl shadow-[0_0_15px_rgba(0,0,0,0.4)] overflow-hidden">
+      <table className="w-full text-sm text-gray-300">
+        {/* HEADER */}
+        <thead className="bg-white/5 text-gray-400 uppercase tracking-wide">
+          <tr>
+            <th className="p-3 border-b border-white/10">Ảnh</th>
+            <th className="p-3 border-b border-white/10">Tên sản phẩm</th>
+            <th className="p-3 border-b border-white/10">Thương hiệu</th>
+            <th className="p-3 border-b border-white/10">Chất liệu</th>
+            <th className="p-3 border-b border-white/10">Kiểu dáng</th>
+            <th className="p-3 border-b border-white/10">Danh mục</th>
+            <th className="p-3 border-b border-white/10">Hành động</th>
           </tr>
         </thead>
 
+        {/* BODY */}
         <tbody>
           {products.map((p) => (
             <ProductItem

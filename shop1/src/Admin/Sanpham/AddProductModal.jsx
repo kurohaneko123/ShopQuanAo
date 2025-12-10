@@ -204,31 +204,40 @@ export default function AddProductModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white w-[900px] max-h-[90vh] overflow-y-auto rounded-xl shadow-lg p-6">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-[#111] border border-white/10 rounded-xl shadow-2xl p-6 w-[900px] max-h-[90vh] overflow-y-auto text-gray-200">
         {/* HEADER */}
-        <div className="flex justify-between items-center mb-5">
-          <h2 className="text-xl font-bold">Thêm sản phẩm</h2>
-          <button onClick={onClose}>✖</button>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-white">Thêm sản phẩm</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-white text-lg"
+          >
+            ✖
+          </button>
         </div>
 
-        {/* FORM SẢN PHẨM */}
+        {/* FORM */}
         <div className="grid grid-cols-2 gap-4">
-          {/* TÊN */}
+          {/* Tên */}
           <div>
-            <label className="font-medium text-sm">Tên sản phẩm *</label>
+            <label className="text-gray-300 text-sm font-medium">
+              Tên sản phẩm *
+            </label>
             <input
-              className="border p-2 rounded w-full"
+              className="bg-[#1a1a1a] border border-white/10 p-2 rounded-lg w-full text-gray-200"
               value={data.tensanpham}
               onChange={(e) => setData({ ...data, tensanpham: e.target.value })}
             />
           </div>
 
-          {/* DANH MỤC */}
+          {/* Danh mục */}
           <div>
-            <label className="font-medium text-sm">Danh mục *</label>
+            <label className="text-gray-300 text-sm font-medium">
+              Danh mục *
+            </label>
             <select
-              className="border p-2 rounded w-full"
+              className="bg-[#1a1a1a] border border-white/10 p-2 rounded-lg w-full"
               value={data.madanhmuc}
               onChange={(e) => setData({ ...data, madanhmuc: e.target.value })}
             >
@@ -241,73 +250,57 @@ export default function AddProductModal({
             </select>
           </div>
 
-          {/* THƯƠNG HIỆU */}
-          <div>
-            <label className="font-medium text-sm">Thương hiệu</label>
-            <input
-              className="border p-2 rounded w-full"
-              value={data.thuonghieu}
-              onChange={(e) => setData({ ...data, thuonghieu: e.target.value })}
-            />
-          </div>
-
-          {/* CHẤT LIỆU */}
-          <div>
-            <label className="font-medium text-sm">Chất liệu</label>
-            <input
-              className="border p-2 rounded w-full"
-              value={data.chatlieu}
-              onChange={(e) => setData({ ...data, chatlieu: e.target.value })}
-            />
-          </div>
-
-          {/* KIỂU DÁNG */}
-          <div>
-            <label className="font-medium text-sm">Kiểu dáng</label>
-            <input
-              className="border p-2 rounded w-full"
-              value={data.kieudang}
-              onChange={(e) => setData({ ...data, kieudang: e.target.value })}
-            />
-          </div>
-
-          {/* BẢO QUẢN */}
-          <div>
-            <label className="font-medium text-sm">Bảo quản</label>
-            <input
-              className="border p-2 rounded w-full"
-              value={data.baoquan}
-              onChange={(e) => setData({ ...data, baoquan: e.target.value })}
-            />
-          </div>
+          {/* Thương hiệu – Chất liệu – Kiểu dáng – Bảo quản */}
+          {[
+            ["Thương hiệu", "thuonghieu"],
+            ["Chất liệu", "chatlieu"],
+            ["Kiểu dáng", "kieudang"],
+            ["Bảo quản", "baoquan"],
+          ].map(([label, key]) => (
+            <div key={key}>
+              <label className="text-gray-300 text-sm font-medium">
+                {label}
+              </label>
+              <input
+                className="bg-[#1a1a1a] border border-white/10 p-2 rounded-lg w-full"
+                value={data[key]}
+                onChange={(e) => setData({ ...data, [key]: e.target.value })}
+              />
+            </div>
+          ))}
         </div>
 
-        {/* MÔ TẢ */}
+        {/* Mô tả */}
         <div className="mt-4">
-          <label className="font-medium text-sm">Mô tả</label>
+          <label className="text-gray-300 text-sm font-medium">Mô tả</label>
           <textarea
-            className="border p-2 rounded w-full"
+            className="bg-[#1a1a1a] border border-white/10 p-2 rounded-lg w-full text-gray-200"
             rows={3}
             value={data.mota}
             onChange={(e) => setData({ ...data, mota: e.target.value })}
           />
         </div>
 
-        {/* ẢNH ĐẠI DIỆN */}
+        {/* Ảnh đại diện */}
         <div className="mt-4">
-          <label className="font-medium text-sm">Ảnh đại diện *</label>
+          <label className="text-gray-300 text-sm font-medium">
+            Ảnh đại diện *
+          </label>
           <input
             type="file"
-            className="border p-2 rounded w-40"
+            className="bg-[#1a1a1a] border border-white/10 p-2 rounded-lg w-60 text-gray-300"
             onChange={(e) => setAvatarFile(e.target.files[0])}
           />
         </div>
 
         {/* BIẾN THỂ */}
-        <div className="mt-6 border rounded-lg p-4 bg-gray-50">
-          <div className="flex justify-between mb-4">
-            <h3 className="font-bold">Biến thể sản phẩm</h3>
-            <button className="text-blue-600" onClick={addVariant}>
+        <div className="mt-6 border border-white/10 rounded-lg p-4 bg-[#1a1a1a] shadow-inner">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="font-bold text-gray-100">Biến thể sản phẩm</h3>
+            <button
+              onClick={addVariant}
+              className="text-indigo-400 hover:text-indigo-300"
+            >
               + Thêm biến thể
             </button>
           </div>
@@ -315,15 +308,15 @@ export default function AddProductModal({
           {variants.map((v, idx) => (
             <div
               key={idx}
-              className="grid grid-cols-7 gap-3 p-3 bg-white rounded-lg mb-4 border"
+              className="grid grid-cols-7 gap-3 p-3 bg-[#111] border border-white/10 rounded-lg mb-4"
             >
               {/* SIZE */}
               <select
-                className="border p-2 rounded"
+                className="bg-[#1a1a1a] border border-white/10 p-2 rounded-lg text-gray-200"
                 value={v.size}
                 onChange={(e) => updateVariant(idx, "size", e.target.value)}
               >
-                <option value="">-- Chọn size --</option>
+                <option value="">-- Size --</option>
                 {sizes.map((s) => (
                   <option key={s.makichthuoc} value={s.makichthuoc}>
                     {s.tenkichthuoc}
@@ -333,11 +326,11 @@ export default function AddProductModal({
 
               {/* MÀU */}
               <select
-                className="border p-2 rounded"
+                className="bg-[#1a1a1a] border border-white/10 p-2 rounded-lg text-gray-200"
                 value={v.color}
                 onChange={(e) => updateVariant(idx, "color", e.target.value)}
               >
-                <option value="">-- Chọn màu --</option>
+                <option value="">-- Màu --</option>
                 {colors.map((c) => (
                   <option key={c.mamausac} value={c.mamausac}>
                     {c.tenmausac}
@@ -347,7 +340,7 @@ export default function AddProductModal({
 
               {/* GIÁ */}
               <input
-                className="border p-2 rounded"
+                className="bg-[#1a1a1a] border border-white/10 p-2 rounded-lg text-gray-200"
                 placeholder="Giá bán"
                 value={v.giaban}
                 onChange={(e) => updateVariant(idx, "giaban", e.target.value)}
@@ -355,39 +348,33 @@ export default function AddProductModal({
 
               {/* TỒN */}
               <input
-                className="border p-2 rounded"
+                className="bg-[#1a1a1a] border border-white/10 p-2 rounded-lg text-gray-200"
                 placeholder="Tồn"
                 value={v.ton}
                 onChange={(e) => updateVariant(idx, "ton", e.target.value)}
               />
 
-              {/* Ảnh 1 */}
-              <div className="flex flex-col">
-                <label className="text-sm font-medium">Ảnh 1</label>
-                <input
-                  type="file"
-                  className="border p-2 rounded w-40"
-                  onChange={(e) =>
-                    updateVariant(idx, "image1", e.target.files[0])
-                  }
-                />
-              </div>
+              {/* ẢNH 1 */}
+              <input
+                type="file"
+                className="bg-[#1a1a1a] border border-white/10 p-2 rounded-lg text-gray-300"
+                onChange={(e) =>
+                  updateVariant(idx, "image1", e.target.files[0])
+                }
+              />
 
-              {/* Ảnh 2 */}
-              <div className="flex flex-col">
-                <label className="text-sm font-medium">Ảnh 2</label>
-                <input
-                  type="file"
-                  className="border p-2 rounded w-40"
-                  onChange={(e) =>
-                    updateVariant(idx, "image2", e.target.files[0])
-                  }
-                />
-              </div>
+              {/* ẢNH 2 */}
+              <input
+                type="file"
+                className="bg-[#1a1a1a] border border-white/10 p-2 rounded-lg text-gray-300"
+                onChange={(e) =>
+                  updateVariant(idx, "image2", e.target.files[0])
+                }
+              />
 
               {/* XOÁ */}
               <button
-                className="text-red-600"
+                className="text-red-500 hover:text-red-400"
                 onClick={() => removeVariant(idx)}
               >
                 Xóa
@@ -396,13 +383,16 @@ export default function AddProductModal({
           ))}
         </div>
 
-        {/* BUTTON */}
+        {/* BUTTONS */}
         <div className="mt-6 flex justify-end gap-3">
-          <button className="px-4 py-2 bg-gray-200 rounded" onClick={onClose}>
+          <button
+            className="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg text-gray-300"
+            onClick={onClose}
+          >
             Hủy
           </button>
           <button
-            className="px-4 py-2 bg-blue-600 text-white rounded"
+            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg shadow-lg"
             onClick={handleSubmit}
           >
             Thêm sản phẩm

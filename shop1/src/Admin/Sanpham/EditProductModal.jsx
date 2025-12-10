@@ -79,41 +79,45 @@ export default function EditProductModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl">
-        <div className="flex items-center justify-between px-5 py-3 border-b">
-          <h3 className="text-lg font-semibold">Sửa sản phẩm</h3>
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-[#111] border border-white/10 rounded-xl shadow-2xl w-full max-w-2xl text-gray-200">
+        {/* HEADER */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
+          <h3 className="text-xl font-bold text-white">Sửa sản phẩm</h3>
           <button
-            className="p-1 rounded-full hover:bg-gray-100"
+            className="p-2 rounded-lg hover:bg-white/10 text-gray-300"
             onClick={onClose}
           >
-            <X size={18} />
+            <X size={20} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-5 space-y-4">
-          {/* ================================================================== */}
-          {/* FORM INPUT */}
-          {/* ================================================================== */}
-
+        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+          {/* INPUT GRID */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Tên */}
             <div>
-              <label className="text-sm font-medium">Tên sản phẩm *</label>
+              <label className="text-sm text-gray-300 font-medium">
+                Tên sản phẩm *
+              </label>
               <input
                 name="tensanpham"
                 value={form.tensanpham || ""}
                 onChange={handleChange}
-                className="w-full border px-3 py-2 rounded-lg mt-1"
+                className="w-full bg-[#1a1a1a] border border-white/10 px-3 py-2 rounded-lg mt-1 text-gray-200"
               />
             </div>
 
+            {/* Danh mục */}
             <div>
-              <label className="text-sm font-medium">Danh mục *</label>
+              <label className="text-sm text-gray-300 font-medium">
+                Danh mục *
+              </label>
               <select
                 name="madanhmuc"
                 value={form.madanhmuc || ""}
                 onChange={handleChange}
-                className="w-full border px-3 py-2 rounded-lg mt-1"
+                className="w-full bg-[#1a1a1a] border border-white/10 px-3 py-2 rounded-lg mt-1 text-gray-200"
               >
                 <option value="">-- Chọn danh mục --</option>
                 {categories.map((c) => (
@@ -124,89 +128,64 @@ export default function EditProductModal({
               </select>
             </div>
 
-            <div>
-              <label className="text-sm font-medium">Thương hiệu</label>
-              <input
-                name="thuonghieu"
-                value={form.thuonghieu || ""}
-                onChange={handleChange}
-                className="w-full border px-3 py-2 rounded-lg mt-1"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium">Chất liệu</label>
-              <input
-                name="chatlieu"
-                value={form.chatlieu || ""}
-                onChange={handleChange}
-                className="w-full border px-3 py-2 rounded-lg mt-1"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium">Kiểu dáng</label>
-              <input
-                name="kieudang"
-                value={form.kieudang || ""}
-                onChange={handleChange}
-                className="w-full border px-3 py-2 rounded-lg mt-1"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium">Bảo quản</label>
-              <input
-                name="baoquan"
-                value={form.baoquan || ""}
-                onChange={handleChange}
-                className="w-full border px-3 py-2 rounded-lg mt-1"
-              />
-            </div>
+            {/* 4 input còn lại */}
+            {[
+              ["Thương hiệu", "thuonghieu"],
+              ["Chất liệu", "chatlieu"],
+              ["Kiểu dáng", "kieudang"],
+              ["Bảo quản", "baoquan"],
+            ].map(([label, key]) => (
+              <div key={key}>
+                <label className="text-sm text-gray-300 font-medium">
+                  {label}
+                </label>
+                <input
+                  name={key}
+                  value={form[key] || ""}
+                  onChange={handleChange}
+                  className="w-full bg-[#1a1a1a] border border-white/10 px-3 py-2 rounded-lg mt-1 text-gray-200"
+                />
+              </div>
+            ))}
           </div>
 
-          {/* MÔ TẢ */}
+          {/* Mô tả */}
           <div>
-            <label className="text-sm font-medium">Mô tả</label>
+            <label className="text-sm text-gray-300 font-medium">Mô tả</label>
             <textarea
               name="mota"
               value={form.mota || ""}
               onChange={handleChange}
-              className="w-full border px-3 py-2 rounded-lg mt-1 min-h-[80px]"
+              className="w-full bg-[#1a1a1a] border border-white/10 px-3 py-2 rounded-lg mt-1 min-h-[90px] text-gray-200"
             />
           </div>
 
-          {/* ================================================================== */}
-          {/*  ẢNH ĐẠI DIỆN  */}
-          {/* ================================================================== */}
-          <div className="mt-4">
-            <label className="text-sm font-medium">
-              Ảnh đại diện (có thể đổi)
+          {/* Ảnh đại diện */}
+          <div>
+            <label className="text-sm text-gray-300 font-medium">
+              Ảnh đại diện
             </label>
 
-            <div className="flex items-center gap-4 mt-2">
-              {/* ẢNH HIỆN TẠI */}
+            <div className="flex items-center gap-4 mt-3">
               <img
-                src={preview || null}
-                className="w-24 h-24 rounded-lg object-cover border bg-gray-100"
-                alt="avatar"
+                src={preview}
+                className="w-24 h-24 rounded-lg object-cover border border-white/10 bg-[#222]"
               />
 
-              {/* INPUT CHỌN ẢNH MỚI */}
               <input
                 type="file"
-                className="border p-2 rounded"
+                className="bg-[#1a1a1a] border border-white/10 px-3 py-2 rounded-lg text-gray-300"
                 onChange={handleAvatarChange}
               />
             </div>
           </div>
 
-          {/* BUTTON */}
+          {/* BUTTONS */}
           <div className="flex justify-end gap-3 pt-3">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-lg border bg-gray-50 hover:bg-gray-100"
+              className="px-4 py-2 rounded-lg bg-white/10 text-gray-300 border border-white/10 hover:bg-white/20"
             >
               Hủy
             </button>
@@ -214,7 +193,7 @@ export default function EditProductModal({
             <button
               type="submit"
               disabled={saving}
-              className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60"
+              className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white disabled:opacity-60 shadow-lg"
             >
               {saving ? "Đang lưu..." : "Lưu thay đổi"}
             </button>

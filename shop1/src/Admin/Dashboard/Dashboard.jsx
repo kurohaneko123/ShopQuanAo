@@ -8,21 +8,17 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState([]);
   const API_USER = "http://localhost:5000/api/nguoidung/danhsach";
-
   const API_ORDER = "http://localhost:5000/api/donhang";
   const API_PRODUCT = "http://localhost:5000/api/sanpham";
+
   const [chartMode, setChartMode] = useState("column");
-  // "column" | "line" | "area"
 
   useEffect(() => {
     const fetchAll = async () => {
       try {
         const rawToken = localStorage.getItem("token");
-
-        if (!rawToken || rawToken === "null" || rawToken === "undefined") {
-          console.log("❌ Không có token — dừng dashboard");
+        if (!rawToken || rawToken === "null" || rawToken === "undefined")
           return;
-        }
 
         const token = rawToken.trim();
 
@@ -40,7 +36,6 @@ export default function Dashboard() {
 
         setOrders(o.data.data || []);
         setProducts(Array.isArray(p.data.data) ? p.data.data : []);
-
         setUsers(u.data.nguoidung || []);
       } catch (err) {
         console.error("Dashboard error:", err);
@@ -48,31 +43,28 @@ export default function Dashboard() {
         setLoading(false);
       }
     };
-
     fetchAll();
   }, []);
 
-  if (loading) return <p>Đang tải...</p>;
+  if (loading) return <p className="text-gray-400">Đang tải...</p>;
 
-  // ==== TÍNH TOÁN ====
+  // ===== TÍNH TOÁN =====
   const totalOrder = orders.length;
   const totalProduct = products.length;
   const totalUser = users.length;
-
   const totalRevenue = orders.reduce(
     (sum, o) => sum + Number(o.tongthanhtoan || 0),
     0
   );
 
-  // ==== BIỂU ĐỒ DOANH THU THEO THÁNG ====
+  // ===== DOANH THU THEO THÁNG =====
   const revenueByMonth = Array(12).fill(0);
-
   orders.forEach((o) => {
     const m = new Date(o.ngaytao).getMonth();
     revenueByMonth[m] += Number(o.tongthanhtoan || 0);
   });
-  const ordersByMonth = Array(12).fill(0);
 
+  const ordersByMonth = Array(12).fill(0);
   orders.forEach((o) => {
     const m = new Date(o.ngaytao).getMonth();
     ordersByMonth[m]++;
@@ -92,135 +84,136 @@ export default function Dashboard() {
     "T11",
     "T12",
   ];
-  // === ĐẾM SỐ ĐƠN THEO TRẠNG THÁI ===
+
+  // ====== ĐẾM TRẠNG THÁI ======
   const statusCount = {
     "Chờ xác nhận": 0,
     "Đang giao": 0,
     "Đã giao": 0,
     "Đã hủy": 0,
   };
-
   orders.forEach((order) => {
     const st = order.trangthai?.trim() || "Chờ xác nhận";
-    if (statusCount[st] !== undefined) {
-      statusCount[st]++;
-    }
+    if (statusCount[st] !== undefined) statusCount[st]++;
   });
 
   return (
-    <div>
-      <h1 className="text-3xl font-extrabold mb-8">Dashboard Tổng Quan</h1>
+    <div className="text-gray-200 space-y-10">
+      <h1 className="text-3xl font-extrabold mb-6 text-white">
+        Dashboard Tổng Quan
+      </h1>
 
       {/* ===== SUMMARY CARDS ===== */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-        {/* Sản phẩm */}
-        <div className="bg-white rounded-xl p-6 flex items-center gap-4 shadow hover:shadow-lg transition">
-          <div className="p-3 rounded-lg bg-cyan-100 text-cyan-700">
-            <Package />
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* CARD TEMPLATE */}
+        {[
+          {
+            icon: <Package />,
+            label: "Sản phẩm",
+            value: totalProduct,
+            color: "text-cyan-400",
+          },
+          {
+            icon: <DollarSign />,
+            label: "Đơn hàng",
+            value: totalOrder,
+            color: "text-green-400",
+          },
+          {
+            icon: <TrendingUp />,
+            label: "Doanh thu (VNĐ)",
+            value: totalRevenue.toLocaleString(),
+            color: "text-purple-400",
+          },
+          {
+            icon: <BarChart2 />,
+            label: "Người dùng",
+            value: totalUser,
+            color: "text-blue-400",
+          },
+        ].map((item, i) => (
+          <div
+            key={i}
+            className="bg-[#111111] border border-white/10 rounded-xl p-6 flex items-center gap-4 shadow-[0_0_15px_rgba(0,0,0,0.4)] hover:bg-white/5 transition"
+          >
+            <div className={`p-3 rounded-lg bg-white/5 ${item.color}`}>
+              {item.icon}
+            </div>
+            <div>
+              <p className="text-sm text-gray-400">{item.label}</p>
+              <h3 className="text-2xl font-bold text-white">{item.value}</h3>
+            </div>
           </div>
-          <div>
-            <p className="text-sm text-gray-500">Sản phẩm</p>
-            <h3 className="text-2xl font-bold">{totalProduct}</h3>
-          </div>
-        </div>
-
-        {/* Đơn hàng */}
-        <div className="bg-white rounded-xl p-6 flex items-center gap-4 shadow hover:shadow-lg transition">
-          <div className="p-3 rounded-lg bg-green-100 text-green-700">
-            <DollarSign />
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Đơn hàng</p>
-            <h3 className="text-2xl font-bold">{totalOrder}</h3>
-          </div>
-        </div>
-
-        {/* Doanh thu */}
-        <div className="bg-white rounded-xl p-6 flex items-center gap-4 shadow hover:shadow-lg transition">
-          <div className="p-3 rounded-lg bg-purple-100 text-purple-700">
-            <TrendingUp />
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Doanh thu (VNĐ)</p>
-            <h3 className="text-2xl font-bold">
-              {totalRevenue.toLocaleString()}
-            </h3>
-          </div>
-        </div>
-
-        {/* 🟦 Người dùng */}
-        <div className="bg-white rounded-xl p-6 flex items-center gap-4 shadow hover:shadow-lg transition">
-          <div className="p-3 rounded-lg bg-blue-100 text-blue-700">
-            <BarChart2 />
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Người dùng</p>
-            <h3 className="text-2xl font-bold">{totalUser}</h3>
-          </div>
-        </div>
+        ))}
       </div>
 
       {/* ===== BIỂU ĐỒ DOANH THU ===== */}
-      <div className="bg-white rounded-xl shadow p-6 mb-10">
-        <h2 className="text-xl font-bold mb-4">Doanh thu 12 tháng</h2>
-
-        {/* Nút chuyển mode */}
+      <div className="bg-[#111111] border border-white/10 rounded-xl p-6 shadow-xl">
+        {/* Button Mode */}
         <div className="flex gap-3 mb-4">
-          <button
-            onClick={() => setChartMode("column")}
-            className={`px-4 py-2 rounded-lg border ${
-              chartMode === "column" ? "bg-cyan-500 text-white" : "bg-white"
-            }`}
-          >
-            Cột
-          </button>
-
-          <button
-            onClick={() => setChartMode("line")}
-            className={`px-4 py-2 rounded-lg border ${
-              chartMode === "line" ? "bg-cyan-500 text-white" : "bg-white"
-            }`}
-          >
-            Đường
-          </button>
-
-          <button
-            onClick={() => setChartMode("area")}
-            className={`px-4 py-2 rounded-lg border ${
-              chartMode === "area" ? "bg-cyan-500 text-white" : "bg-white"
-            }`}
-          >
-            Area
-          </button>
+          {["column", "line", "area"].map((m) => (
+            <button
+              key={m}
+              onClick={() => setChartMode(m)}
+              className={`px-4 py-2 rounded-lg border border-white/10 ${
+                chartMode === m
+                  ? "bg-indigo-600 text-white"
+                  : "bg-[#1a1a1a] text-gray-300"
+              }`}
+            >
+              {m === "column" ? "Cột" : m === "line" ? "Đường" : "Area"}
+            </button>
+          ))}
         </div>
 
         {/* BIỂU ĐỒ */}
-        <div className="relative h-72 bg-gradient-to-b from-cyan-50 to-white rounded-xl p-6">
+        <div
+          className="relative h-72 
+bg-gradient-to-b from-[#1f1f1f] via-[#181818] to-[#111111]
+rounded-2xl p-6
+shadow-[inset_0_10px_25px_rgba(255,255,255,0.03)]"
+        >
           <svg viewBox="0 0 1200 300" className="w-full h-full">
-            {/* VẼ AREA MODE */}
+            <defs>
+              <linearGradient id="revBar" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#5ee7ff" /> {/* Cyan sáng */}
+                <stop offset="100%" stopColor="#0ea5e9" /> {/* Xanh đậm */}
+              </linearGradient>
+            </defs>
+            {months.map((m, i) => {
+              const x = (i / 12) * 1200 + 50; // vị trí tháng dưới mỗi cột
+              return (
+                <text
+                  key={m}
+                  x={x}
+                  y={295}
+                  textAnchor="middle"
+                  fontSize="22"
+                  fill="rgba(255,255,255,0.35)"
+                >
+                  {m}
+                </text>
+              );
+            })}
+            {/* AREA */}
             {chartMode === "area" && (
               <path
-                d={`
-            M 0 300 
-            ${revenueByMonth
-              .map((v, i) => {
-                const x = (i / 11) * 1200;
-                const y = 300 - (v / Math.max(...revenueByMonth, 1)) * 260;
-                return `L ${x} ${y}`;
-              })
-              .join(" ")}
-            L 1200 300 Z
-          `}
-                fill="rgba(34,211,238,0.4)"
-                className="transition-all duration-500"
+                d={`M0 300 ${revenueByMonth
+                  .map((v, i) => {
+                    const x = (i / 11) * 1200;
+                    const y = 300 - (v / Math.max(...revenueByMonth, 1)) * 260;
+                    return `L ${x} ${y}`;
+                  })
+                  .join(" ")} L1200 300 Z`}
+                fill="rgba(99,102,241,0.35)"
               />
             )}
 
-            {/* VẼ LINE MODE */}
+            {/* LINE */}
             {chartMode === "line" && (
               <polyline
                 fill="none"
-                stroke="#06b6d4"
+                stroke="#6366f1"
                 strokeWidth="4"
                 strokeLinecap="round"
                 points={revenueByMonth
@@ -230,172 +223,117 @@ export default function Dashboard() {
                     return `${x},${y}`;
                   })
                   .join(" ")}
-                className="transition-all duration-500"
               />
             )}
 
-            {/* VẼ CỘT MODE */}
+            {/* COLUMN */}
             {chartMode === "column" &&
               revenueByMonth.map((v, i) => {
                 const height = (v / Math.max(...revenueByMonth, 1)) * 260;
                 const x = (i / 12) * 1200 + 20;
+
                 return (
-                  <rect
-                    key={i}
-                    x={x}
-                    y={300 - height}
-                    width="60"
-                    height={height}
-                    fill="#06b6d4"
-                    className="transition-all duration-500 hover:opacity-70 cursor-pointer"
-                  />
-                );
-              })}
-
-            {/* TOOLTIP DOT + giá trị */}
-            {/* TOOLTIP DOT + FULL INFO */}
-            {revenueByMonth.map((v, i) => {
-              const x = (i / 11) * 1200;
-              const y = 300 - (v / Math.max(...revenueByMonth, 1)) * 260;
-
-              return (
-                <g key={i}>
-                  <circle cx={x} cy={y} r="6" fill="#06b6d4" />
-
-                  {/* Tooltip */}
-                  <g className="opacity-0 hover:opacity-100 transition">
+                  <g key={i}>
+                    {/* CỘT DOANH THU */}
                     <rect
-                      x={x - 70}
-                      y={y - 80}
-                      width="140"
-                      height="65"
-                      rx="8"
-                      fill="white"
-                      stroke="#06b6d4"
-                      className="shadow-lg"
+                      x={x}
+                      y={300 - height}
+                      width="60"
+                      height={height}
+                      rx="10"
+                      fill="url(#revBar)"
+                      filter="drop-shadow(0px 0px 8px rgba(14,165,233,0.35))"
+                      className="transition-all duration-500 hover:opacity-90"
                     />
 
+                    {/* LABEL THÁNG */}
                     <text
-                      x={x}
-                      y={y - 60}
+                      x={x + 30}
+                      y={295}
                       textAnchor="middle"
-                      className="text-xs fill-gray-800 font-semibold"
+                      fontSize="22"
+                      fill="rgba(255,255,255,0.35)"
                     >
-                      {`Tháng ${i + 1}`}
-                    </text>
-
-                    <text
-                      x={x}
-                      y={y - 40}
-                      textAnchor="middle"
-                      className="text-xs fill-cyan-600 font-bold"
-                    >
-                      {`Doanh thu: ${v.toLocaleString()}đ`}
-                    </text>
-
-                    <text
-                      x={x}
-                      y={y - 22}
-                      textAnchor="middle"
-                      className="text-xs fill-gray-600"
-                    >
-                      {`Số đơn: ${ordersByMonth[i]} đơn`}
+                      {months[i]}
                     </text>
                   </g>
-                </g>
-              );
-            })}
+                );
+              })}
           </svg>
         </div>
+      </div>
 
-        {/* ====== PIE CHART ====== */}
-        {/* ===== BIỂU ĐỒ TRÒN ĐẸP ===== */}
-        <div className="bg-white rounded-2xl shadow p-8 mt-10">
-          <h2 className="text-xl font-bold mb-6">Tỉ lệ trạng thái đơn hàng</h2>
+      {/* ===== PIE CHART ===== */}
+      <div className="bg-[#111111] border border-white/10 rounded-xl p-8 shadow-xl">
+        <h2 className="text-xl font-bold mb-6 text-white">
+          Tỉ lệ trạng thái đơn hàng
+        </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-            {/* LEGEND */}
-            <div className="space-y-4 text-gray-700">
-              <div className="flex items-center gap-3">
-                <span className="w-4 h-4 rounded-full bg-green-500"></span>
-                <span>
-                  Chờ xác nhận: <b>{statusCount["Chờ xác nhận"]}</b> đơn
-                </span>
-              </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center text-gray-300">
+          {/* LEGEND */}
+          <div className="space-y-4">
+            <p>
+              <span className="inline-block w-4 h-4 bg-green-500 mr-2"></span>
+              Chờ xác nhận: {statusCount["Chờ xác nhận"]} đơn
+            </p>
+            <p>
+              <span className="inline-block w-4 h-4 bg-blue-500 mr-2"></span>
+              Đang giao: {statusCount["Đang giao"]} đơn
+            </p>
+            <p>
+              <span className="inline-block w-4 h-4 bg-purple-500 mr-2"></span>
+              Đã giao: {statusCount["Đã giao"]} đơn
+            </p>
+            <p>
+              <span className="inline-block w-4 h-4 bg-red-500 mr-2"></span>Đã
+              hủy: {statusCount["Đã hủy"]} đơn
+            </p>
+          </div>
 
-              <div className="flex items-center gap-3">
-                <span className="w-4 h-4 rounded-full bg-blue-500"></span>
-                <span>
-                  Đang giao: <b>{statusCount["Đang giao"]}</b> đơn
-                </span>
-              </div>
+          {/* DONUT CHART */}
+          <div className="flex justify-center">
+            <div className="relative w-48 h-48">
+              <svg viewBox="0 0 36 36" className="w-full h-full">
+                <circle
+                  cx="18"
+                  cy="18"
+                  r="15.5"
+                  fill="#0d0d0d"
+                  stroke="#222"
+                  strokeWidth="3"
+                />
 
-              <div className="flex items-center gap-3">
-                <span className="w-4 h-4 rounded-full bg-purple-500"></span>
-                <span>
-                  Đã giao: <b>{statusCount["Đã giao"]}</b> đơn
-                </span>
-              </div>
+                {(() => {
+                  const total =
+                    Object.values(statusCount).reduce((a, b) => a + b, 0) || 1;
+                  let offset = 25;
+                  const COLORS = ["#22c55e", "#0ea5e9", "#a855f7", "#ef4444"];
 
-              <div className="flex items-center gap-3">
-                <span className="w-4 h-4 rounded-full bg-red-500"></span>
-                <span>
-                  Đã hủy: <b>{statusCount["Đã hủy"]}</b> đơn
-                </span>
-              </div>
-            </div>
+                  return Object.values(statusCount).map((value, i) => {
+                    const pct = (value / total) * 100;
+                    const dash = (pct / 100) * 100;
 
-            {/* DONUT CHART */}
-            <div className="flex justify-center">
-              <div className="relative w-48 h-48">
-                <svg viewBox="0 0 36 36" className="w-full h-full">
-                  {/* Vòng trắng ở giữa */}
-                  <circle
-                    cx="18"
-                    cy="18"
-                    r="15.5"
-                    fill="white"
-                    stroke="#f1f5f9"
-                    strokeWidth="3"
-                  />
+                    const circle = (
+                      <circle
+                        key={i}
+                        cx="18"
+                        cy="18"
+                        r="15.5"
+                        fill="transparent"
+                        stroke={COLORS[i]}
+                        strokeWidth="3.2"
+                        strokeDasharray={`${dash} ${100 - dash}`}
+                        strokeDashoffset={offset}
+                        className="transition-all duration-700"
+                      />
+                    );
 
-                  {/* Các vòng màu */}
-                  {(() => {
-                    const total =
-                      Object.values(statusCount).reduce((a, b) => a + b, 0) ||
-                      1;
-                    let offset = 25;
-
-                    const COLORS = ["#22c55e", "#0ea5e9", "#a855f7", "#ef4444"];
-
-                    return Object.values(statusCount).map((value, i) => {
-                      const pct = (value / total) * 100;
-                      const dash = (pct / 100) * 100;
-
-                      const circle = (
-                        <circle
-                          key={i}
-                          cx="18"
-                          cy="18"
-                          r="15.5"
-                          fill="transparent"
-                          stroke={COLORS[i]}
-                          strokeWidth="3.2"
-                          strokeDasharray={`${dash} ${100 - dash}`}
-                          strokeDashoffset={offset}
-                          className="transition-all duration-700"
-                        />
-                      );
-
-                      offset -= dash;
-                      return circle;
-                    });
-                  })()}
-                </svg>
-
-                {/* LÕI TRẮNG Ở GIỮA */}
-                <div className="absolute top-1/2 left-1/2 w-20 h-20 bg-white rounded-full -translate-x-1/2 -translate-y-1/2 shadow"></div>
-              </div>
+                    offset -= dash;
+                    return circle;
+                  });
+                })()}
+              </svg>
+              <div className="absolute top-1/2 left-1/2 w-20 h-20 bg-[#111111] rounded-full -translate-x-1/2 -translate-y-1/2 shadow-inner"></div>
             </div>
           </div>
         </div>

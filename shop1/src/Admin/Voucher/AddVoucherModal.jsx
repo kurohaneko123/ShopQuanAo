@@ -8,15 +8,15 @@ export default function AddVoucherModal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
-      <div className="bg-white w-[440px] rounded-xl shadow-xl p-6">
-        <h3 className="text-lg font-bold mb-4">Thêm voucher</h3>
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50">
+      <div className="bg-[#111] w-[440px] rounded-xl border border-white/10 shadow-2xl p-6 text-gray-200">
+        <h3 className="text-xl font-bold mb-4 text-white">Thêm voucher</h3>
 
         <div className="space-y-3">
           {/* Mã voucher hệ thống */}
           <input
             placeholder="Mã voucher (hệ thống)"
-            className="border p-2 w-full rounded bg-gray-100"
+            className="bg-[#1a1a1a] border border-white/10 p-2 w-full rounded text-gray-400"
             value={data.mavoucher || ""}
             disabled
           />
@@ -24,7 +24,7 @@ export default function AddVoucherModal({
           {/* Mã giảm giá */}
           <input
             placeholder="Mã giảm giá"
-            className="border p-2 w-full rounded"
+            className="bg-[#1a1a1a] border border-white/10 p-2 w-full rounded text-gray-200"
             value={data.magiamgia || ""}
             onChange={(e) => setData({ ...data, magiamgia: e.target.value })}
           />
@@ -32,14 +32,14 @@ export default function AddVoucherModal({
           {/* Mô tả */}
           <textarea
             placeholder="Mô tả"
-            className="border p-2 w-full rounded h-20"
+            className="bg-[#1a1a1a] border border-white/10 p-2 w-full rounded h-20 text-gray-200"
             value={data.mota || ""}
             onChange={(e) => setData({ ...data, mota: e.target.value })}
           />
 
           {/* Loại khuyến mãi */}
           <select
-            className="border p-2 w-full rounded"
+            className="bg-[#1a1a1a] border border-white/10 p-2 w-full rounded text-gray-200"
             value={data.loaikhuyenmai || "%"}
             onChange={(e) =>
               setData({ ...data, loaikhuyenmai: e.target.value })
@@ -53,7 +53,7 @@ export default function AddVoucherModal({
           <input
             placeholder="Giá trị giảm"
             type="number"
-            className="border p-2 w-full rounded"
+            className="bg-[#1a1a1a] border border-white/10 p-2 w-full rounded text-gray-200"
             value={data.giatrigiam || ""}
             onChange={(e) => setData({ ...data, giatrigiam: e.target.value })}
           />
@@ -62,7 +62,7 @@ export default function AddVoucherModal({
           <input
             placeholder="Giảm tối đa (đ)"
             type="number"
-            className="border p-2 w-full rounded"
+            className="bg-[#1a1a1a] border border-white/10 p-2 w-full rounded text-gray-200"
             value={data.giantoida || ""}
             onChange={(e) => setData({ ...data, giantoida: e.target.value })}
           />
@@ -71,7 +71,7 @@ export default function AddVoucherModal({
           <input
             placeholder="Đơn tối thiểu (đ)"
             type="number"
-            className="border p-2 w-full rounded"
+            className="bg-[#1a1a1a] border border-white/10 p-2 w-full rounded text-gray-200"
             value={data.dontoithieu || ""}
             onChange={(e) => setData({ ...data, dontoithieu: e.target.value })}
           />
@@ -80,13 +80,14 @@ export default function AddVoucherModal({
           <div className="flex gap-2">
             <input
               type="date"
-              className="border p-2 w-full rounded"
+              className="bg-[#1a1a1a] border border-white/10 p-2 w-full rounded text-gray-200"
               value={data.ngaybatdau || ""}
               onChange={(e) => setData({ ...data, ngaybatdau: e.target.value })}
             />
+
             <input
               type="date"
-              className="border p-2 w-full rounded"
+              className="bg-[#1a1a1a] border border-white/10 p-2 w-full rounded text-gray-200"
               value={data.ngayketthuc || ""}
               onChange={(e) =>
                 setData({ ...data, ngayketthuc: e.target.value })
@@ -96,7 +97,7 @@ export default function AddVoucherModal({
 
           {/* Trạng thái */}
           <select
-            className="border p-2 w-full rounded"
+            className="bg-[#1a1a1a] border border-white/10 p-2 w-full rounded text-gray-200"
             value={data.trangthai || "hoạt động"}
             onChange={(e) => setData({ ...data, trangthai: e.target.value })}
           >
@@ -106,12 +107,16 @@ export default function AddVoucherModal({
 
           {/* Nút */}
           <div className="flex justify-end gap-2 mt-4">
-            <button onClick={onClose} className="px-4 py-2 bg-gray-200 rounded">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 bg-white/10 border border-white/10 rounded text-gray-300 hover:bg-white/20 transition"
+            >
               Hủy
             </button>
+
             <button
               onClick={onSubmit}
-              className="px-4 py-2 bg-blue-600 text-white rounded"
+              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded shadow-lg transition"
             >
               Thêm
             </button>

@@ -64,64 +64,86 @@ export default function CategoriesPage() {
   };
 
   return (
-    <div>
+    <div className="text-gray-200">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Quản lý danh mục</h2>
+        <h2 className="text-3xl font-extrabold text-white">Quản lý danh mục</h2>
 
         <button
           onClick={openAdd}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition"
+          className="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-lg flex items-center gap-2 shadow-lg transition text-white"
         >
           <PlusCircle size={18} /> Thêm danh mục
         </button>
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl shadow-md p-6">
-        <table className="w-full text-sm border-collapse">
+      <div className="bg-[#111] border border-white/10 rounded-xl shadow-xl p-6">
+        <table className="w-full text-sm table-fixed">
           <thead>
-            <tr className="bg-gray-100 text-gray-600">
-              <th className="p-3 border">Mã</th>
-              <th className="p-3 border">Tên danh mục</th>
-              <th className="p-3 border">Giới tính</th>
-              <th className="p-3 border">Slug</th>
-              <th className="p-3 border">Ngày tạo</th>
-              <th className="p-3 border">Hành động</th>
+            <tr className="bg-white/5 text-gray-400 uppercase tracking-wider">
+              <th className="p-3 border-b border-white/10 w-[80px] text-center">
+                MÃ
+              </th>
+
+              <th className="p-3 border-b border-white/10 w-[220px] text-left">
+                TÊN DANH MỤC
+              </th>
+
+              <th className="p-3 border-b border-white/10 w-[120px] text-center">
+                GIỚI TÍNH
+              </th>
+
+              <th className="p-3 border-b border-white/10 w-[250px] text-left">
+                SLUG
+              </th>
+
+              <th className="p-3 border-b border-white/10 w-[150px] text-center">
+                NGÀY TẠO
+              </th>
+
+              <th className="p-3 border-b border-white/10 w-[120px] text-center">
+                HÀNH ĐỘNG
+              </th>
             </tr>
           </thead>
 
           <tbody>
-            {categories.map((c, index) => (
+            {categories.map((c) => (
               <tr
                 key={c.madanhmuc}
-                className={`${
-                  index % 2 === 0 ? "bg-gray-50" : "bg-white"
-                } hover:bg-gray-100 transition`}
+                className="hover:bg-white/5 transition-colors border-b border-white/5"
               >
-                <td className="p-3 border text-center font-semibold">
+                {/* MÃ */}
+                <td className="p-3 text-center font-semibold text-gray-300">
                   {c.madanhmuc}
                 </td>
 
-                <td className="p-3 border">{c.tendanhmuc}</td>
+                {/* TÊN DANH MỤC */}
+                <td className="p-3 text-gray-200 font-medium">
+                  {c.tendanhmuc}
+                </td>
 
-                <td className="p-3 border">
+                {/* GIỚI TÍNH */}
+                <td className="p-3 text-center">
                   <span
-                    className={`px-3 py-1 rounded-full text-white text-xs ${
+                    className={`px-3 py-1 rounded-full text-xs font-medium ${
                       c.gioitinh === "Nam"
-                        ? "bg-blue-500"
+                        ? "bg-blue-600/30 text-blue-300 border border-blue-500/40"
                         : c.gioitinh === "Nu"
-                        ? "bg-pink-500"
-                        : "bg-gray-400"
+                        ? "bg-pink-600/30 text-pink-300 border border-pink-500/40"
+                        : "bg-gray-600/30 text-gray-300 border border-gray-500/40"
                     }`}
                   >
                     {c.gioitinh || "Không"}
                   </span>
                 </td>
 
-                <td className="p-3 border text-gray-600">{c.slug}</td>
+                {/* SLUG */}
+                <td className="p-3 text-gray-400 break-words">{c.slug}</td>
 
-                <td className="p-3 border text-gray-500">
+                {/* NGÀY TẠO */}
+                <td className="p-3 text-center text-gray-500">
                   {c.ngaytao
                     ? new Date(c.ngaytao.replace(" ", "T")).toLocaleDateString(
                         "vi-VN"
@@ -129,20 +151,25 @@ export default function CategoriesPage() {
                     : "—"}
                 </td>
 
-                <td className="p-3 border text-center flex justify-center gap-3">
-                  <button
-                    onClick={() => openEdit(c)}
-                    className="text-yellow-500 hover:text-yellow-600"
-                  >
-                    <Pencil size={18} />
-                  </button>
+                {/* ACTION */}
+                <td className="p-3">
+                  <div className="flex justify-center gap-4">
+                    {/* Sửa */}
+                    <button
+                      onClick={() => openEdit(c)}
+                      className="text-yellow-400 hover:text-yellow-300 transition"
+                    >
+                      <Pencil size={20} />
+                    </button>
 
-                  <button
-                    onClick={() => handleDelete(c.madanhmuc)}
-                    className="text-red-500 hover:text-red-600"
-                  >
-                    <Trash2 size={18} />
-                  </button>
+                    {/* Xóa */}
+                    <button
+                      onClick={() => handleDelete(c.madanhmuc)}
+                      className="text-red-500 hover:text-red-400 transition"
+                    >
+                      <Trash2 size={20} />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -152,32 +179,35 @@ export default function CategoriesPage() {
 
       {/* MODAL */}
       {open && (
-        <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
-          <div className="bg-white w-[420px] p-6 rounded-xl shadow-lg relative">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50">
+          <div className="bg-[#111] border border-white/10 w-[420px] p-6 rounded-xl shadow-xl relative text-gray-200">
+            {/* Close */}
             <button
-              className="absolute right-3 top-3 text-gray-500 hover:text-black"
+              className="absolute right-3 top-3 text-gray-400 hover:text-white"
               onClick={() => setOpen(false)}
             >
-              <X size={20} />
+              <X size={22} />
             </button>
 
-            <h3 className="text-xl font-bold mb-4">
+            <h3 className="text-xl font-bold mb-4 text-white">
               {editMode ? "Sửa danh mục" : "Thêm danh mục"}
             </h3>
 
-            <div className="space-y-3">
+            <div className="space-y-4">
+              {/* Tên */}
               <input
                 type="text"
                 placeholder="Tên danh mục"
-                className="border p-2 rounded w-full"
+                className="bg-[#1a1a1a] border border-white/10 p-2 rounded-lg w-full text-gray-200 placeholder-gray-500"
                 value={form.tendanhmuc}
                 onChange={(e) =>
                   setForm({ ...form, tendanhmuc: e.target.value })
                 }
               />
 
+              {/* Giới tính */}
               <select
-                className="border p-2 rounded w-full"
+                className="bg-[#1a1a1a] border border-white/10 p-2 rounded-lg w-full text-gray-200"
                 value={form.gioitinh}
                 onChange={(e) => setForm({ ...form, gioitinh: e.target.value })}
               >
@@ -186,16 +216,17 @@ export default function CategoriesPage() {
                 <option value="Nu">Nữ</option>
               </select>
 
+              {/* Mô tả */}
               <textarea
                 placeholder="Mô tả (Không bắt buộc)"
-                className="border p-2 rounded w-full min-h-[80px]"
+                className="bg-[#1a1a1a] border border-white/10 p-2 rounded-lg w-full min-h-[80px] text-gray-200 placeholder-gray-500"
                 value={form.mota}
                 onChange={(e) => setForm({ ...form, mota: e.target.value })}
               ></textarea>
 
               <button
                 onClick={save}
-                className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2 rounded-lg shadow-lg"
               >
                 Lưu danh mục
               </button>

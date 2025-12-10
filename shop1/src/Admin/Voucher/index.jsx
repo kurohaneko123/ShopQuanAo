@@ -112,19 +112,17 @@ export default function QuanLyVoucher() {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-6 text-gray-200">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Quản lý voucher</h2>
+        <h2 className="text-3xl font-bold text-white">Quản lý voucher</h2>
 
         <button
           onClick={() => {
-            // Tìm mavoucher lớn nhất
             const nextId =
               vouchers.length > 0
                 ? Math.max(...vouchers.map((v) => Number(v.mavoucher))) + 1
                 : 1;
 
-            // Gán mavoucher vào form thêm mới
             setNewData({
               mavoucher: nextId,
               magiamgia: "",
@@ -143,7 +141,7 @@ export default function QuanLyVoucher() {
 
             setAddOpen(true);
           }}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700"
+          className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg shadow-lg transition"
         >
           ➕ Thêm voucher
         </button>

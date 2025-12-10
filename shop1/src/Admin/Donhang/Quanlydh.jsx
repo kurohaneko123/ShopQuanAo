@@ -78,112 +78,107 @@ export default function Quanlydh() {
     );
 
   return (
-    <div className="p-5">
-      <h1 className="text-3xl font-bold mb-4">Quản Lý Đơn Hàng</h1>
+    <div className="p-6 text-gray-200">
+      <h1 className="text-3xl font-bold mb-6 text-white">Quản Lý Đơn Hàng</h1>
 
-      {/* Search */}
+      {/* SEARCH */}
       <input
         type="text"
         placeholder="Tìm theo mã đơn, tên người nhận, SĐT..."
-        className="border w-80 px-4 py-2 rounded-lg mb-5"
+        className="bg-[#1a1a1a] border border-white/10 px-4 py-2 rounded-lg mb-5 w-80 text-gray-200 placeholder-gray-500"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
       />
 
       {/* TABLE */}
-      <div className="bg-white p-5 shadow rounded-xl">
-        <table className="w-full border-collapse rounded-lg overflow-hidden">
-          <thead className="bg-teal-600 text-white">
+      <div className="bg-[#111] border border-white/10 rounded-xl shadow-xl overflow-x-auto">
+        <table className="w-full text-sm table-fixed">
+          <thead className="bg-white/5 text-gray-400 uppercase tracking-wide">
             <tr>
-              <th className="p-3 text-left">Mã đơn</th>
-              <th className="p-3 text-left">Người nhận</th>
-              <th className="p-3 text-left">SĐT</th>
-              <th className="p-3 text-left">Tổng tiền</th>
-              <th className="p-3 text-left">Trạng thái</th>
-              <th className="p-3 text-left">Hành động</th>
+              <th className="p-3 w-[90px] text-left">Mã đơn</th>
+              <th className="p-3 w-[180px] text-left">Người nhận</th>
+              <th className="p-3 w-[130px] text-left">SĐT</th>
+              <th className="p-3 w-[130px] text-left">Tổng tiền</th>
+              <th className="p-3 w-[150px] text-center">Trạng thái</th>
+              <th className="p-3 w-[160px] text-center">Hành động</th>
             </tr>
           </thead>
 
           <tbody>
             {filtered.map((x) => (
-              <tr key={x.madonhang} className="border-b hover:bg-gray-50">
-                <td className="p-3 font-semibold">{x.madonhang}</td>
-                <td className="p-3">{x.tennguoinhan}</td>
-                <td className="p-3">{x.sodienthoai}</td>
-                <td className="p-3 text-teal-600 font-semibold">
+              <tr
+                key={x.madonhang}
+                className="border-b border-white/5 hover:bg-white/5 transition"
+              >
+                <td className="p-3 text-gray-300 font-semibold">
+                  {x.madonhang}
+                </td>
+                <td className="p-3 text-gray-200">{x.tennguoinhan}</td>
+                <td className="p-3 text-gray-300">{x.sodienthoai}</td>
+                <td className="p-3 text-teal-300 font-semibold">
                   {Number(x.tongthanhtoan).toLocaleString()}đ
                 </td>
 
-                {/* ================================================== */}
-                {/* HIỂN THỊ TRẠNG THÁI */}
+                {/* BADGE TRẠNG THÁI */}
                 <td className="p-3 text-center">
-                  {x.trangthai === "Chờ xác nhận" && (
-                    <span className="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-sm font-semibold">
-                      Chờ xác nhận
-                    </span>
-                  )}
-
-                  {x.trangthai === "Đã xác nhận" && (
-                    <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-sm font-semibold">
-                      Đã xác nhận
-                    </span>
-                  )}
-
-                  {x.trangthai === "Đang giao" && (
-                    <span className="px-3 py-1 rounded-full bg-purple-100 text-purple-700 text-sm font-semibold">
-                      Đang giao
-                    </span>
-                  )}
-
-                  {x.trangthai === "Đã giao" && (
-                    <span className="px-3 py-1 rounded-full bg-green-100 text-green-700 text-sm font-semibold">
-                      Đã giao
-                    </span>
-                  )}
-
-                  {x.trangthai === "Đã hủy" && (
-                    <span className="px-3 py-1 rounded-full bg-red-100 text-red-700 text-sm font-semibold">
-                      Đã hủy
-                    </span>
-                  )}
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-semibold border ${
+                      x.trangthai === "Chờ xác nhận"
+                        ? "bg-yellow-600/30 text-yellow-300 border-yellow-500/40"
+                        : x.trangthai === "Đã xác nhận"
+                        ? "bg-blue-600/30 text-blue-300 border-blue-500/40"
+                        : x.trangthai === "Đang giao"
+                        ? "bg-purple-600/30 text-purple-300 border-purple-500/40"
+                        : x.trangthai === "Đã hủy"
+                        ? "bg-red-600/30 text-red-300 border-red-500/40"
+                        : "bg-green-600/30 text-green-300 border-green-500/40"
+                    }`}
+                  >
+                    {x.trangthai}
+                  </span>
                 </td>
 
-                {/* ================================================== */}
-                {/* ACTION BUTTON */}
-                <td className="p-3 flex items-center gap-3 text-center">
-                  {/* Luôn hiện Xem */}
-                  <button className="text-blue-500 hover:underline">Xem</button>
+                {/* ACTION */}
+                <td className="p-3">
+                  <div className="flex justify-center gap-4">
+                    {/* Xem */}
+                    <button className="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-white flex items-center gap-1 shadow">
+                      <Eye size={16} /> Xem
+                    </button>
 
-                  {/* Nếu chờ xác nhận → hiện nút xác nhận và hủy */}
-                  {x.trangthai === "Chờ xác nhận" && (
-                    <>
+                    {/* Chờ xác nhận */}
+                    {x.trangthai === "Chờ xác nhận" && (
+                      <>
+                        <button
+                          onClick={() =>
+                            updateStatus(x.madonhang, x, "Đã xác nhận")
+                          }
+                          className="text-green-400 hover:text-green-300 font-semibold"
+                        >
+                          ✔ Xác nhận
+                        </button>
+
+                        <button
+                          onClick={() => updateStatus(x.madonhang, x, "Đã hủy")}
+                          className="text-red-500 hover:text-red-400 font-semibold"
+                        >
+                          ✖ Hủy
+                        </button>
+                      </>
+                    )}
+
+                    {/* Đã xác nhận */}
+                    {x.trangthai === "Đã xác nhận" && (
                       <button
                         onClick={() =>
-                          updateStatus(x.madonhang, x, "Đã xác nhận")
+                          updateStatus(x.madonhang, x, "Đang giao")
                         }
-                        className="text-green-600 hover:underline"
+                        className="text-purple-400 hover:text-purple-300 font-semibold"
                       >
-                        ✔ Xác nhận
+                        ➜ Đang giao
                       </button>
-
-                      <button
-                        onClick={() => updateStatus(x.madonhang, x, "Đã hủy")}
-                        className="text-red-600 hover:underline"
-                      >
-                        ✖ Hủy
-                      </button>
-                    </>
-                  )}
-
-                  {/* Nếu đã xác nhận → hiện nút Đánh dấu đang giao */}
-                  {x.trangthai === "Đã xác nhận" && (
-                    <button
-                      onClick={() => updateStatus(x.madonhang, x, "Đang giao")}
-                      className="text-purple-600 hover:underline"
-                    >
-                      ➜ Đang giao
-                    </button>
-                  )}
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}

@@ -35,6 +35,16 @@ export default function AccountModal({ isOpen, onClose }) {
           vaitro,
         })
       );
+      const userId =
+        data.nguoidung?.manguoidung ||
+        data.nguoidung?.id ||
+        data.nguoidung?.email ||
+        email;
+
+      localStorage.setItem("activeUserId", String(userId));
+
+      // ✅ tránh dính dữ liệu checkout / form của user cũ
+      localStorage.removeItem("checkoutPayload");
 
       alert("Đăng nhập Google thành công!");
       onClose?.();

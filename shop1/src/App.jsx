@@ -1,6 +1,7 @@
 // App.jsx
+
 import React from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import Navbar from "./View/Header.jsx";
 import Banner from "./View/Banner.jsx";
 import Footer from "./View/Footer.jsx";
@@ -24,6 +25,18 @@ import Voucher from "./Admin/Voucher/index.jsx";
 import ChiTietSanPhamAdmin from "./Admin/Sanpham/Quanlychitietsp.jsx";
 import Danhmuc from "./Admin/Danhmuc/index.jsx";
 export default function App() {
+  function RequireAuth({ children }) {
+    const token = localStorage.getItem("token");
+
+    // ❌ chưa đăng nhập → đá về trang chủ (hoặc /login)
+    if (!token) {
+      return <Navigate to="/" replace />;
+    }
+
+    // ✅ đã đăng nhập → cho vào
+    return children;
+  }
+
   const location = useLocation();
 
   // Ẩn Navbar và Footer khi ở trang admin
@@ -35,7 +48,22 @@ export default function App() {
 
       <Routes>
         {/* ====== TRANG NGƯỜI DÙNG ====== */}
-        <Route path="/thongtincanhan" element={<ThongTinKhachHang />} />
+        <Route
+          path="/thongtincanhan"
+          element={
+            <RequireAuth>
+              <ThongTinKhachHang />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/donhang"
+          element={
+            <RequireAuth>
+              <DonHang />
+            </RequireAuth>
+          }
+        />
         <Route
           path="/"
           element={
@@ -51,9 +79,15 @@ export default function App() {
         <Route path="/all/:category" element={<TatCaSanPham />} />
         <Route path="/all/:gender" element={<TatCaSanPham />} />
         <Route path="/product/:id" element={<ChiTietSanPham />} />
-        <Route path="/donhang" element={<DonHang />} />
         <Route path="/lienhe" element={<LienHe />} />
-        <Route path="/checkout" element={<CheckoutPage />} />
+        <Route
+          path="/checkout"
+          element={
+            <RequireAuth>
+              <CheckoutPage />
+            </RequireAuth>
+          }
+        />
         <Route path="/zalopay" element={<ZaloPayPage />} />
 
         {/* ====== TRANG ADMIN ====== */}

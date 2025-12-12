@@ -25,15 +25,24 @@ export default function Checkout() {
   const navigate = useNavigate();
   const [discount, setDiscount] = useState(0);
   const [coupon, setCoupon] = useState(null);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [successOrderId, setSuccessOrderId] = useState(null);
 
   useEffect(() => {
-    const payload = localStorage.getItem("checkoutPayload");
-    if (payload) {
-      const data = JSON.parse(payload);
-      setDiscount(data.totals?.discountValue || 0);
-      setCoupon(data.coupon || null);
+    const raw = localStorage.getItem("checkoutPayload");
+
+    if (!raw) {
+      // Không có payload → không cho vào checkout
+      navigate("/");
+      return;
     }
-  }, []);
+
+    const data = JSON.parse(raw);
+
+    setCart(data.cart || []);
+    setCoupon(data.coupon || null);
+    setDiscount(data.totals?.discountValue || 0);
+  }, [navigate]);
 
   /* =====================================================
    * 2. STATE FORM – KHỞI TẠO KHÔNG BỊ NULL
@@ -52,31 +61,6 @@ export default function Checkout() {
   /* =====================================================
    * 3. LOAD CART TỪ LOCALSTORAGE – CHUẨN HÓA DỮ LIỆU
    * ===================================================== */
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem("cart");
-      if (!stored) return;
-
-      const parsed = JSON.parse(stored);
-
-      const normalized = parsed.map((it) => ({
-        mabienthe: it.mabienthe, // phải có từ lúc Add to Cart
-        tensanpham: it.tensanpham || it.name,
-        giagoc: Number(it.giagoc || it.price),
-        giakhuyenmai: Number(it.giakhuyenmai || it.price),
-        soluong: Number(it.soluong || it.qty || 1),
-        mausac: it.mausac || it.color,
-        size: it.size,
-        hinhanh: it.hinhanh || it.img,
-        sku: it.sku,
-      }));
-
-      setCart(normalized);
-    } catch (error) {
-      console.error("Lỗi load giỏ hàng:", error);
-      setCart([]);
-    }
-  }, []);
 
   /* =====================================================
    * 4. TÍNH TIỀN – CHỐNG NaN
@@ -175,9 +159,16 @@ export default function Checkout() {
       // ======= 2) COD ============
       // ============================
       if (formData.hinhthucthanhtoan === "COD") {
-        alert("Đặt hàng thành công!");
-        localStorage.removeItem("cart");
-        navigate("/donhang");
+        // ✅ clear đúng dữ liệu
+        localStorage.removeItem("checkoutPayload");
+
+        const uid = localStorage.getItem("activeUserId");
+        const cartKey = uid ? `cart_${uid}` : "cart_guest";
+        localStorage.removeItem(cartKey);
+
+        // ✅ show modal thành công
+        setSuccessOrderId(orderId);
+        setShowSuccess(true);
         return;
       }
 
@@ -414,6 +405,51 @@ export default function Checkout() {
           </div>
         </div>
       </div>
+      {showSuccess && (
+        <div className="fixed inset-0 z-[9999] bg-black/40 flex items-center justify-center">
+          <div className="bg-white rounded-3xl shadow-xl w-[420px] p-8 text-center animate-modalIn">
+            {/* CHECK ICON */}
+            <div className="relative w-20 h-20 mx-auto mb-5">
+              <div className="absolute inset-0 rounded-full bg-green-300 animate-ring"></div>
+              <div className="relative w-20 h-20 rounded-full bg-green-100 flex items-center justify-center animate-checkPop">
+                <span className="text-4xl text-green-600 font-bold">✓</span>
+              </div>
+            </div>
+
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Đặt hàng thành công
+            </h2>
+
+            <p className="text-gray-600 text-sm leading-relaxed mb-5">
+              Cảm ơn bạn đã mua sắm tại <b>Horizon</b> Đơn hàng của bạn đang
+              được xử lý.
+            </p>
+
+            <div className="border rounded-xl py-3 mb-6 bg-gray-50">
+              <p className="text-xs text-gray-500">Mã đơn hàng</p>
+              <p className="text-lg font-semibold text-gray-900">
+                #{successOrderId}
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => navigate("/donhang")}
+                className="flex-1 bg-red-600 text-white py-2.5 rounded-xl font-semibold hover:bg-red-700 transition"
+              >
+                Xem đơn hàng
+              </button>
+
+              <button
+                onClick={() => navigate("/")}
+                className="flex-1 border border-gray-300 py-2.5 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition"
+              >
+                Tiếp tục mua sắm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

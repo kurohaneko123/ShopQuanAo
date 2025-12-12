@@ -21,16 +21,41 @@ export default function DonHang() {
   const BASE_URL = "http://localhost:5000/api/donhang";
 
   useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (!storedUser) {
+      setOrders([]);
+      setLoading(false);
+      return;
+    }
+
+    const user = JSON.parse(storedUser);
+
     const fetchOrders = async () => {
       try {
+        const storedUser = localStorage.getItem("user");
+        if (!storedUser) {
+          setOrders([]);
+          return;
+        }
+
+        const user = JSON.parse(storedUser);
+
         const res = await axios.get(BASE_URL);
-        setOrders(res.data.data);
+        const allOrders = res.data.data || [];
+
+        // ✅ LỌC ĐƠN HÀNG THEO USER ĐANG ĐĂNG NHẬP
+        const userOrders = allOrders.filter(
+          (o) => o.manguoidung === user.manguoidung || o.email === user.email
+        );
+
+        setOrders(userOrders);
       } catch (err) {
         console.error("Lỗi lấy đơn hàng:", err);
       } finally {
         setLoading(false);
       }
     };
+
     fetchOrders();
   }, []);
 

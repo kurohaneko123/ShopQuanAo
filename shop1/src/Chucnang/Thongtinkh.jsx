@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { User, Mail, Phone, MapPin, Loader2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function ThongTinKhachHang() {
   const [user, setUser] = useState(null);
@@ -13,6 +14,7 @@ export default function ThongTinKhachHang() {
     soDienThoai: "",
     diaChi: "",
   });
+  const navigate = useNavigate();
 
   const handleUpdate = async () => {
     try {
@@ -48,8 +50,7 @@ export default function ThongTinKhachHang() {
 
         const token = localStorage.getItem("token");
         if (!token) {
-          setError("Bạn chưa đăng nhập!");
-          setLoading(false);
+          navigate("/"); // hoặc navigate("/login") nếu anh có trang login riêng
           return;
         }
 

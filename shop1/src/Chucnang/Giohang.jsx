@@ -18,43 +18,12 @@ export default function CartSlidebar({ onClose }) {
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [error, setError] = useState("");
 
-  // ⭐ THÊM MỚI: SUGGESTED VOUCHER
+  // THÊM MỚI: SUGGESTED VOUCHER
   const [suggested, setSuggested] = useState([]);
-
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem("cart");
-      if (stored) {
-        const parsed = JSON.parse(stored);
-
-        const normalized = parsed.map((it) => ({
-          mabienthe: Number(it.mabienthe), // chỉ dùng mabienthe
-
-          tensanpham: it.tensanpham || it.name || "Sản phẩm",
-          giagoc: Number(it.giagoc), // GIÁ LẤY TỪ it.giagoc
-          giakhuyenmai: Number(it.giakhuyenmai), // GIÁ KM LẤY TỪ it.giakhuyenmai
-          soluong: Number(it.soluong || it.qty || 1),
-          mausac: it.mausac || it.color || "",
-          size: it.size || "",
-          hinhanh: it.hinhanh || it.img || "/img/placeholder.png",
-          sku: it.sku,
-        }));
-
-        setCart(normalized);
-      } else {
-        setCart([]);
-      }
-    } catch (err) {
-      console.error("Lỗi khi đọc localStorage cart:", err);
-      setCart([]);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (cart && cart.length > 0) {
-      localStorage.setItem("cart", JSON.stringify(cart));
-    }
-  }, [cart]);
+  const getCartKey = () => {
+    const uid = localStorage.getItem("activeUserId");
+    return uid ? `cart_${uid}` : "cart_guest";
+  };
 
   const updateQty = (variantId, delta) => {
     setCart((prev) =>
@@ -194,21 +163,37 @@ export default function CartSlidebar({ onClose }) {
   useEffect(() => {
     const syncCart = () => {
       try {
-        const stored = JSON.parse(localStorage.getItem("cart")) || [];
-        setCart(stored);
+        const raw = JSON.parse(localStorage.getItem(getCartKey())) || [];
 
-        const newSubtotal = stored.reduce(
-          (s, it) => s + Number(it.giakhuyenmai) * Number(it.soluong),
+        const normalized = raw.map((it) => ({
+          mabienthe: Number(it.mabienthe),
+          tensanpham: it.tensanpham || "Sản phẩm",
+          giagoc: Number(it.giagoc),
+          giakhuyenmai: Number(it.giakhuyenmai),
+          soluong: Number(it.soluong || 1),
+          mausac: it.mausac || "",
+          size: it.size || "",
+          hinhanh: it.hinhanh || "/img/placeholder.png",
+          sku: it.sku,
+        }));
+
+        setCart(normalized);
+
+        const newSubtotal = normalized.reduce(
+          (s, it) => s + it.giakhuyenmai * it.soluong,
           0
         );
 
         loadSuggestedVouchers(newSubtotal);
       } catch (e) {
-        console.error(e);
+        console.error("Lỗi sync cart:", e);
+        setCart([]);
       }
     };
 
+    syncCart(); // ⭐ CỰC QUAN TRỌNG: gọi ngay khi mở giỏ
     window.addEventListener("cartUpdated", syncCart);
+
     return () => window.removeEventListener("cartUpdated", syncCart);
   }, []);
 

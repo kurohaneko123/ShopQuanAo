@@ -56,10 +56,17 @@ export default function Navbar() {
   }, []);
 
   const handleLogout = () => {
+    localStorage.removeItem("token");
     localStorage.removeItem("user");
+
+    // giữ activeUserId lại cũng được (để sau login khôi phục),
+    // nhưng để chắc chắn “không lộ dữ liệu” khi chưa login thì xoá:
+    localStorage.removeItem("activeUserId");
+    localStorage.removeItem("checkoutPayload");
+
     setUser(null);
     alert("Đăng xuất thành công!");
-    window.location.reload();
+    window.location.href = "/"; // về home
   };
 
   const handleAvatarClick = () => {
@@ -101,7 +108,9 @@ export default function Navbar() {
   useEffect(() => {
     const syncCart = () => {
       try {
-        const stored = JSON.parse(localStorage.getItem("cart")) || [];
+        const uid = localStorage.getItem("activeUserId");
+        const key = uid ? `cart_${uid}` : "cart_guest";
+        const stored = JSON.parse(localStorage.getItem(key)) || [];
         const totalQty = stored.reduce(
           (s, item) => s + Number(item.soluong || 1),
           0
@@ -361,27 +370,44 @@ export default function Navbar() {
               <UserCircle className="w-7 h-7 text-gray-800" />
             </button>
           ) : (
-            <div className="relative group">
+            <div className="relative group px-2 py-1">
               <UserCircle
                 className="w-9 h-9 text-gray-800 cursor-pointer"
                 onClick={handleAvatarClick}
               />
 
-              <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg py-2 opacity-0 group-hover:opacity-100 invisible group-hover:visible transition">
-                <div className="px-4 py-2 border-b">
-                  <p className="text-sm font-medium text-gray-900">
+              <div
+                className="
+    absolute right-0 mt-3 w-56
+    bg-white rounded-2xl shadow-2xl
+    border border-gray-100
+    opacity-0 invisible
+    group-hover:opacity-100 group-hover:visible
+    transition-all duration-300 ease-out
+    z-50
+  "
+              >
+                <div className="px-4 py-3 bg-gray-50">
+                  <p className="text-sm font-semibold text-gray-900 truncate">
                     {user.name || user.email}
                   </p>
                   <p className="text-xs text-gray-500">
                     {user.vaitro === "admin" ? "Quản trị viên" : "Thành viên"}
                   </p>
                 </div>
-
+                <div className="h-px bg-gray-100" />
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  className="
+      w-full flex items-center gap-3
+      px-4 py-3 text-sm font-medium
+      text-gray-700
+      hover:bg-red-50 hover:text-red-600
+      transition
+    "
                 >
-                  <LogOut size={16} /> Đăng xuất
+                  <LogOut size={16} />
+                  Đăng xuất
                 </button>
               </div>
             </div>

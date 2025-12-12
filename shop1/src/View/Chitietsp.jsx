@@ -18,15 +18,17 @@ export default function ChiTietSanPham() {
   /* ====== 🛒 Hàm thêm sản phẩm vào giỏ hàng ====== */
   const handleAddToCart = () => {
     try {
-      const stored = JSON.parse(localStorage.getItem("cart")) || [];
+      const uid = localStorage.getItem("activeUserId");
+      const cartKey = uid ? `cart_${uid}` : "cart_guest";
 
-      // 👉 Lấy đúng variant theo màu + size
+      const stored = JSON.parse(localStorage.getItem(cartKey)) || [];
+
       const variant = variants.find(
         (v) => v.tenmausac === selectedColor && v.tenkichthuoc === selectedSize
       );
 
       if (!variant) {
-        alert("Không tìm thấy biến thể sản phẩm!");
+        alert("Vui lòng chọn màu và size hợp lệ");
         return;
       }
 
@@ -42,45 +44,42 @@ export default function ChiTietSanPham() {
         sku: variant.sku,
       };
 
-      // 👉 Nếu đã có cùng mabienthe thì + số lượng
       const existing = stored.find((i) => i.mabienthe === newItem.mabienthe);
-      if (existing) existing.soluong += 1;
-      else stored.push(newItem);
 
-      localStorage.setItem("cart", JSON.stringify(stored));
+      if (existing) {
+        existing.soluong += 1;
+      } else {
+        stored.push(newItem);
+      }
 
-      // 🔔 Gửi sự kiện để Header cập nhật badge
+      localStorage.setItem(cartKey, JSON.stringify(stored));
+
+      // 🔔 BẮT BUỘC để Header + Giohang sync
       window.dispatchEvent(new Event("cartUpdated"));
 
-      // ================================
-      // ⭐ TOAST CAO CẤP – ZARA STYLE
-      // ================================
+      // ===== TOAST (giữ nguyên của em) =====
       const toast = document.createElement("div");
       toast.className = `
-  fixed z-[9999]
-  bg-white border border-gray-200 shadow-xl
-  rounded-xl p-4 w-[320px]
-  flex items-center gap-3
-  animate-fadeIn
-
-  top-[90px]       /* ĐẨY XUỐNG DƯỚI ICON */
-  right-[110px]    /* CANH THEO VỊ TRÍ GIỎ HÀNG */
-`;
+      fixed z-[9999]
+      bg-white border border-gray-200 shadow-xl
+      rounded-xl p-4 w-[320px]
+      flex items-center gap-3
+      animate-fadeIn
+      top-[90px]
+      right-[110px]
+    `;
 
       toast.innerHTML = `
       <img src="${newItem.hinhanh}" 
            class="w-14 h-14 rounded-md object-cover border" />
-
       <div class="flex-1">
         <p class="text-sm font-semibold text-gray-900">
           Đã thêm vào giỏ hàng
         </p>
-
         <p class="text-xs text-gray-500 mt-0.5">
           ${product.tensanpham} • ${newItem.mausac}, ${newItem.size}
         </p>
       </div>
-
     `;
 
       document.body.appendChild(toast);

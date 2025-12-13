@@ -49,3 +49,6 @@
 .animate-ring {
   animation: ring 1.2s ease-out infinite;
 }
+html {
+  scrollbar-gutter: stable;
+}

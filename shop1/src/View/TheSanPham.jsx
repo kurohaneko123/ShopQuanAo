@@ -1,67 +1,59 @@
-import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-const ProductCard = ({ product }) => {
-  const [hovered, setHovered] = useState(false);
-  const [selectedColor, setSelectedColor] = useState(product.colors[0]);
+const TheSanPham = ({ product, price, onAddToCart }) => {
+  const navigate = useNavigate();
 
   return (
     <div
-      className="relative bg-white shadow-md rounded-lg overflow-hidden group"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onClick={() => navigate(`/sanpham/${product.id}`)}
+      className="group bg-white border rounded-2xl overflow-hidden
+                 shadow-sm hover:shadow-lg transition cursor-pointer"
     >
-      {/* Hình sản phẩm */}
-      <img
-        src={selectedColor.image}
-        alt={product.name}
-        className="w-full h-80 object-cover transition duration-300"
-      />
+      {/* Ảnh */}
+      <div className="relative aspect-[3/4] bg-gray-100 overflow-hidden">
+        <img
+          src={product.hinhanh}
+          alt={product.tensanpham}
+          className="w-full h-full object-cover
+                     group-hover:scale-105 transition duration-300"
+        />
 
-      {/* Khi hover mới hiện */}
-      {hovered && (
-        <div className="absolute inset-0 bg-white/80 flex flex-col justify-center items-center gap-3 p-4 transition">
-          {/* Nút thêm giỏ hàng */}
-          <button className="bg-black text-white px-6 py-2 rounded-full hover:bg-gray-800">
-            Thêm vào giỏ hàng +
-          </button>
+        {/* Nút thêm giỏ – chỉ hiện khi hover */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onAddToCart(product);
+          }}
+          className="absolute bottom-3 left-1/2 -translate-x-1/2
+                     opacity-0 group-hover:opacity-100
+                     bg-black text-white px-5 py-2 rounded-full
+                     text-sm font-medium shadow-lg
+                     transition"
+        >
+          Thêm vào giỏ hàng
+        </button>
+      </div>
 
-          {/* Danh sách size */}
-          <div className="flex gap-2 mt-2">
-            {product.sizes.map((size) => (
-              <button
-                key={size}
-                className="px-3 py-1 border rounded-md text-sm hover:bg-black hover:text-white transition"
-              >
-                {size}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* Nội dung */}
+      <div className="p-4 text-center">
+        <h3 className="text-sm font-semibold text-slate-900 line-clamp-2">
+          {product.tensanpham}
+        </h3>
 
-      {/* Thông tin sản phẩm */}
-      <div className="p-4">
-        {/* Nút chọn màu */}
-        <div className="flex gap-2 mb-2">
-          {product.colors.map((color) => (
-            <button
-              key={color.name}
-              onClick={() => setSelectedColor(color)}
-              className={`w-6 h-6 rounded-full border-2 ${
-                selectedColor.name === color.name
-                  ? "border-black"
-                  : "border-gray-300"
-              }`}
-              style={{ backgroundColor: color.code }}
-            ></button>
-          ))}
-        </div>
+        {product.thuonghieu && (
+          <p className="mt-1 text-xs text-slate-500">{product.thuonghieu}</p>
+        )}
 
-        <h3 className="font-semibold">{product.name}</h3>
-        <p className="text-gray-600">{product.price}</p>
+        {price ? (
+          <p className="mt-2 text-red-600 font-bold text-base">
+            {price.toLocaleString("vi-VN")}đ
+          </p>
+        ) : (
+          <p className="mt-2 text-sm text-slate-400">Đang tải giá…</p>
+        )}
       </div>
     </div>
   );
 };
 
-export default ProductCard;
+export default TheSanPham;

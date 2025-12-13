@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Pencil, Loader2 } from "lucide-react";
+import { Pencil, Loader2, X } from "lucide-react";
 
 export default function QuanLyNguoiDungAdmin() {
   const [users, setUsers] = useState([]);
@@ -20,6 +20,30 @@ export default function QuanLyNguoiDungAdmin() {
   });
 
   const API = "http://localhost:5000/api/nguoidung/danhsach";
+  const handleToggleStatus = async (user, status) => {
+    try {
+      const token = localStorage.getItem("token");
+
+      await axios.put(
+        `http://localhost:5000/api/nguoidung/admin/sua/${user.manguoidung}`,
+        { ...user, trangthai: status },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.manguoidung === user.manguoidung ? { ...u, trangthai: status } : u
+        )
+      );
+      if (selectedUser?.manguoidung === user.manguoidung) {
+        setSelectedUser((prev) => ({ ...prev, trangthai: status }));
+        setForm((prev) => ({ ...prev, trangthai: status }));
+      }
+    } catch (err) {
+      console.error("Lỗi đổi trạng thái:", err);
+      alert("Không đổi được trạng thái!");
+    }
+  };
 
   // ====== LẤY DANH SÁCH USER ========
   useEffect(() => {
@@ -213,6 +237,23 @@ export default function QuanLyNguoiDungAdmin() {
                 <option value="bị khóa">Bị khóa</option>
               </select>
             </div>
+            <button
+              onClick={() =>
+                handleToggleStatus(
+                  selectedUser,
+                  selectedUser.trangthai === "hoạt động"
+                    ? "bị khóa"
+                    : "hoạt động"
+                )
+              }
+              className={`px-3 py-1 rounded-lg text-white ${
+                selectedUser.trangthai === "hoạt động"
+                  ? "bg-red-600 hover:bg-red-500"
+                  : "bg-green-600 hover:bg-green-500"
+              }`}
+            >
+              {selectedUser.trangthai === "hoạt động" ? "Khóa" : "Mở"}
+            </button>
 
             <div className="flex justify-end gap-3 mt-5">
               <button

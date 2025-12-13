@@ -5,6 +5,9 @@ import { Eye, CheckCircle, XCircle } from "lucide-react";
 const API = "http://localhost:5000/api/donhang";
 
 export default function Quanlydh() {
+  const [showDetail, setShowDetail] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+
   const [orders, setOrders] = useState([]);
   const [filtered, setFiltered] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -45,30 +48,21 @@ export default function Quanlydh() {
   }, [search, orders]);
 
   // ====================== CẬP NHẬT TRẠNG THÁI ======================
-  const updateStatus = async (id, item, status) => {
+  const updateStatus = async (id, status) => {
     try {
       await axios.put(
         `${API}/sua/${id}`,
-        {
-          tennguoinhan: item.tennguoinhan,
-          sodienthoai: item.sodienthoai,
-          diachigiao: item.diachigiao,
-          donvivanchuyen: item.donvivanchuyen,
-          hinhthucthanhtoan: item.hinhthucthanhtoan,
-          ghichu: item.ghichu,
-          phivanchuyen: item.phivanchuyen,
-          tongthanhtoan: item.tongthanhtoan,
-          trangthai: status,
-        },
+        { trangthai: status },
         { headers: { "Content-Type": "application/json" } }
       );
 
-      // update FE luôn
+      // cập nhật lại state FE
       setOrders((prev) =>
         prev.map((o) => (o.madonhang === id ? { ...o, trangthai: status } : o))
       );
     } catch (err) {
       console.error("Lỗi cập nhật trạng thái:", err);
+      alert("Cập nhật trạng thái thất bại!");
     }
   };
 
@@ -142,8 +136,14 @@ export default function Quanlydh() {
                 <td className="p-3">
                   <div className="flex justify-center gap-4">
                     {/* Xem */}
-                    <button className="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-white flex items-center gap-1 shadow">
-                      <Eye size={16} /> Xem
+                    <button
+                      onClick={() => {
+                        setSelectedOrder(x);
+                        setShowDetail(true);
+                      }}
+                      className="p-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-white"
+                    >
+                      <Eye size={16} />
                     </button>
 
                     {/* Chờ xác nhận */}
@@ -151,7 +151,7 @@ export default function Quanlydh() {
                       <>
                         <button
                           onClick={() =>
-                            updateStatus(x.madonhang, x, "Đã xác nhận")
+                            updateStatus(x.madonhang, "Đã xác nhận")
                           }
                           className="text-green-400 hover:text-green-300 font-semibold"
                         >
@@ -159,7 +159,7 @@ export default function Quanlydh() {
                         </button>
 
                         <button
-                          onClick={() => updateStatus(x.madonhang, x, "Đã hủy")}
+                          onClick={() => updateStatus(x.madonhang, "Đã hủy")}
                           className="text-red-500 hover:text-red-400 font-semibold"
                         >
                           ✖ Hủy
@@ -170,9 +170,7 @@ export default function Quanlydh() {
                     {/* Đã xác nhận */}
                     {x.trangthai === "Đã xác nhận" && (
                       <button
-                        onClick={() =>
-                          updateStatus(x.madonhang, x, "Đang giao")
-                        }
+                        onClick={() => updateStatus(x.madonhang, "Đang giao")}
                         className="text-purple-400 hover:text-purple-300 font-semibold"
                       >
                         ➜ Đang giao
@@ -185,6 +183,65 @@ export default function Quanlydh() {
           </tbody>
         </table>
       </div>
+      {showDetail && selectedOrder && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-[#111] w-[600px] max-h-[90vh] overflow-y-auto p-6 rounded-xl border border-white/10">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold text-white">
+                Chi tiết đơn hàng #{selectedOrder.madonhang}
+              </h3>
+              <button
+                onClick={() => setShowDetail(false)}
+                className="text-white/60 hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Thông tin người nhận */}
+            <div className="space-y-2 text-white/90 text-sm">
+              <p>
+                <b>Người nhận:</b> {selectedOrder.tennguoinhan}
+              </p>
+              <p>
+                <b>SĐT:</b> {selectedOrder.sodienthoai}
+              </p>
+              <p>
+                <b>Địa chỉ:</b> {selectedOrder.diachigiao}
+              </p>
+              <p>
+                <b>Thanh toán:</b> {selectedOrder.hinhthucthanhtoan}
+              </p>
+              <p>
+                <b>Ghi chú:</b> {selectedOrder.ghichu || "Không có"}
+              </p>
+              <p>
+                <b>Trạng thái:</b>{" "}
+                <span className="text-teal-400 font-semibold">
+                  {selectedOrder.trangthai}
+                </span>
+              </p>
+            </div>
+
+            <hr className="my-4 border-white/10" />
+
+            {/* Tổng tiền */}
+            <div className="text-right text-lg font-bold text-teal-400">
+              Tổng thanh toán:{" "}
+              {Number(selectedOrder.tongthanhtoan).toLocaleString()} đ
+            </div>
+
+            <div className="text-right mt-4">
+              <button
+                onClick={() => setShowDetail(false)}
+                className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white"
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

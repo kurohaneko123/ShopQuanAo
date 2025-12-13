@@ -11,12 +11,36 @@ export default function CategoriesPage() {
   const [categories, setCategories] = useState([]);
   const [open, setOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
+  const [openDelete, setOpenDelete] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null); // { id, name }
 
   const [form, setForm] = useState({
     tendanhmuc: "",
     gioitinh: "",
     mota: "",
   });
+  const setField = (name, value) => {
+    setForm((prev) => ({ ...prev, [name]: value }));
+    // đang gõ lại thì xóa lỗi của field đó thôi
+    setErrors((prev) => ({ ...prev, [name]: "" }));
+  };
+
+  const validate = () => {
+    const e = {};
+
+    if (!form.tendanhmuc?.trim())
+      e.tendanhmuc = "Tên danh mục không được để trống";
+
+    // Nếu em muốn giới tính bắt buộc thì mở dòng này:
+    // if (!form.gioitinh) e.gioitinh = "Vui lòng chọn giới tính";
+
+    // Mô tả không bắt buộc nên không validate
+
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
 
   const load = async () => {
     const data = await getAllCategories();
@@ -40,7 +64,8 @@ export default function CategoriesPage() {
   };
 
   const save = async () => {
-    if (!form.tendanhmuc) return alert("Tên danh mục không được để trống!");
+    // chỉ báo lỗi field sai, không alert vô tội vạ
+    if (!validate()) return;
 
     try {
       if (editMode) {
@@ -49,6 +74,8 @@ export default function CategoriesPage() {
         await createCategory(form);
       }
       setOpen(false);
+      setTouched({});
+      setErrors({});
       load();
     } catch (err) {
       alert("Lỗi khi lưu danh mục!");
@@ -56,10 +83,12 @@ export default function CategoriesPage() {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!confirm("Bạn có chắc muốn xóa danh mục này?")) return;
+  const handleDelete = async () => {
+    if (!deleteTarget?.id) return;
 
-    await deleteCategory(id);
+    await deleteCategory(deleteTarget.id);
+    setOpenDelete(false);
+    setDeleteTarget(null);
     load();
   };
 
@@ -164,8 +193,13 @@ export default function CategoriesPage() {
 
                     {/* Xóa */}
                     <button
-                      onClick={() => handleDelete(c.madanhmuc)}
-                      className="text-red-500 hover:text-red-400 transition"
+                      onClick={() => {
+                        setDeleteTarget({
+                          id: c.madanhmuc,
+                          name: c.tendanhmuc,
+                        });
+                        setOpenDelete(true);
+                      }}
                     >
                       <Trash2 size={20} />
                     </button>
@@ -179,56 +213,128 @@ export default function CategoriesPage() {
 
       {/* MODAL */}
       {open && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50">
-          <div className="bg-[#111] border border-white/10 w-[420px] p-6 rounded-xl shadow-xl relative text-gray-200">
-            {/* Close */}
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center">
+          <div className="w-[420px] rounded-2xl bg-[#161616] border border-white/10 p-6 relative">
+            {/* Nút đóng */}
             <button
-              className="absolute right-3 top-3 text-gray-400 hover:text-white"
               onClick={() => setOpen(false)}
+              className="absolute top-3 right-3 text-gray-400 hover:text-white transition"
             >
-              <X size={22} />
+              <X size={18} />
             </button>
 
-            <h3 className="text-xl font-bold mb-4 text-white">
-              {editMode ? "Sửa danh mục" : "Thêm danh mục"}
+            {/* Tiêu đề */}
+            <h3 className="text-lg font-semibold text-gray-100 mb-5">
+              {editMode ? "Chỉnh sửa danh mục" : "Thêm danh mục"}
             </h3>
 
             <div className="space-y-4">
-              {/* Tên */}
-              <input
-                type="text"
-                placeholder="Tên danh mục"
-                className="bg-[#1a1a1a] border border-white/10 p-2 rounded-lg w-full text-gray-200 placeholder-gray-500"
-                value={form.tendanhmuc}
-                onChange={(e) =>
-                  setForm({ ...form, tendanhmuc: e.target.value })
-                }
-              />
+              {/* TÊN DANH MỤC */}
+              <div>
+                <label className="text-sm text-gray-300">Tên danh mục</label>
+                <input
+                  type="text"
+                  value={form.tendanhmuc}
+                  onChange={(e) => setField("tendanhmuc", e.target.value)}
+                  onBlur={() => setTouched((p) => ({ ...p, tendanhmuc: true }))}
+                  placeholder="VD: Áo sơ mi"
+                  className={`w-full px-3 py-2 rounded-lg
+              bg-black/40 text-gray-200
+              border ${
+                errors.tendanhmuc ? "border-red-500/60" : "border-white/10"
+              }
+              focus:border-indigo-500 outline-none`}
+                />
+                {touched.tendanhmuc && errors.tendanhmuc && (
+                  <p className="mt-1 text-xs text-red-400">
+                    {errors.tendanhmuc}
+                  </p>
+                )}
+              </div>
 
-              {/* Giới tính */}
-              <select
-                className="bg-[#1a1a1a] border border-white/10 p-2 rounded-lg w-full text-gray-200"
-                value={form.gioitinh}
-                onChange={(e) => setForm({ ...form, gioitinh: e.target.value })}
-              >
-                <option value="">Chọn giới tính</option>
-                <option value="Nam">Nam</option>
-                <option value="Nu">Nữ</option>
-              </select>
+              {/* GIỚI TÍNH */}
+              <div>
+                <label className="text-sm text-gray-300">Giới tính</label>
+                <select
+                  value={form.gioitinh}
+                  onChange={(e) => setField("gioitinh", e.target.value)}
+                  className={`w-full px-3 py-2 rounded-lg
+              bg-black/40 text-gray-200
+              border border-white/10
+              focus:border-indigo-500 outline-none`}
+                >
+                  <option value="">Không phân loại</option>
+                  <option value="Nam">Nam</option>
+                  <option value="Nu">Nữ</option>
+                </select>
+              </div>
 
-              {/* Mô tả */}
-              <textarea
-                placeholder="Mô tả (Không bắt buộc)"
-                className="bg-[#1a1a1a] border border-white/10 p-2 rounded-lg w-full min-h-[80px] text-gray-200 placeholder-gray-500"
-                value={form.mota}
-                onChange={(e) => setForm({ ...form, mota: e.target.value })}
-              ></textarea>
+              {/* MÔ TẢ */}
+              <div>
+                <label className="text-sm text-gray-300">Mô tả</label>
+                <textarea
+                  value={form.mota}
+                  onChange={(e) => setField("mota", e.target.value)}
+                  placeholder="Mô tả ngắn cho danh mục"
+                  className="w-full px-3 py-2 rounded-lg
+              bg-black/40 text-gray-200
+              border border-white/10
+              focus:border-indigo-500 outline-none min-h-[80px]"
+                />
+              </div>
 
+              {/* BUTTON */}
               <button
                 onClick={save}
-                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2 rounded-lg shadow-lg"
+                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2 rounded-lg transition"
               >
-                Lưu danh mục
+                {editMode ? "Lưu thay đổi" : "Thêm danh mục"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {openDelete && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center">
+          <div className="w-[420px] rounded-2xl bg-[#161616] border border-white/10 p-6 relative">
+            <button
+              onClick={() => {
+                setOpenDelete(false);
+                setDeleteTarget(null);
+              }}
+              className="absolute top-3 right-3 text-gray-400 hover:text-white transition"
+            >
+              <X size={18} />
+            </button>
+
+            <h3 className="text-lg font-semibold text-gray-100 mb-2">
+              Xóa danh mục
+            </h3>
+
+            <p className="text-sm text-gray-400 mb-5 leading-relaxed">
+              Danh mục{" "}
+              <span className="text-gray-200 font-semibold">
+                {deleteTarget?.name || "này"}
+              </span>{" "}
+              sẽ bị xóa vĩnh viễn và không thể khôi phục.
+            </p>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setOpenDelete(false);
+                  setDeleteTarget(null);
+                }}
+                className="flex-1 bg-white/5 hover:bg-white/10 text-gray-200 py-2 rounded-lg transition border border-white/10"
+              >
+                Hủy
+              </button>
+
+              <button
+                onClick={handleDelete}
+                className="flex-1 bg-red-600 hover:bg-red-500 text-white py-2 rounded-lg transition"
+              >
+                Xác nhận xóa
               </button>
             </div>
           </div>

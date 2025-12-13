@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 
 import AccountModal from "../Chucnang/Taikhoan.jsx";
-import bannerNam from "../assets/ao.jpg";
+import bannerNam from "../assets/bannerdafix.jpg";
 import bannerNu from "../assets/aonu.jpg";
 import bannerSale from "../assets/khuyenmai.png";
 import CartSidebar from "../Chucnang/Giohang.jsx";
@@ -129,10 +129,10 @@ export default function Navbar() {
 
   return (
     <header
-      className="fixed top-3 left-1/2 -translate-x-1/2 w-[95%]
-      bg-white/80 backdrop-blur-xl border border-white/40
-      shadow-[0_4px_20px_rgba(0,0,0,0.08)]
-      rounded-2xl z-50 transition-all duration-300"
+      className="fixed top-3 inset-x-0 mx-auto w-[95%] max-w-[1400px]
+  bg-white/80 backdrop-blur-xl border border-white/40
+  shadow-[0_4px_20px_rgba(0,0,0,0.08)]
+  rounded-2xl z-50 transition-all duration-300"
     >
       <div className="h-20 px-6 flex items-center justify-between">
         {/* LOGO */}
@@ -151,23 +151,29 @@ export default function Navbar() {
           <ul className="flex h-full items-center space-x-10">
             {/* NAM */}
             <li className="group relative h-full flex items-center">
-              <a
-                href="/all?gender=Nam"
+              <Link
+                to="/all?gender=Nam"
                 className="relative px-4 py-5 font-semibold text-neutral-900
                 before:absolute before:bottom-0 before:left-0 before:h-[3px]
                 before:w-0 before:bg-black before:transition-all before:duration-300
                 hover:before:w-full"
               >
                 Nam
-              </a>
+              </Link>
 
               <div
-                className="absolute left-1/2 -translate-x-1/2 top-full mt-3
-                w-[900px] bg-white/90 backdrop-blur-xl shadow-lg border rounded-2xl
-                p-6 grid grid-cols-3 gap-6 z-[45]
-                opacity-0 invisible translate-y-4 
-                group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 
-                transition-all duration-300"
+                className="
+    fixed left-1/2 -translate-x-1/2
+    top-[90px]
+    w-[min(1100px,95vw)]
+    bg-white/95 backdrop-blur-xl
+    shadow-xl border rounded-2xl
+    p-8 grid grid-cols-3 gap-8
+    z-[60]
+    opacity-0 invisible translate-y-4
+    group-hover:opacity-100 group-hover:visible group-hover:translate-y-0
+    transition-all duration-300
+  "
               >
                 <div className="col-span-2">
                   <h4 className="font-bold mb-3 text-gray-900">Danh mục Nam</h4>
@@ -204,23 +210,29 @@ export default function Navbar() {
 
             {/* NỮ */}
             <li className="group relative h-full flex items-center">
-              <a
-                href="/all?gender=Nữ"
+              <Link
+                to="/all?gender=Nữ"
                 className="relative px-4 py-5 font-semibold text-neutral-900
                 before:absolute before:bottom-0 before:left-0 before:h-[3px]
                 before:w-0 before:bg-black before:transition-all before:duration-300
                 hover:before:w-full"
               >
                 Nữ
-              </a>
+              </Link>
 
               <div
-                className="absolute left-1/2 -translate-x-1/2 top-full mt-3
-                w-[900px] bg-white/90 backdrop-blur-xl shadow-lg border rounded-2xl
-                p-6 grid grid-cols-3 gap-6 z-[45]
-                opacity-0 invisible translate-y-4 
-                group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 
-                transition-all duration-300"
+                className="
+    fixed left-1/2 -translate-x-1/2
+    top-[90px]
+    w-[min(1100px,95vw)]
+    bg-white/95 backdrop-blur-xl
+    shadow-xl border rounded-2xl
+    p-8 grid grid-cols-3 gap-8
+    z-[60]
+    opacity-0 invisible translate-y-4
+    group-hover:opacity-100 group-hover:visible group-hover:translate-y-0
+    transition-all duration-300
+  "
               >
                 <div className="col-span-2">
                   <h4 className="font-bold mb-3 text-gray-900">Danh mục Nữ</h4>

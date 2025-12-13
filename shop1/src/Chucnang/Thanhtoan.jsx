@@ -25,8 +25,6 @@ export default function Checkout() {
   const navigate = useNavigate();
   const [discount, setDiscount] = useState(0);
   const [coupon, setCoupon] = useState(null);
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [successOrderId, setSuccessOrderId] = useState(null);
 
   useEffect(() => {
     const raw = localStorage.getItem("checkoutPayload");
@@ -166,9 +164,14 @@ export default function Checkout() {
         const cartKey = uid ? `cart_${uid}` : "cart_guest";
         localStorage.removeItem(cartKey);
 
-        // ✅ show modal thành công
-        setSuccessOrderId(orderId);
-        setShowSuccess(true);
+        // ✅ lưu lại để refresh vẫn thấy
+        localStorage.setItem("lastOrderId", String(orderId));
+        localStorage.setItem("lastPaymentMethod", formData.hinhthucthanhtoan);
+
+        // ✅ chuyển sang trang success (thay modal)
+        navigate("/ordersuccess", {
+          state: { orderId, paymentMethod: formData.hinhthucthanhtoan },
+        });
         return;
       }
 
@@ -384,7 +387,8 @@ export default function Checkout() {
               </div>
 
               <div>
-                {item.soluong} × {item.giakhuyenmai.toLocaleString()}đ
+                {item.soluong} ×{" "}
+                {Number(item.giakhuyenmai || 0).toLocaleString()}đ
               </div>
             </div>
           ))}
@@ -405,51 +409,6 @@ export default function Checkout() {
           </div>
         </div>
       </div>
-      {showSuccess && (
-        <div className="fixed inset-0 z-[9999] bg-black/40 flex items-center justify-center">
-          <div className="bg-white rounded-3xl shadow-xl w-[420px] p-8 text-center animate-modalIn">
-            {/* CHECK ICON */}
-            <div className="relative w-20 h-20 mx-auto mb-5">
-              <div className="absolute inset-0 rounded-full bg-green-300 animate-ring"></div>
-              <div className="relative w-20 h-20 rounded-full bg-green-100 flex items-center justify-center animate-checkPop">
-                <span className="text-4xl text-green-600 font-bold">✓</span>
-              </div>
-            </div>
-
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Đặt hàng thành công
-            </h2>
-
-            <p className="text-gray-600 text-sm leading-relaxed mb-5">
-              Cảm ơn bạn đã mua sắm tại <b>Horizon</b> Đơn hàng của bạn đang
-              được xử lý.
-            </p>
-
-            <div className="border rounded-xl py-3 mb-6 bg-gray-50">
-              <p className="text-xs text-gray-500">Mã đơn hàng</p>
-              <p className="text-lg font-semibold text-gray-900">
-                #{successOrderId}
-              </p>
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => navigate("/donhang")}
-                className="flex-1 bg-red-600 text-white py-2.5 rounded-xl font-semibold hover:bg-red-700 transition"
-              >
-                Xem đơn hàng
-              </button>
-
-              <button
-                onClick={() => navigate("/")}
-                className="flex-1 border border-gray-300 py-2.5 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition"
-              >
-                Tiếp tục mua sắm
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

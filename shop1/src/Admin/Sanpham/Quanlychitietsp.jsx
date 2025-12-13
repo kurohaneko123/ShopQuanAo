@@ -17,6 +17,8 @@ export default function Quanlychitietsp() {
   const [showAddPopup, setShowAddPopup] = useState(false);
   const [showEditPopup, setShowEditPopup] = useState(false);
   const [showDeletePopup, setShowDeletePopup] = useState(false);
+  const [addErrors, setAddErrors] = useState({});
+  const [editErrors, setEditErrors] = useState({});
 
   // ADD form
   const [addForm, setAddForm] = useState({
@@ -101,6 +103,16 @@ export default function Quanlychitietsp() {
   // ============================================================
   // ADD VARIANT
   const handleAddVariant = async () => {
+    const e = {};
+
+    if (!addForm.mamausac) e.mamausac = "Chọn màu";
+    if (!addForm.makichthuoc) e.makichthuoc = "Chọn size";
+    if (!addForm.giaban) e.giaban = "Nhập giá";
+    if (!addForm.soluongton) e.soluongton = "Nhập số lượng";
+
+    setAddErrors(e);
+    if (Object.keys(e).length > 0) return;
+
     try {
       const res = await axios.post("http://localhost:5000/api/bienthe/them", {
         ...addForm,
@@ -109,8 +121,9 @@ export default function Quanlychitietsp() {
 
       setVariants((prev) => [...prev, res.data.newVariant]);
       setShowAddPopup(false);
+      setAddForm({ mamausac: "", makichthuoc: "", giaban: "", soluongton: "" });
+      setAddErrors({});
     } catch (err) {
-      console.log(err);
       alert("Lỗi khi thêm biến thể!");
     }
   };
@@ -118,6 +131,13 @@ export default function Quanlychitietsp() {
   // ============================================================
   // EDIT VARIANT
   const handleSubmitEdit = async () => {
+    const e = {};
+    if (!editForm.giaban) e.giaban = "Giá không được trống";
+    if (!editForm.soluongton) e.soluongton = "Số lượng không được trống";
+
+    setEditErrors(e);
+    if (Object.keys(e).length > 0) return;
+
     try {
       await axios.put(
         `http://localhost:5000/api/bienthe/sua/${selectedVariant.mabienthe}`,
@@ -131,8 +151,8 @@ export default function Quanlychitietsp() {
       );
 
       setShowEditPopup(false);
+      setEditErrors({});
     } catch (err) {
-      console.log(err);
       alert("Sửa thất bại!");
     }
   };
@@ -158,16 +178,26 @@ export default function Quanlychitietsp() {
   // ============================================================
   // POPUP
   const Popup = ({ title, children, onClose }) => (
-    <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
-      <div className="bg-white p-6 rounded-xl w-[450px] relative">
+    <div
+      className="fixed inset-0 z-50 
+    bg-black/60 backdrop-blur-sm 
+    flex items-center justify-center"
+    >
+      <div
+        className="w-[420px] rounded-2xl 
+      bg-[#161616] border border-white/10 
+      p-6 relative"
+      >
         <button
           onClick={onClose}
-          className="absolute right-3 top-3 text-gray-500 hover:text-black"
+          className="absolute top-3 right-3 
+        text-gray-400 hover:text-white transition"
         >
-          <X />
+          <X size={18} />
         </button>
 
-        <h3 className="text-lg font-bold mb-4">{title}</h3>
+        <h3 className="text-lg font-semibold text-gray-100 mb-5">{title}</h3>
+
         {children}
       </div>
     </div>
@@ -180,60 +210,83 @@ export default function Quanlychitietsp() {
       <h2 className="text-2xl font-bold mb-6">Chi tiết sản phẩm</h2>
 
       {/* ===================================== IMAGE + INFO */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 bg-white rounded-xl shadow mb-10">
+      <div
+        className="grid grid-cols-1 md:grid-cols-2 gap-10 
+  p-8 mb-10 rounded-2xl
+  bg-[#161616] border border-white/5"
+      >
+        {/* IMAGE */}
         <div className="flex flex-col items-center">
+          {/* ẢNH CHÍNH */}
           <img
             src={variants[0]?.hinhanh?.[0] || ""}
-            className="w-[350px] h-[350px] object-cover rounded-xl shadow"
+            className="w-[320px] h-[320px] 
+      rounded-xl object-cover 
+      bg-black/40"
+            alt=""
           />
 
+          {/* THUMBNAILS */}
           <div className="flex gap-3 mt-4 flex-wrap justify-center">
             {variants[0]?.hinhanh?.map((img, i) => (
               <img
                 key={i}
                 src={img}
-                className="w-20 h-20 rounded-lg border shadow-sm object-cover"
+                className="w-16 h-16 rounded-lg 
+          border border-white/10 
+          object-cover hover:scale-105 transition"
+                alt=""
               />
             ))}
           </div>
         </div>
 
+        {/* INFO */}
         <div>
-          <h3 className="text-2xl font-bold">{product.tensanpham}</h3>
-          <p className="text-gray-600 mt-2">{product.mota}</p>
+          <h3 className="text-2xl font-semibold text-gray-100">
+            {product.tensanpham}
+          </h3>
+
+          <p className="text-gray-400 mt-3 leading-relaxed">{product.mota}</p>
         </div>
       </div>
 
       {/* ===================================== VARIANT TABLE */}
-      <div className="bg-white p-6 rounded-xl shadow">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-semibold">Biến thể sản phẩm</h3>
+      <div className="bg-[#161616] p-6 rounded-2xl border border-white/5">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-lg font-semibold text-gray-100">
+            Biến thể sản phẩm
+          </h3>
 
           <button
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg"
             onClick={() => setShowAddPopup(true)}
+            className="flex items-center gap-2
+    px-4 py-2 rounded-lg
+    bg-indigo-600 hover:bg-indigo-500
+    text-white text-sm shadow"
           >
-            <PlusCircle size={18} /> Thêm biến thể
+            <PlusCircle size={18} />
+            Thêm biến thể
           </button>
         </div>
 
         <table className="w-full border-collapse text-sm">
           <thead>
-            <tr className="bg-gray-100">
-              <th className="border p-3">Màu</th>
-              <th className="border p-3">Size</th>
-              <th className="border p-3">Giá</th>
-              <th className="border p-3">Hình</th>
-              <th className="border p-3">Hành động</th>
+            <tr className="bg-white/5 text-gray-400">
+              <th className="bg-white/5 text-gray-400">Màu</th>
+              <th className="bg-white/5 text-gray-400">Size</th>
+              <th className="bg-white/5 text-gray-400">Giá</th>
+              <th className="bg-white/5 text-gray-400">Hình</th>
+              <th className="bg-white/5 text-gray-400">Hành động</th>
             </tr>
           </thead>
 
           <tbody>
             {variants.map((v) => (
-              <tr key={v.mabienthe} className="hover:bg-gray-50">
-                <td className="border p-3">{v.tenmausac}</td>
-                <td className="border p-3">{v.tenkichthuoc}</td>
-                <td className="border p-3">
+              <tr key={v.mabienthe} className="bg-white/5 text-gray-400">
+                <td className="px-4 py-3 text-gray-200">{v.tenmausac}</td>
+                <td className="px-4 py-3 text-gray-200">{v.tenkichthuoc}</td>
+                <td className="px-4 py-3 text-gray-200">
                   {Number(v.giaban).toLocaleString()} đ
                 </td>
 
@@ -304,60 +357,75 @@ export default function Quanlychitietsp() {
       {/* ===================================== POPUP ADD */}
       {showAddPopup && (
         <Popup title="Thêm biến thể" onClose={() => setShowAddPopup(false)}>
-          <div className="space-y-3">
-            <label>Màu</label>
-            <select
-              className="border p-2 rounded w-full"
-              value={addForm.mamausac}
-              onChange={(e) =>
-                setAddForm({ ...addForm, mamausac: e.target.value })
-              }
-            >
-              {colors.map((m) => (
-                <option key={m.mamausac} value={m.mamausac}>
-                  {m.tenmausac}
-                </option>
-              ))}
-            </select>
+          <label>Màu</label>
+          <select
+            className={`w-full px-3 py-2 rounded-lg
+  bg-black/40 text-gray-200
+  border ${addErrors.mamausac ? "border-red-500/60" : "border-white/10"}
+  focus:border-indigo-500 outline-none`}
+            value={addForm.mamausac}
+            onChange={(e) =>
+              setAddForm({ ...addForm, mamausac: e.target.value })
+            }
+          >
+            {colors.map((m) => (
+              <option key={m.mamausac} value={m.mamausac}>
+                {m.tenmausac}
+              </option>
+            ))}
+          </select>
+          {addErrors.mamausac && (
+            <p className="text-xs text-red-500">{addErrors.mamausac}</p>
+          )}
 
-            <label>Kích thước</label>
-            <select
-              className="border p-2 rounded w-full"
-              value={addForm.makichthuoc}
-              onChange={(e) =>
-                setAddForm({ ...addForm, makichthuoc: e.target.value })
-              }
-            >
-              {sizes.map((s) => (
-                <option key={s.makichthuoc} value={s.makichthuoc}>
-                  {s.tenkichthuoc}
-                </option>
-              ))}
-            </select>
+          <label>Kích thước</label>
+          <select
+            className={`w-full px-3 py-2 rounded-lg
+  bg-black/40 text-gray-200
+  border ${addErrors.makichthuoc ? "border-red-500/60" : "border-white/10"}
+  focus:border-indigo-500 outline-none`}
+          >
+            {sizes.map((s) => (
+              <option key={s.makichthuoc} value={s.makichthuoc}>
+                {s.tenkichthuoc}
+              </option>
+            ))}
+          </select>
+          {addErrors.makichthuoc && (
+            <p className="text-xs text-red-500">{addErrors.makichthuoc}</p>
+          )}
+          <input
+            className={`w-full px-3 py-2 rounded-lg
+  bg-black/40 text-gray-200
+  border ${addErrors.giaban ? "border-red-500/60" : "border-white/10"}
+  focus:border-indigo-500 outline-none`}
+            placeholder="Giá bán"
+          />
 
-            <input
-              placeholder="Giá bán"
-              className="border p-2 rounded w-full"
-              onChange={(e) =>
-                setAddForm({ ...addForm, giaban: e.target.value })
-              }
-            />
+          {addErrors.giaban && (
+            <p className="text-xs text-red-500">{addErrors.giaban}</p>
+          )}
+          <input
+            placeholder="Số lượng"
+            className={`w-full px-3 py-2 rounded-lg
+  bg-black/40 text-gray-200
+  border ${addErrors.soluongton ? "border-red-500/60" : "border-white/10"}
+  focus:border-indigo-500 outline-none`}
+            onChange={(e) =>
+              setAddForm({ ...addForm, soluongton: e.target.value })
+            }
+          />
 
-            <input
-              placeholder="Số lượng"
-              className="border p-2 rounded w-full"
-              onChange={(e) =>
-                setAddForm({ ...addForm, soluongton: e.target.value })
-              }
-            />
-
-            <button
-              className="w-full bg-green-600 text-white py-2 rounded"
-              onClick={handleAddVariant}
-            >
-              Thêm
-            </button>
-          </div>
+          {addErrors.soluongton && (
+            <p className="text-xs text-red-500">{addErrors.soluongton}</p>
+          )}
+          <button
+            className="w-full bg-indigo-600 hover:bg-indigo-500
+  text-white py-2 rounded-lg transition"
+            onClick={handleAddVariant}
+          >
+            Thêm biến thể
+          </button>
         </Popup>
       )}
 
@@ -370,7 +438,10 @@ export default function Quanlychitietsp() {
           <div className="space-y-3">
             <label>Màu</label>
             <select
-              className="border p-2 rounded w-full"
+              className={`w-full px-3 py-2 rounded-lg
+  bg-black/40 text-gray-200
+  border border-white/10
+  focus:border-indigo-500 outline-none`}
               value={editForm.mamausac}
               onChange={(e) =>
                 setEditForm({ ...editForm, mamausac: e.target.value })
@@ -385,7 +456,10 @@ export default function Quanlychitietsp() {
 
             <label>Kích thước</label>
             <select
-              className="border p-2 rounded w-full"
+              className={`w-full px-3 py-2 rounded-lg
+  bg-black/40 text-gray-200
+  border border-white/10
+  focus:border-indigo-500 outline-none`}
               value={editForm.makichthuoc}
               onChange={(e) =>
                 setEditForm({ ...editForm, makichthuoc: e.target.value })
@@ -397,11 +471,13 @@ export default function Quanlychitietsp() {
                 </option>
               ))}
             </select>
-
             <input
               type="number"
               value={editForm.giaban}
-              className="border p-2 rounded w-full"
+              className={`w-full px-3 py-2 rounded-lg
+  bg-black/40 text-gray-200
+  border ${editErrors.giaban ? "border-red-500/60" : "border-white/10"}
+  focus:border-indigo-500 outline-none`}
               onChange={(e) =>
                 setEditForm({ ...editForm, giaban: e.target.value })
               }
@@ -410,14 +486,18 @@ export default function Quanlychitietsp() {
             <input
               type="number"
               value={editForm.soluongton}
-              className="border p-2 rounded w-full"
+              className={`w-full px-3 py-2 rounded-lg
+  bg-black/40 text-gray-200
+  border ${editErrors.soluongton ? "border-red-500/60" : "border-white/10"}
+  focus:border-indigo-500 outline-none`}
               onChange={(e) =>
                 setEditForm({ ...editForm, soluongton: e.target.value })
               }
             />
 
             <button
-              className="w-full bg-blue-600 text-white py-2 rounded"
+              className="w-full bg-indigo-600 hover:bg-indigo-500
+  text-white py-2 rounded-lg transition"
               onClick={handleSubmitEdit}
             >
               Lưu thay đổi
@@ -429,13 +509,15 @@ export default function Quanlychitietsp() {
       {/* ===================================== POPUP DELETE */}
       {showDeletePopup && (
         <Popup title="Xóa biến thể" onClose={() => setShowDeletePopup(false)}>
-          <p className="mb-4">Bạn có chắc muốn xóa biến thể này không?</p>
+          <p className="text-gray-600 mb-4 text-sm">
+            Biến thể này sẽ bị xoá vĩnh viễn và không thể khôi phục.
+          </p>
 
           <button
-            className="w-full bg-red-600 text-white py-2 rounded"
+            className="w-full bg-red-600 hover:bg-red-500 text-white py-2 rounded-lg"
             onClick={handleDeleteVariant}
           >
-            Xóa
+            Xác nhận xoá
           </button>
         </Popup>
       )}

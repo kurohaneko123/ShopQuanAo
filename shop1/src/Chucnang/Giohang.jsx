@@ -24,19 +24,33 @@ export default function CartSlidebar({ onClose }) {
     const uid = localStorage.getItem("activeUserId");
     return uid ? `cart_${uid}` : "cart_guest";
   };
+  const saveCart = (nextCart) => {
+    localStorage.setItem(getCartKey(), JSON.stringify(nextCart));
+    setCart(nextCart);
+    window.dispatchEvent(new Event("cartUpdated"));
+  };
 
   const updateQty = (variantId, delta) => {
-    setCart((prev) =>
-      prev.map((it) =>
-        it.mabienthe === variantId
-          ? { ...it, soluong: Math.max(1, it.soluong + delta) }
-          : it
-      )
+    const item = cart.find((it) => it.mabienthe === variantId);
+    if (!item) return;
+
+    if (item.soluong === 1 && delta === -1) {
+      if (window.confirm("Xóa sản phẩm này khỏi giỏ hàng?")) {
+        removeItem(variantId);
+      }
+      return;
+    }
+
+    const nextCart = cart.map((it) =>
+      it.mabienthe === variantId ? { ...it, soluong: it.soluong + delta } : it
     );
+
+    saveCart(nextCart);
   };
 
   const removeItem = (variantId) => {
-    setCart((prev) => prev.filter((it) => it.mabienthe !== variantId));
+    const nextCart = cart.filter((it) => it.mabienthe !== variantId);
+    saveCart(nextCart);
   };
 
   const subtotal = cart.reduce(

@@ -11,14 +11,34 @@ import {
   ClipboardList,
   XCircle,
   CalendarClock,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function DonHang() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const pageSize = 5; // anh muốn 2-3-4 tuỳ, để 3 nhìn đẹp
 
   const BASE_URL = "http://localhost:5000/api/donhang";
+  const totalPages = Math.max(1, Math.ceil(orders.length / pageSize));
+  const safePage = Math.min(page, totalPages);
+  const start = (safePage - 1) * pageSize;
+  const pagedOrders = orders.slice(start, start + pageSize);
+
+  useEffect(() => {
+    // nếu số trang giảm (vd huỷ đơn, lọc user) đảm bảo không văng
+    if (page > totalPages) setPage(totalPages);
+    // eslint-disable-next-line
+  }, [orders.length]);
+
+  const goToPage = (p) => {
+    const next = Math.max(1, Math.min(totalPages, p));
+    setPage(next);
+    window.scrollTo({ top: 0, behavior: "smooth" }); // UX: đổi trang kéo lên
+  };
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -142,7 +162,7 @@ export default function DonHang() {
           {/* DANH SÁCH ĐƠN HÀNG */}
           {!loading && orders.length > 0 && (
             <div className="space-y-6">
-              {orders.map((o) => (
+              {pagedOrders.map((o) => (
                 <div
                   key={o.madonhang}
                   className="group border border-slate-100 rounded-2xl p-5 md:p-6 bg-white/90 hover:bg-slate-50 hover:border-slate-200 shadow-sm hover:shadow-md transition-all duration-200"
@@ -261,6 +281,57 @@ export default function DonHang() {
               ))}
             </div>
           )}
+        </div>
+        {/* PAGINATION */}
+        <div className="pt-4 flex items-center justify-center gap-2">
+          <button
+            onClick={() => goToPage(safePage - 1)}
+            disabled={safePage === 1}
+            className={`h-10 w-10 rounded-full border flex items-center justify-center transition
+      ${safePage === 1 ? "opacity-40 cursor-not-allowed" : "hover:bg-slate-50"}
+    `}
+            aria-label="Trang trước"
+          >
+            <ChevronLeft size={18} />
+          </button>
+
+          {Array.from({ length: totalPages })
+            .slice(0, 10)
+            .map((_, idx) => {
+              const p = idx + 1;
+              const active = p === safePage;
+              return (
+                <button
+                  key={p}
+                  onClick={() => goToPage(p)}
+                  className={`h-10 w-10 rounded-full text-sm font-semibold transition
+          ${
+            active
+              ? "bg-slate-900 text-white"
+              : "text-slate-700 hover:bg-slate-50 border"
+          }
+        `}
+                  aria-label={`Trang ${p}`}
+                >
+                  {p}
+                </button>
+              );
+            })}
+
+          <button
+            onClick={() => goToPage(safePage + 1)}
+            disabled={safePage === totalPages}
+            className={`h-10 w-10 rounded-full border flex items-center justify-center transition
+      ${
+        safePage === totalPages
+          ? "opacity-40 cursor-not-allowed"
+          : "hover:bg-slate-50"
+      }
+    `}
+            aria-label="Trang sau"
+          >
+            <ChevronRight size={18} />
+          </button>
         </div>
       </div>
     </div>

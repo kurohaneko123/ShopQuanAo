@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import QuickAddModal from "./QuickAddModal.jsx";
 
 /* ====== Import ảnh mẫu (tạm) ====== */
 import Aosomi from "../assets/aosomi.jpg";
@@ -78,6 +79,19 @@ export default function HomePage() {
   const [error, setError] = useState(null);
   const [vouchers, setVouchers] = useState([]);
   const [categories, setCategories] = useState({ nam: [], nu: [] });
+  const [openQuickAdd, setOpenQuickAdd] = useState(false);
+  const [quickProduct, setQuickProduct] = useState(null);
+  const [quickVariants, setQuickVariants] = useState([]);
+  const [priceMap, setPriceMap] = useState({});
+
+  const goToDetail = (id) => {
+    navigate(`/product/${id}`);
+  };
+
+  const getCartKey = () => {
+    const uid = localStorage.getItem("activeUserId");
+    return uid ? `cart_${uid}` : "cart_guest";
+  };
 
   /* ====== Cấu hình slider ====== */
   const settings = {
@@ -134,8 +148,7 @@ export default function HomePage() {
         const mapped = apiData.map((item) => ({
           id: item.masanpham,
           name: item.tensanpham,
-          price: Math.floor(Math.random() * 400000) + 150000,
-          img: item.anhdaidien || "", // 👉 ảnh từ Cloudinary
+          img: item.anhdaidien || "",
           brand: item.thuonghieu,
           mota: item.mota,
           categoryId: item.madanhmuc,
@@ -167,6 +180,51 @@ export default function HomePage() {
     quanhogi: "Quần Jogger",
     khac: "Khác",
   };
+  const allHomeProducts = React.useMemo(() => {
+    const map = new Map();
+    [...dailyProducts, ...highlightProducts].forEach((p) => {
+      if (p?.id) map.set(p.id, p);
+    });
+    return Array.from(map.values());
+  }, [dailyProducts, highlightProducts]);
+
+  useEffect(() => {
+    if (allHomeProducts.length === 0) return;
+
+    const fetchPrices = async () => {
+      const map = {};
+
+      await Promise.all(
+        allHomeProducts.map(async (p) => {
+          try {
+            const res = await axios.get(
+              `http://localhost:5000/api/sanpham/${p.id}`
+            );
+            const variants = res.data.bienthe || [];
+
+            if (variants.length > 0) {
+              const preferredVariant =
+                variants.find(
+                  (v) => String(v.tenkichthuoc || "").toUpperCase() === "M"
+                ) || variants[0];
+
+              const basePrice = Number(preferredVariant?.giaban);
+
+              if (Number.isFinite(basePrice)) {
+                map[p.id] = basePrice;
+              }
+            }
+          } catch (err) {
+            console.error("Lỗi lấy giá:", err);
+          }
+        })
+      );
+
+      setPriceMap(map);
+    };
+
+    fetchPrices();
+  }, [allHomeProducts]);
 
   // Lấy danh mục từ ảnh đại diện
   useEffect(() => {
@@ -232,8 +290,8 @@ export default function HomePage() {
   /* ====== 🛒 Thêm nhanh vào giỏ hàng từ Homepage — BẢN XỊN ====== */
   const handleAddToCart = async (p) => {
     try {
-      // 1️⃣ Lấy biến thể sản phẩm
       const res = await axios.get(`http://localhost:5000/api/sanpham/${p.id}`);
+
       const variants = res.data.bienthe || [];
 
       if (variants.length === 0) {
@@ -241,51 +299,11 @@ export default function HomePage() {
         return;
       }
 
-      // 2️⃣ Lấy biến thể đầu tiên (auto)
-      const v = variants[0];
-
-      const newItem = {
-        mabienthe: v.mabienthe,
-        tensanpham: p.name,
-        giagoc: Number(v.giaban),
-        giakhuyenmai: Number(v.giaban),
-        soluong: 1,
-        mausac: v.tenmausac,
-        size: v.tenkichthuoc,
-        hinhanh: v.hinhanh?.[0] || p.img,
-        sku: v.sku,
-      };
-
-      // 3️⃣ Lưu vào cart
-      const stored = JSON.parse(localStorage.getItem("cart")) || [];
-
-      const exist = stored.find((i) => i.mabienthe === newItem.mabienthe);
-      if (exist) exist.soluong += 1;
-      else stored.push(newItem);
-
-      localStorage.setItem("cart", JSON.stringify(stored));
-
-      // 4️⃣ Bắn event để Header cập nhật
-      window.dispatchEvent(new Event("cartUpdated"));
-
-      // ⭐ TOAST Luxury
-      const toast = document.createElement("div");
-      toast.className = `
-      fixed z-[9999] bg-white border border-gray-200 shadow-xl rounded-xl
-      p-4 w-[320px] flex items-center gap-3 animate-fadeIn
-      top-[90px] right-[110px]
-    `;
-      toast.innerHTML = `
-      <img src="${newItem.hinhanh}" class="w-14 h-14 rounded-md border object-cover"/>
-      <div class="flex-1">
-        <p class="text-sm font-semibold text-gray-900">Đã thêm vào giỏ hàng</p>
-        <p class="text-xs text-gray-500 mt-0.5">${newItem.tensanpham} • ${newItem.mausac}, ${newItem.size}</p>
-      </div>
-    `;
-      document.body.appendChild(toast);
-      setTimeout(() => toast.remove(), 2500);
+      setQuickProduct(p);
+      setQuickVariants(variants);
+      setOpenQuickAdd(true);
     } catch (err) {
-      console.error("Lỗi thêm giỏ hàng:", err);
+      console.error("Lỗi mở popup thêm nhanh:", err);
     }
   };
 
@@ -381,7 +399,11 @@ export default function HomePage() {
           <Slider {...settings}>
             {dailyProducts.map((p) => (
               <div key={p.id} className="px-3">
-                <div className="relative group bg-white border rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition">
+                <div
+                  onClick={() => goToDetail(p.id)}
+                  className="relative group bg-white border rounded-2xl overflow-hidden 
+             shadow-sm hover:shadow-lg transition cursor-pointer"
+                >
                   <div className="h-72 bg-gray-50">
                     <img
                       src={p.img}
@@ -393,14 +415,22 @@ export default function HomePage() {
                     <h3 className="font-semibold text-lg line-clamp-1 leading-tight">
                       {p.name}
                     </h3>
-                    <p className="text-red-600 font-bold">
-                      {p.price.toLocaleString("vi-VN")}đ
-                    </p>
+                    {priceMap[p.id] ? (
+                      <p className="text-red-600 font-bold text-[15px]">
+                        {priceMap[p.id].toLocaleString("vi-VN")}đ
+                      </p>
+                    ) : (
+                      <p className="text-slate-400 text-sm">Đang tải giá…</p>
+                    )}
                   </div>
                   <div className="absolute bottom-4 left-0 w-full flex justify-center opacity-0 group-hover:opacity-100 transition">
                     <button
-                      onClick={() => handleAddToCart(p)}
-                      className="bg-black text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-gray-800"
+                      onClick={(e) => {
+                        e.stopPropagation(); // ⛔ chặn click lan sang card
+                        handleAddToCart(p);
+                      }}
+                      className="bg-black text-white px-5 py-2 rounded-full 
+             text-sm font-medium hover:bg-gray-800"
                     >
                       Thêm vào giỏ hàng +
                     </button>
@@ -434,7 +464,11 @@ export default function HomePage() {
           <Slider {...settings}>
             {highlightProducts.map((p) => (
               <div key={p.id} className="px-3">
-                <div className="relative group bg-white border rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition">
+                <div
+                  onClick={() => goToDetail(p.id)}
+                  className="relative group bg-white border rounded-2xl overflow-hidden 
+             shadow-sm hover:shadow-lg transition cursor-pointer"
+                >
                   <div className="h-72 bg-gray-50">
                     <img
                       src={p.img}
@@ -446,14 +480,22 @@ export default function HomePage() {
                     <h3 className="font-semibold text-lg line-clamp-1 leading-tight">
                       {p.name}
                     </h3>
-                    <p className="text-red-600 font-bold">
-                      {p.price.toLocaleString("vi-VN")}đ
-                    </p>
+                    {priceMap[p.id] ? (
+                      <p className="text-red-600 font-bold text-[15px]">
+                        {priceMap[p.id].toLocaleString("vi-VN")}đ
+                      </p>
+                    ) : (
+                      <p className="text-slate-400 text-sm">Đang tải giá…</p>
+                    )}
                   </div>
                   <div className="absolute bottom-4 left-0 w-full flex justify-center opacity-0 group-hover:opacity-100 transition">
                     <button
-                      onClick={() => handleAddToCart(p)}
-                      className="bg-black text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-gray-800"
+                      onClick={(e) => {
+                        e.stopPropagation(); // ⛔ chặn click lan sang card
+                        handleAddToCart(p);
+                      }}
+                      className="bg-black text-white px-5 py-2 rounded-full 
+             text-sm font-medium hover:bg-gray-800"
                     >
                       Thêm vào giỏ hàng +
                     </button>
@@ -539,6 +581,37 @@ export default function HomePage() {
           )}
         </section>
       </div>
+      <QuickAddModal
+        open={openQuickAdd}
+        onClose={() => setOpenQuickAdd(false)}
+        product={quickProduct}
+        variants={quickVariants}
+        onConfirm={({ variant, qty }) => {
+          const key = getCartKey();
+          const stored = JSON.parse(localStorage.getItem(key)) || [];
+
+          const item = {
+            mabienthe: variant.mabienthe,
+            tensanpham: quickProduct.name,
+            giagoc: Number(variant.giaban),
+            giakhuyenmai: Number(variant.giaban),
+            soluong: qty,
+            mausac: variant.tenmausac,
+            size: variant.tenkichthuoc,
+            hinhanh: variant.hinhanh?.[0] || quickProduct.img,
+            sku: variant.sku,
+          };
+
+          const exist = stored.find((i) => i.mabienthe === item.mabienthe);
+          if (exist) exist.soluong += qty;
+          else stored.push(item);
+
+          localStorage.setItem(key, JSON.stringify(stored));
+          window.dispatchEvent(new Event("cartUpdated"));
+
+          setOpenQuickAdd(false);
+        }}
+      />
     </main>
   );
 }

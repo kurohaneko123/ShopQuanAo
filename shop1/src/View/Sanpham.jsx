@@ -64,8 +64,59 @@ export default function TatCaSanPham() {
   const [selectedColors, setSelectedColors] = useState([]);
   const [selectedGender, setSelectedGender] = useState(null);
   const [selectedPrice, setSelectedPrice] = useState(null);
-  const [visibleCount, setVisibleCount] = useState(6);
+  const [page, setPage] = useState(1);
+  const pageSize = 6;
+  const [priceMap, setPriceMap] = useState({});
+
   const [activeColor, setActiveColor] = useState({});
+  useEffect(() => {
+    setPage(1);
+  }, [
+    selectedSizes,
+    selectedColors,
+    selectedGender,
+    selectedPrice,
+    searchTerm,
+  ]);
+  useEffect(() => {
+    if (products.length === 0) return;
+
+    const fetchPrices = async () => {
+      const map = {};
+
+      await Promise.all(
+        products.map(async (p) => {
+          try {
+            const res = await axios.get(
+              `http://localhost:5000/api/sanpham/${p.id}`
+            );
+
+            const variants = res.data.bienthe || [];
+
+            if (variants.length > 0) {
+              // Ưu tiên size M → fallback variant đầu
+              const preferred =
+                variants.find(
+                  (v) => String(v.tenkichthuoc || "").toUpperCase() === "M"
+                ) || variants[0];
+
+              const basePrice = Number(preferred?.giaban);
+
+              if (Number.isFinite(basePrice)) {
+                map[p.id] = basePrice;
+              }
+            }
+          } catch (err) {
+            console.error("Lỗi lấy giá sản phẩm:", err);
+          }
+        })
+      );
+
+      setPriceMap(map);
+    };
+
+    fetchPrices();
+  }, [products]);
 
   /* ✅ GỌI API */
   useEffect(() => {
@@ -80,11 +131,11 @@ export default function TatCaSanPham() {
           material: item.chatlieu,
           categoryId: item.madanhmuc,
           img: item.anhdaidien || Aothunbasic,
-          price: Math.floor(Math.random() * 400000) + 150000,
           colors: ["black", "white", "red"],
           sizes: ["M", "L", "XL"],
           gender: "Nam",
         }));
+
         setProducts(apiProducts);
       } catch (err) {
         console.error(err);
@@ -131,7 +182,16 @@ export default function TatCaSanPham() {
     return matchSize && matchColor && matchGender && matchPrice && matchSearch;
   });
 
-  const visibleProducts = filteredProducts.slice(0, visibleCount);
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / pageSize));
+  const safePage = Math.min(page, totalPages);
+  const start = (safePage - 1) * pageSize;
+  const visibleProducts = filteredProducts.slice(start, start + pageSize);
+
+  const goToPage = (p) => {
+    const next = Math.max(1, Math.min(totalPages, p));
+    setPage(next);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   /* ===== RENDER ===== */
   if (loading)
@@ -264,7 +324,9 @@ export default function TatCaSanPham() {
                         <h3 className="font-semibold">{p.name}</h3>
                         <p className="text-gray-600 text-sm mb-2">{p.brand}</p>
                         <div className="text-red-600 font-bold">
-                          {p.price.toLocaleString("vi-VN")}đ
+                          {priceMap[p.id]
+                            ? `${priceMap[p.id].toLocaleString("vi-VN")}đ`
+                            : "Đang tải giá…"}
                         </div>
                       </div>
                     </Link>
@@ -289,17 +351,57 @@ export default function TatCaSanPham() {
                   </div>
                 ))}
               </div>
+              {/* Pagination */}
+              <div className="mt-10 flex items-center justify-center gap-2">
+                <button
+                  onClick={() => goToPage(safePage - 1)}
+                  disabled={safePage === 1}
+                  className={`h-10 w-10 rounded-full border flex items-center justify-center transition
+      ${safePage === 1 ? "opacity-40 cursor-not-allowed" : "hover:bg-gray-50"}
+    `}
+                  aria-label="Trang trước"
+                >
+                  ‹
+                </button>
 
-              {visibleCount < filteredProducts.length && (
-                <div className="text-center mt-10">
-                  <button
-                    onClick={() => setVisibleCount((prev) => prev + 6)}
-                    className="bg-black text-white font-semibold px-6 py-3 rounded-lg hover:bg-gray-800 transition"
-                  >
-                    Xem thêm sản phẩm ↓
-                  </button>
-                </div>
-              )}
+                {Array.from({ length: totalPages })
+                  .slice(0, 10)
+                  .map((_, idx) => {
+                    const p = idx + 1;
+                    const active = p === safePage;
+                    return (
+                      <button
+                        key={p}
+                        onClick={() => goToPage(p)}
+                        className={`h-10 w-10 rounded-full text-sm font-semibold transition
+          ${
+            active
+              ? "bg-black text-white"
+              : "text-gray-700 hover:bg-gray-50 border"
+          }
+        `}
+                        aria-label={`Trang ${p}`}
+                      >
+                        {p}
+                      </button>
+                    );
+                  })}
+
+                <button
+                  onClick={() => goToPage(safePage + 1)}
+                  disabled={safePage === totalPages}
+                  className={`h-10 w-10 rounded-full border flex items-center justify-center transition
+      ${
+        safePage === totalPages
+          ? "opacity-40 cursor-not-allowed"
+          : "hover:bg-gray-50"
+      }
+    `}
+                  aria-label="Trang sau"
+                >
+                  ›
+                </button>
+              </div>
             </>
           )}
         </main>

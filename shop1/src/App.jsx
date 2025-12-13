@@ -15,6 +15,7 @@ import ChiTietSanPham from "./View/Chitietsp.jsx";
 import ThongTinKhachHang from "./Chucnang/Thongtinkh.jsx";
 import DonHang from "./Chucnang/DonHang.jsx";
 import ZaloPayPage from "./Chucnang/Zalopay.jsx";
+import OrderSuccess from "./View/OrderSuccess.jsx";
 //Admin
 import AdminLayout from "./Admin/Admin.jsx";
 import ProductManagement from "./Admin/Sanpham/index.jsx";
@@ -64,6 +65,7 @@ export default function App() {
             </RequireAuth>
           }
         />
+        <Route path="/ordersuccess" element={<OrderSuccess />} />
         <Route
           path="/"
           element={
@@ -73,6 +75,7 @@ export default function App() {
             </>
           }
         />
+
         {/* ====== TRANG Sản Phẩm  ====== */}
         <Route path="/all" element={<TatCaSanPham />} />
         <Route path="/all/:gender/:category" element={<TatCaSanPham />} />

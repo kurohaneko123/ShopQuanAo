@@ -1,5 +1,5 @@
 import express from "express";
-import { xoaBienTheController, suaBienThe } from "../controllers/bientheController.js";
+import { xoaBienTheController, suaBienThe, locBienThe } from "../controllers/bientheController.js";
 
 const router = express.Router();
 
@@ -8,5 +8,8 @@ router.delete("/xoa/:id", xoaBienTheController);
 
 // PUT biến thể theo id
 router.put("/sua/:id", suaBienThe);
+
+// GET biến thể (lọc)
+router.get("/loc", locBienThe);
 
 export default router;

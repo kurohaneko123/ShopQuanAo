@@ -1,4 +1,4 @@
-import { xoaBienThe, capNhatBienThe } from "../models/bientheModel.js";
+import { xoaBienThe, capNhatBienThe, locBienTheModel } from "../models/bientheModel.js";
 // Xóa biến thể 
 export const xoaBienTheController = async (req, res) => {
     try {
@@ -57,6 +57,40 @@ export const suaBienThe = async (req, res) => {
         res.status(500).json({
             message: "Lỗi máy chủ",
             error: error.message
+        });
+    }
+};
+//Lọc biến thể
+export const locBienThe = async (req, res) => {
+    try {
+        const {
+            kichthuoc,
+            mausac,
+            giaTu,
+            giaDen,
+            gioitinh,
+        } = req.query;
+
+        const boLoc = {
+            kichthuoc: kichthuoc ? kichthuoc.split(",").map(Number) : [],
+            mausac: mausac ? mausac.split(",").map(Number) : [],
+            giaTu: giaTu ? Number(giaTu) : null,
+            giaDen: giaDen ? Number(giaDen) : null,
+            gioitinh: gioitinh || null,
+        };
+
+        const duLieu = await locBienTheModel(boLoc);
+
+        res.status(200).json({
+            thanhcong: true,
+            tong: duLieu.length,
+            dulieu: duLieu,
+        });
+    } catch (loi) {
+        console.error("❌ Lỗi lọc biến thể:", loi);
+        res.status(500).json({
+            thanhcong: false,
+            thongbao: "Lỗi khi lọc biến thể sản phẩm",
         });
     }
 };

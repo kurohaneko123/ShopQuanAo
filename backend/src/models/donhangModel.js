@@ -1,15 +1,15 @@
 import db from "../config/db.js";
 
 // Tạo 1 đơn hàng mới
-export const taoDonHang = async (data) => {
+export const taoDonHang = async (data, connection) => {
     const sql = `
-      INSERT INTO donhang 
-      (manguoidung, tennguoinhan, sodienthoai, diachigiao, donvivanchuyen,
-       hinhthucthanhtoan, tongtien, phivanchuyen, tongthanhtoan, ghichu, ngaytao)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+    INSERT INTO donhang 
+    (manguoidung, tennguoinhan, sodienthoai, diachigiao, donvivanchuyen,
+     hinhthucthanhtoan, tongtien, phivanchuyen, tongthanhtoan, ghichu, ngaytao)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
   `;
 
-    const [result] = await db.query(sql, [
+    const [result] = await connection.query(sql, [
         data.manguoidung,
         data.tennguoinhan,
         data.sodienthoai,
@@ -22,18 +22,18 @@ export const taoDonHang = async (data) => {
         data.ghichu || null,
     ]);
 
-    return result.insertId; // trả về mã đơn hàng
+    return result.insertId;
 };
 
 // Thêm chi tiết đơn hàng
-export const taoChiTietDonHang = async (idDon, chitiet) => {
+export const taoChiTietDonHang = async (idDon, chitiet, connection) => {
     const sql = `
-      INSERT INTO chitietdonhang 
-      (madonhang, mabienthe, soluong, giagoc, giakhuyenmai, ngaytao)
-      VALUES (?, ?, ?, ?, ?, NOW())
+    INSERT INTO chitietdonhang 
+    (madonhang, mabienthe, soluong, giagoc, giakhuyenmai, ngaytao)
+    VALUES (?, ?, ?, ?, ?, NOW())
   `;
 
-    const [result] = await db.query(sql, [
+    const [result] = await connection.query(sql, [
         idDon,
         chitiet.mabienthe,
         chitiet.soluong,

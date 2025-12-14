@@ -1,35 +1,72 @@
+import db from "../config/db.js";
 import { taoDonHang, taoChiTietDonHang, layTatCaDonHang, layDonHangTheoID, capNhatDonHang } from "../models/donhangModel.js";
 
-//Tạo 1 đơn hàng
+// Tạo 1 đơn hàng + TRỪ KHO BIẾN THỂ
 export const themDonHang = async (req, res) => {
+    const connection = await db.getConnection(); // dùng transaction
     try {
         const data = req.body;
 
         if (!data.danhsach || data.danhsach.length === 0) {
             return res.status(400).json({
-                message: "Đơn hàng phải có ít nhất 1 sản phẩm!"
+                message: "Đơn hàng phải có ít nhất 1 sản phẩm!",
             });
         }
 
-        // 1️. Tạo đơn hàng
-        const idDonHang = await taoDonHang(data);
+        await connection.beginTransaction();
 
-        // 2️. Thêm từng chi tiết đơn hàng
+        /* =======================
+           1️ TẠO ĐƠN HÀNG
+        ======================= */
+        const idDonHang = await taoDonHang(data, connection);
+
+        /* =======================
+           2️ XỬ LÝ TỪNG SẢN PHẨM
+           - CHECK KHO
+           - TRỪ KHO
+           - THÊM CHI TIẾT
+        ======================= */
         for (const item of data.danhsach) {
-            await taoChiTietDonHang(idDonHang, item);
+            const { mabienthe, soluong } = item;
+
+            // 🔹 Trừ tồn kho (an toàn)
+            const [result] = await connection.query(
+                `
+        UPDATE bienthesanpham
+        SET soluongton = soluongton - ?
+        WHERE mabienthe = ?
+          AND soluongton >= ?
+        `,
+                [soluong, mabienthe, soluong]
+            );
+
+            if (result.affectedRows === 0) {
+                throw new Error(
+                    `Biến thể ${mabienthe} không đủ số lượng tồn`
+                );
+            }
+
+            //  Thêm chi tiết đơn hàng
+            await taoChiTietDonHang(idDonHang, item, connection);
         }
+
+        await connection.commit();
 
         return res.status(201).json({
             message: "Tạo đơn hàng thành công!",
-            madonhang: idDonHang
+            madonhang: idDonHang,
         });
 
     } catch (error) {
-        console.error("Lỗi khi thêm đơn hàng:", error);
-        res.status(500).json({
-            message: "Lỗi máy chủ",
-            error: error.message
+        await connection.rollback();
+        console.error(" Lỗi khi thêm đơn hàng:", error);
+
+        return res.status(500).json({
+            message: "Tạo đơn hàng thất bại",
+            error: error.message,
         });
+    } finally {
+        connection.release();
     }
 };
 //Lấy danh sách đơn hàng

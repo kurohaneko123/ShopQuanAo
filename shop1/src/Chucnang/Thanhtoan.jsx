@@ -183,8 +183,8 @@ export default function Checkout() {
           const zaloRes = await axios.post(
             "http://localhost:5000/api/payment/zalopay/create",
             {
-              amount: total, // FE gửi số tiền FE muốn
-              orderId: orderId, // FE gửi mã đơn vừa tạo
+              madonhang: orderId,       // ✅ ĐÚNG KEY BE CẦN
+              tongthanhtoan: total,    // ✅ ĐÚNG KEY BE CẦN
             }
           );
 

@@ -8,12 +8,20 @@ import {
   Truck,
   RefreshCcw,
   ChevronLeft,
+  ChevronRight,
+  MessageSquareText,
+  SlidersHorizontal,
 } from "lucide-react";
 import axios from "axios";
+
+import ProductRecommendations from "./chitietsp/ProductRecommendations";
+import RecentViewed from "./chitietsp/RecentViewed.jsx";
+import ProductReviews from "./chitietsp/ProductReviews.jsx";
 
 export default function ChiTietSanPham() {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const [quantity, setQuantity] = useState(1);
   const [product, setProduct] = useState(null);
   const [variants, setVariants] = useState([]);
@@ -22,8 +30,10 @@ export default function ChiTietSanPham() {
   const [selectedSize, setSelectedSize] = useState("");
   const [loading, setLoading] = useState(true);
 
-  // UI-only: lỗi theo field (để không bắt nhập lại hết)
+  // UI-only: lỗi theo field
   const [errors, setErrors] = useState({ color: "", size: "" });
+
+  // ✅ NEW: gợi ý sản phẩm + sản phẩm đã xem
 
   const BASE_URL = "http://localhost:5000";
 
@@ -34,12 +44,10 @@ export default function ChiTietSanPham() {
         (v) => v.tenmausac === selectedColor && v.tenkichthuoc === selectedSize
       );
 
-      // UX: báo lỗi đúng field, không alert thô
       const newErrors = { color: "", size: "" };
       if (!selectedColor) newErrors.color = "Vui lòng chọn màu.";
       if (!selectedSize) newErrors.size = "Vui lòng chọn size.";
       if (!variant) {
-        // nếu chọn combo không tồn tại
         newErrors.size =
           newErrors.size || "Size này không có sẵn cho màu bạn chọn.";
       }
@@ -69,7 +77,6 @@ export default function ChiTietSanPham() {
       localStorage.setItem(cartKey, JSON.stringify(stored));
       window.dispatchEvent(new Event("cartUpdated"));
 
-      // Toast giữ kiểu của anh (chỉ làm gọn UI chút)
       const toast = document.createElement("div");
       toast.className = `
         fixed z-[9999] top-[90px] right-[20px]
@@ -100,7 +107,6 @@ export default function ChiTietSanPham() {
         setProduct(res.data.sanpham);
         setVariants(res.data.bienthe);
 
-        // Auto chọn màu + size đầu tiên (giữ như anh)
         if (res.data.bienthe.length > 0) {
           setSelectedColor(res.data.bienthe[0].tenmausac);
           setSelectedSize(res.data.bienthe[0].tenkichthuoc);
@@ -114,7 +120,7 @@ export default function ChiTietSanPham() {
     fetchProduct();
   }, [id]);
 
-  // ====== Dữ liệu UI hợp lệ theo variants (để không hardcode) ======
+  // ====== Dữ liệu UI hợp lệ theo variants ======
   const colorList = useMemo(
     () => [...new Set(variants.map((v) => v.tenmausac))],
     [variants]
@@ -125,7 +131,6 @@ export default function ChiTietSanPham() {
     [variants]
   );
 
-  // size hợp lệ theo màu đang chọn
   const availableSizesForColor = useMemo(() => {
     if (!selectedColor) return new Set();
     return new Set(
@@ -135,26 +140,25 @@ export default function ChiTietSanPham() {
     );
   }, [variants, selectedColor]);
 
-  // variant theo màu + size
   const selectedVariant = useMemo(() => {
     return variants.find(
       (v) => v.tenmausac === selectedColor && v.tenkichthuoc === selectedSize
     );
   }, [variants, selectedColor, selectedSize]);
 
-  // danh sách ảnh theo màu
   const currentVariantByColor = variants.find(
     (v) => v.tenmausac === selectedColor
   );
   const currentImages = currentVariantByColor?.hinhanh || [];
 
-  // Reset ảnh chính khi đổi màu
   useEffect(() => {
-    setErrors({ color: "", size: "" }); // UX: đổi màu thì clear lỗi
-    setQuantity(1); // UX: đổi màu thì reset số lượng về 1
+    setErrors({ color: "", size: "" });
+    setQuantity(1);
     if (currentImages.length > 0) setMainImage(currentImages[0]);
     else setMainImage(product?.anhdaidien || "");
   }, [selectedColor, variants]); // eslint-disable-line
+
+  // ✅ NEW: gợi ý sản phẩm (fallback an toàn: thử gọi list, fail thì bỏ trống)
 
   if (loading)
     return (
@@ -202,6 +206,7 @@ export default function ChiTietSanPham() {
           </nav>
         </div>
 
+        {/* MAIN CARD */}
         <div className="bg-white/80 backdrop-blur-xl border border-slate-100 shadow-[0_18px_60px_rgba(15,23,42,0.08)] rounded-3xl p-5 md:p-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
             {/* ===== ẢNH ===== */}
@@ -319,7 +324,6 @@ export default function ChiTietSanPham() {
                         key={color}
                         onClick={() => {
                           setSelectedColor(color);
-                          // UX: nếu size hiện tại không tồn tại theo màu mới -> tự reset về size hợp lệ đầu tiên
                           if (!availableSizesForColor.has(selectedSize)) {
                             const first =
                               variants.find((v) => v.tenmausac === color)
@@ -396,14 +400,14 @@ export default function ChiTietSanPham() {
                   <p className="mt-2 text-xs text-rose-600">{errors.size}</p>
                 )}
               </div>
+
               {/* Quantity */}
               <div>
                 <h4 className="font-semibold text-slate-900 mb-2">Số lượng</h4>
                 <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-2 py-1">
                   <button
                     onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                    className="h-9 w-9 rounded-full flex items-center justify-center text-lg font-semibold
-        hover:bg-slate-100 transition"
+                    className="h-9 w-9 rounded-full flex items-center justify-center text-lg font-semibold hover:bg-slate-100 transition"
                     aria-label="Giảm số lượng"
                   >
                     –
@@ -415,8 +419,7 @@ export default function ChiTietSanPham() {
 
                   <button
                     onClick={() => setQuantity((q) => q + 1)}
-                    className="h-9 w-9 rounded-full flex items-center justify-center text-lg font-semibold
-        hover:bg-slate-100 transition"
+                    className="h-9 w-9 rounded-full flex items-center justify-center text-lg font-semibold hover:bg-slate-100 transition"
                     aria-label="Tăng số lượng"
                   >
                     +
@@ -452,7 +455,20 @@ export default function ChiTietSanPham() {
           </div>
         </div>
 
-        {/* note nhỏ */}
+        {/*  Gợi ý sản phẩm */}
+        <ProductRecommendations
+          BASE_URL={BASE_URL}
+          product={product}
+          currentId={id}
+        />
+
+        <ProductReviews BASE_URL={BASE_URL} productId={id} />
+
+        <RecentViewed
+          currentId={id}
+          currentProduct={product}
+          currentPrice={priceToShow}
+        />
       </div>
     </div>
   );
@@ -471,3 +487,11 @@ function TrustItem({ icon, title, desc }) {
     </div>
   );
 }
+
+/* =========================
+   UI BLOCKS: Less is more
+========================= */
+
+/* =========================
+   REVIEWS: UI shell (logic làm sau)
+========================= */

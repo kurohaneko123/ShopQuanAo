@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import {
   useSearchParams,
@@ -9,48 +9,38 @@ import {
 } from "react-router-dom";
 
 /* ====== Import ảnh mẫu (tạm) ====== */
-import Aosomi from "../assets/aosomi.jpg";
-import Aokhoac from "../assets/aokhoac.jpg";
-import Aopolo from "../assets/aopolo.jpeg";
 import Aothunbasic from "../assets/aothunbasic.jpg";
-import Quanjean from "../assets/quanjean.jpg";
-import Quanjooger from "../assets/quanjooger.jpg";
 
-/* ====== Dữ liệu bộ lọc ====== */
-const sizes = ["XS", "S", "M", "L", "XL"];
-const colors = [
-  { name: "Đen", code: "black" },
-  { name: "Trắng", code: "white" },
-  { name: "Đỏ", code: "red" },
-  { name: "Xanh lam", code: "blue" },
-  { name: "Xám", code: "gray" },
-  { name: "Be", code: "#f5f5dc" },
+/* =========================
+   MAPPING THEO API /bienthe/loc
+   - Anh đang test: kichthuoc=2,3 (Size M,L)
+   - mausac=4,5 (Xanh Navy, Xám Tro)
+   ========================= */
+const sizeOptions = [
+  { id: 2, label: "M" },
+  { id: 3, label: "L" },
+  // Nếu BE anh có thêm: {id: 1,label:"S"}, {id:4,label:"XL"}... anh add tiếp ở đây
 ];
+
+const colorOptions = [
+  { id: 4, label: "Xanh Navy" },
+  { id: 5, label: "Xám Tro" },
+  // Nếu BE anh có thêm màu khác → add tiếp
+];
+
 const priceRanges = [
   { label: "0 - 200.000đ", min: 0, max: 200000 },
   { label: "200.000đ - 300.000đ", min: 200000, max: 300000 },
   { label: "300.000đ - 500.000đ", min: 300000, max: 500000 },
   { label: ">500.000đ", min: 500000, max: Infinity },
 ];
-const genders = ["Nam", "Nữ"];
 
-function formatCategoryName(slug) {
-  const mapping = {
-    "ao-thun": "Áo Thun",
-    "ao-polo": "Áo Polo",
-    "ao-khoac": "Áo Khoác",
-    "ao-so-mi": "Áo Sơ Mi",
-    "ao-hoodie": "Áo Hoodie",
-    "quan-jean": "Quần Jean",
-    "quan-jogger": "Quần Jogger",
-  };
-  return mapping[slug] || slug;
-}
+const genders = ["Nam", "Nữ"];
 
 export default function TatCaSanPham() {
   const [searchParams] = useSearchParams();
   const { gender: genderParam, category } = useParams();
-  const genderQuery = searchParams.get("gender");
+
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const searchTerm = queryParams.get("search")?.toLowerCase() || "";
@@ -60,24 +50,154 @@ export default function TatCaSanPham() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const [selectedSizes, setSelectedSizes] = useState([]);
-  const [selectedColors, setSelectedColors] = useState([]);
+  // chọn filter theo ID để match API
+  const [selectedSizeIds, setSelectedSizeIds] = useState([]);
+  const [selectedColorIds, setSelectedColorIds] = useState([]);
   const [selectedGender, setSelectedGender] = useState(null);
   const [selectedPrice, setSelectedPrice] = useState(null);
+
   const [page, setPage] = useState(1);
   const pageSize = 6;
+
+  // giá hiển thị: vẫn lấy từ /api/sanpham/:id giống code cũ của anh
   const [priceMap, setPriceMap] = useState({});
 
-  const [activeColor, setActiveColor] = useState({});
+  // reset page khi đổi filter/search
   useEffect(() => {
     setPage(1);
   }, [
-    selectedSizes,
-    selectedColors,
+    selectedSizeIds,
+    selectedColorIds,
     selectedGender,
     selectedPrice,
     searchTerm,
   ]);
+
+  const hasAnyFilter = useMemo(() => {
+    return (
+      selectedSizeIds.length > 0 ||
+      selectedColorIds.length > 0 ||
+      !!selectedGender ||
+      !!selectedPrice
+    );
+  }, [selectedSizeIds, selectedColorIds, selectedGender, selectedPrice]);
+
+  const toggleId = (id, setter) => {
+    setter((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
+  const clearFilters = () => {
+    setSelectedSizeIds([]);
+    setSelectedColorIds([]);
+    setSelectedGender(null);
+    setSelectedPrice(null);
+    setPage(1);
+  };
+
+  // =========================
+  // 1) FETCH PRODUCTS:
+  // - Nếu có filter => gọi /api/bienthe/loc (lọc thật theo BE)
+  // - Nếu không => gọi /api/sanpham (danh sách thường)
+  // =========================
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        if (hasAnyFilter) {
+          // build query đúng như Postman của anh
+          const params = {};
+          if (selectedSizeIds.length)
+            params.kichthuoc = selectedSizeIds.join(",");
+          if (selectedColorIds.length)
+            params.mausac = selectedColorIds.join(",");
+          if (selectedPrice) {
+            params.giaTu = selectedPrice.min;
+            params.giaDen =
+              selectedPrice.max === Infinity ? undefined : selectedPrice.max;
+          }
+          if (selectedGender) params.gioitinh = selectedGender;
+
+          const res = await axios.get("http://localhost:5000/api/bienthe/loc", {
+            params,
+          });
+
+          // cố gắng “đỡ” mọi kiểu response
+          const raw = Array.isArray(res.data?.dulieu) ? res.data.dulieu : [];
+
+          // Normalize về format card (id, name, brand, img...)
+          // Tùy BE anh trả gì: có thể trả list biến thể kèm sản phẩm.
+          // Chị gom về theo sản phẩm nếu tìm thấy masanpham/tensanpham.
+          const mapById = new Map();
+
+          raw.forEach((item) => {
+            const pid = item.masanpham;
+            const name = item.tensanpham;
+
+            if (!pid) return;
+
+            if (!mapById.has(pid)) {
+              mapById.set(pid, {
+                id: pid,
+                name: name || `Sản phẩm #${pid}`,
+                brand: item.thuonghieu || "",
+                img: item.anhdaidien || Aothunbasic,
+              });
+            }
+          });
+          setProducts(Array.from(mapById.values()));
+          const normalized = Array.from(mapById.values());
+
+          // searchTerm vẫn lọc thêm ở FE (nếu anh muốn BE lọc luôn thì nâng cấp sau)
+          const finalList = searchTerm
+            ? normalized.filter((p) =>
+                p.name.toLowerCase().includes(searchTerm)
+              )
+            : normalized;
+
+          setProducts(finalList);
+        } else {
+          // Không filter: load list thường
+          const res = await axios.get("http://localhost:5000/api/sanpham");
+          const apiProducts = (res.data?.data || []).map((item) => ({
+            id: item.masanpham,
+            name: item.tensanpham,
+            brand: item.thuonghieu,
+            img: item.anhdaidien || Aothunbasic,
+          }));
+
+          const finalList = searchTerm
+            ? apiProducts.filter((p) =>
+                p.name.toLowerCase().includes(searchTerm)
+              )
+            : apiProducts;
+
+          setProducts(finalList);
+        }
+      } catch (err) {
+        console.error(err);
+        setError("Không thể tải danh sách sản phẩm");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [
+    hasAnyFilter,
+    selectedSizeIds,
+    selectedColorIds,
+    selectedGender,
+    selectedPrice,
+    searchTerm,
+  ]);
+
+  // =========================
+  // 2) FETCH PRICE MAP (giữ logic cũ của anh)
+  // =========================
   useEffect(() => {
     if (products.length === 0) return;
 
@@ -90,21 +210,16 @@ export default function TatCaSanPham() {
             const res = await axios.get(
               `http://localhost:5000/api/sanpham/${p.id}`
             );
-
-            const variants = res.data.bienthe || [];
+            const variants = res.data?.bienthe || [];
 
             if (variants.length > 0) {
-              // Ưu tiên size M → fallback variant đầu
               const preferred =
                 variants.find(
                   (v) => String(v.tenkichthuoc || "").toUpperCase() === "M"
                 ) || variants[0];
 
               const basePrice = Number(preferred?.giaban);
-
-              if (Number.isFinite(basePrice)) {
-                map[p.id] = basePrice;
-              }
+              if (Number.isFinite(basePrice)) map[p.id] = basePrice;
             }
           } catch (err) {
             console.error("Lỗi lấy giá sản phẩm:", err);
@@ -118,74 +233,13 @@ export default function TatCaSanPham() {
     fetchPrices();
   }, [products]);
 
-  /* ✅ GỌI API */
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const res = await axios.get("http://localhost:5000/api/sanpham");
-        const apiProducts = res.data.data.map((item) => ({
-          id: item.masanpham,
-          name: item.tensanpham,
-          brand: item.thuonghieu,
-          description: item.mota,
-          material: item.chatlieu,
-          categoryId: item.madanhmuc,
-          img: item.anhdaidien || Aothunbasic,
-          colors: ["black", "white", "red"],
-          sizes: ["M", "L", "XL"],
-          gender: "Nam",
-        }));
-
-        setProducts(apiProducts);
-      } catch (err) {
-        console.error(err);
-        setError("Không thể tải danh sách sản phẩm");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProducts();
-  }, []);
-
-  /* ===== FILTER LOGIC ===== */
-  const toggleSize = (s) =>
-    setSelectedSizes((prev) =>
-      prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]
-    );
-
-  const toggleColor = (c) =>
-    setSelectedColors((prev) =>
-      prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]
-    );
-
-  const clearFilters = () => {
-    setSelectedSizes([]);
-    setSelectedColors([]);
-    setSelectedGender(null);
-    setSelectedPrice(null);
-    setVisibleCount(6);
-  };
-
-  const filteredProducts = products.filter((p) => {
-    const matchSize =
-      selectedSizes.length === 0 ||
-      p.sizes.some((sz) => selectedSizes.includes(sz));
-    const matchColor =
-      selectedColors.length === 0 ||
-      p.colors.some((col) => selectedColors.includes(col));
-    const matchGender = !selectedGender || p.gender === selectedGender;
-    const matchPrice =
-      !selectedPrice ||
-      (p.price >= selectedPrice.min && p.price <= selectedPrice.max);
-    const matchSearch =
-      !searchTerm || p.name.toLowerCase().includes(searchTerm);
-    return matchSize && matchColor && matchGender && matchPrice && matchSearch;
-  });
-
-  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / pageSize));
+  // =========================
+  // 3) PAGINATION
+  // =========================
+  const totalPages = Math.max(1, Math.ceil(products.length / pageSize));
   const safePage = Math.min(page, totalPages);
   const start = (safePage - 1) * pageSize;
-  const visibleProducts = filteredProducts.slice(start, start + pageSize);
+  const visibleProducts = products.slice(start, start + pageSize);
 
   const goToPage = (p) => {
     const next = Math.max(1, Math.min(totalPages, p));
@@ -209,7 +263,11 @@ export default function TatCaSanPham() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8 items-start">
         {/* ===== SIDEBAR ===== */}
         <aside className="md:col-span-1">
-          <div className="sticky top-[100px] z-40 space-y-4">
+          <div
+            className="sticky top-[110px] max-h-[calc(100vh-140px)]
+                overflow-y-auto rounded-xl bg-gray-50
+                p-6 space-y-6"
+          >
             <div className="flex items-center justify-between">
               <h3 className="font-bold text-lg">Bộ lọc</h3>
               <button
@@ -224,36 +282,39 @@ export default function TatCaSanPham() {
             <div>
               <h4 className="font-medium mb-2">Kích cỡ</h4>
               <div className="flex flex-wrap gap-2">
-                {sizes.map((s) => (
+                {sizeOptions.map((s) => (
                   <button
-                    key={s}
-                    onClick={() => toggleSize(s)}
+                    key={s.id}
+                    onClick={() => toggleId(s.id, setSelectedSizeIds)}
                     className={`px-3 py-1 border rounded-full text-sm ${
-                      selectedSizes.includes(s)
+                      selectedSizeIds.includes(s.id)
                         ? "bg-black text-white border-black"
                         : "hover:border-black"
                     }`}
                   >
-                    {s}
+                    {s.label}
                   </button>
                 ))}
               </div>
+              <p className="text-xs text-gray-500 mt-2"></p>
             </div>
 
             {/* Màu sắc */}
             <div>
               <h4 className="font-medium mb-2">Màu sắc</h4>
-              <div className="flex flex-wrap gap-2">
-                {colors.map((c) => (
-                  <button
-                    key={c.code}
-                    onClick={() => toggleColor(c.code)}
-                    className={`w-8 h-8 rounded-full border ${
-                      selectedColors.includes(c.code) ? "ring-2 ring-black" : ""
-                    }`}
-                    style={{ backgroundColor: c.code }}
-                    aria-label={c.name}
-                  />
+              <div className="flex flex-col gap-2">
+                {colorOptions.map((c) => (
+                  <label
+                    key={c.id}
+                    className="flex items-center gap-2 text-sm cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedColorIds.includes(c.id)}
+                      onChange={() => toggleId(c.id, setSelectedColorIds)}
+                    />
+                    {c.label}
+                  </label>
                 ))}
               </div>
             </div>
@@ -299,7 +360,7 @@ export default function TatCaSanPham() {
         <main className="md:col-span-3">
           <h2 className="text-2xl font-bold mb-6">Tất cả sản phẩm</h2>
 
-          {filteredProducts.length === 0 ? (
+          {products.length === 0 ? (
             <div className="py-16 text-center text-gray-600">
               Không có sản phẩm phù hợp.
             </div>
@@ -322,7 +383,11 @@ export default function TatCaSanPham() {
 
                       <div className="p-4 text-center">
                         <h3 className="font-semibold">{p.name}</h3>
-                        <p className="text-gray-600 text-sm mb-2">{p.brand}</p>
+                        {p.brand && (
+                          <p className="text-gray-600 text-sm mb-2">
+                            {p.brand}
+                          </p>
+                        )}
                         <div className="text-red-600 font-bold">
                           {priceMap[p.id]
                             ? `${priceMap[p.id].toLocaleString("vi-VN")}đ`
@@ -330,35 +395,22 @@ export default function TatCaSanPham() {
                         </div>
                       </div>
                     </Link>
-
-                    {/* Màu sắc chọn */}
-                    {/* <div className="flex justify-center gap-3 mt-3">
-                      {p.colors.map((clr) => (
-                        <button
-                          key={clr}
-                          onClick={() =>
-                            setActiveColor({ ...activeColor, [p.id]: clr })
-                          }
-                          className={`w-6 h-6 rounded-full border-2 transition ${
-                            activeColor[p.id] === clr
-                              ? "border-black scale-110"
-                              : "border-gray-300"
-                          }`}
-                          style={{ backgroundColor: clr }}
-                        />
-                      ))}
-                    </div> */}
                   </div>
                 ))}
               </div>
+
               {/* Pagination */}
               <div className="mt-10 flex items-center justify-center gap-2">
                 <button
                   onClick={() => goToPage(safePage - 1)}
                   disabled={safePage === 1}
                   className={`h-10 w-10 rounded-full border flex items-center justify-center transition
-      ${safePage === 1 ? "opacity-40 cursor-not-allowed" : "hover:bg-gray-50"}
-    `}
+                    ${
+                      safePage === 1
+                        ? "opacity-40 cursor-not-allowed"
+                        : "hover:bg-gray-50"
+                    }
+                  `}
                   aria-label="Trang trước"
                 >
                   ‹
@@ -367,22 +419,22 @@ export default function TatCaSanPham() {
                 {Array.from({ length: totalPages })
                   .slice(0, 10)
                   .map((_, idx) => {
-                    const p = idx + 1;
-                    const active = p === safePage;
+                    const pnum = idx + 1;
+                    const active = pnum === safePage;
                     return (
                       <button
-                        key={p}
-                        onClick={() => goToPage(p)}
+                        key={pnum}
+                        onClick={() => goToPage(pnum)}
                         className={`h-10 w-10 rounded-full text-sm font-semibold transition
-          ${
-            active
-              ? "bg-black text-white"
-              : "text-gray-700 hover:bg-gray-50 border"
-          }
-        `}
-                        aria-label={`Trang ${p}`}
+                          ${
+                            active
+                              ? "bg-black text-white"
+                              : "text-gray-700 hover:bg-gray-50 border"
+                          }
+                        `}
+                        aria-label={`Trang ${pnum}`}
                       >
-                        {p}
+                        {pnum}
                       </button>
                     );
                   })}
@@ -391,12 +443,12 @@ export default function TatCaSanPham() {
                   onClick={() => goToPage(safePage + 1)}
                   disabled={safePage === totalPages}
                   className={`h-10 w-10 rounded-full border flex items-center justify-center transition
-      ${
-        safePage === totalPages
-          ? "opacity-40 cursor-not-allowed"
-          : "hover:bg-gray-50"
-      }
-    `}
+                    ${
+                      safePage === totalPages
+                        ? "opacity-40 cursor-not-allowed"
+                        : "hover:bg-gray-50"
+                    }
+                  `}
                   aria-label="Trang sau"
                 >
                   ›

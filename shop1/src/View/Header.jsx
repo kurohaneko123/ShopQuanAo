@@ -129,7 +129,7 @@ export default function Navbar() {
 
   return (
     <header
-      className="fixed top-3 inset-x-0 mx-auto w-[95%] max-w-[1400px]
+      className="fixed top-3 inset-x-0 mx-auto w-[95%] max-w-[1600px]
   bg-white/80 backdrop-blur-xl border border-white/40
   shadow-[0_4px_20px_rgba(0,0,0,0.08)]
   rounded-2xl z-50 transition-all duration-300"

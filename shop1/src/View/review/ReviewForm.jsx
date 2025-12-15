@@ -16,38 +16,50 @@ export default function ReviewForm({ productId, onSuccess }) {
     try {
       setLoading(true);
 
-      // 🔹 BƯỚC 1: tạo đánh giá (KHÔNG HÌNH)
-      const res = await axios.post("http://localhost:5000/api/danhgia", {
-        productId,
-        rating,
-        noidung,
-      });
-
-      const madanhgia = res.data.madanhgia; // 👈 backend trả về
-
-      // 🔹 BƯỚC 2: nếu có hình → upload hình
-      if (images.length > 0) {
-        const formData = new FormData();
-        images.forEach((file) => {
-          formData.append("images", file);
-        });
-
-        await axios.post(
-          `http://localhost:5000/api/danhgia/${madanhgia}/hinhanh`,
-          formData,
-          {
-            headers: { "Content-Type": "multipart/form-data" },
-          }
-        );
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("Bạn cần đăng nhập để đánh giá");
+        return;
       }
+
+      // 🔥 LẤY madonhang ĐÃ MUA (anh đang có sẵn)
+      const madonhang = localStorage.getItem("lastOrderId");
+      // hoặc props truyền xuống
+
+      if (!madonhang) {
+        alert("Không tìm thấy đơn hàng để đánh giá");
+        return;
+      }
+
+      const res = await axios.post(
+        "http://localhost:5000/api/danhgia",
+        {
+          masanpham: productId, // ✅ ĐÚNG TÊN
+          madonhang: Number(madonhang), // ✅ BẮT BUỘC
+          sosao: rating, // ✅ ĐÚNG TÊN
+          noidung,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
       alert("Đánh giá thành công 🎉");
       setNoidung("");
       setImages([]);
-      onSuccess?.(); // reload lại list đánh giá
+      onSuccess?.();
     } catch (err) {
       console.error(err);
-      alert("Gửi đánh giá thất bại");
+
+      if (err.response?.status === 400) {
+        alert(err.response.data?.message || "Dữ liệu đánh giá không hợp lệ");
+      } else if (err.response?.status === 403) {
+        alert(err.response.data?.message);
+      } else if (err.response?.status === 409) {
+        alert("Bạn đã đánh giá sản phẩm này rồi");
+      } else {
+        alert("Lỗi server");
+      }
     } finally {
       setLoading(false);
     }

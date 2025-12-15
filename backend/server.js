@@ -15,8 +15,6 @@ import donhangRoutes from "./src/routes/donhangRoutes.js"; //Route đơn hàng
 import chitietdonhangRoutes from "./src/routes/chitietdonhangRoutes.js"; //Route chi tiết đơn hàng
 
 import paymentRoutes from "./src/routes/paymentRoutes.js"; //Routes thanh toán
-
-import paymentRoutes from "./src/routes/paymentRoutes.js"; //Routes thanh toán
 import danhgiaRoute from "./src/routes/danhgiaRoutes.js"; //Routes đánh giá
 
 dotenv.config();

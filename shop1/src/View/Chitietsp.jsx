@@ -43,7 +43,18 @@ export default function ChiTietSanPham() {
       const variant = variants.find(
         (v) => v.tenmausac === selectedColor && v.tenkichthuoc === selectedSize
       );
+      if (Number(variant?.soluongton ?? 0) <= 0) {
+        setErrors({ color: "", size: "Sản phẩm này đã hết hàng." });
+        return;
+      }
 
+      if (quantity > Number(variant.soluongton)) {
+        setErrors({
+          color: "",
+          size: `Chỉ còn ${variant.soluongton} sản phẩm.`,
+        });
+        return;
+      }
       const newErrors = { color: "", size: "" };
       if (!selectedColor) newErrors.color = "Vui lòng chọn màu.";
       if (!selectedSize) newErrors.size = "Vui lòng chọn size.";
@@ -145,6 +156,8 @@ export default function ChiTietSanPham() {
       (v) => v.tenmausac === selectedColor && v.tenkichthuoc === selectedSize
     );
   }, [variants, selectedColor, selectedSize]);
+  const stock = Number(selectedVariant?.soluongton ?? 0);
+  const outOfStock = stock <= 0;
 
   const currentVariantByColor = variants.find(
     (v) => v.tenmausac === selectedColor
@@ -300,6 +313,17 @@ export default function ChiTietSanPham() {
                   </p>
                 )}
               </div>
+              <div className="rounded-2xl border border-slate-200 bg-white p-3">
+                {outOfStock ? (
+                  <p className="text-sm font-semibold text-rose-600">
+                    Hết hàng
+                  </p>
+                ) : (
+                  <p className="text-sm text-slate-700">
+                    Còn <span className="font-bold">{stock}</span> sản phẩm
+                  </p>
+                )}
+              </div>
 
               {/* Color */}
               <div>
@@ -418,8 +442,14 @@ export default function ChiTietSanPham() {
                   </span>
 
                   <button
-                    onClick={() => setQuantity((q) => q + 1)}
-                    className="h-9 w-9 rounded-full flex items-center justify-center text-lg font-semibold hover:bg-slate-100 transition"
+                    onClick={() =>
+                      setQuantity((q) => {
+                        if (outOfStock) return 1;
+                        return Math.min(stock, q + 1);
+                      })
+                    }
+                    disabled={outOfStock}
+                    className="h-9 w-9 rounded-full flex items-center justify-center text-lg font-semibold hover:bg-slate-100 transition disabled:opacity-40 disabled:cursor-not-allowed"
                     aria-label="Tăng số lượng"
                   >
                     +
@@ -430,10 +460,11 @@ export default function ChiTietSanPham() {
               {/* CTA */}
               <button
                 onClick={handleAddToCart}
-                className="flex items-center justify-center gap-2 bg-slate-900 text-white py-4 w-full rounded-2xl font-semibold hover:bg-slate-800 transition shadow-sm hover:shadow-md"
+                disabled={outOfStock}
+                className="flex items-center justify-center gap-2 bg-slate-900 text-white py-4 w-full rounded-2xl font-semibold hover:bg-slate-800 transition shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-slate-900"
               >
                 <ShoppingBag size={20} />
-                Thêm vào giỏ hàng
+                {outOfStock ? "Hết hàng" : "Thêm vào giỏ hàng"}
               </button>
 
               {/* Mô tả */}

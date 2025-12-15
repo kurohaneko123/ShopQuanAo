@@ -47,6 +47,10 @@ export default function ZaloPayPage() {
         data?.order_url || data?.orderurl || data?.data?.order_url;
 
       if (orderUrl) {
+        // ✅ LƯU LẠI ĐỂ KHI USER QUAY VỀ SITE CÒN BIẾT ĐƠN NÀO
+        localStorage.setItem("lastZaloOrderId", orderId);
+        localStorage.setItem("lastPaymentMethod", "ZALOPAY");
+
         window.location.href = orderUrl;
       } else {
         setCreateError("Không nhận được link thanh toán");

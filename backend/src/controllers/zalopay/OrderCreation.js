@@ -34,7 +34,7 @@ export const ZaloPayCreateOrder = async (req, res) => {
             app_time: Date.now(),
             item: JSON.stringify(items),
             embed_data: JSON.stringify(embed_data),
-            callback_url: "https://e22dab8eb95d.ngrok-free.app/api/payment/zalopay/callback",
+            callback_url: "https://f2e63b92d7b6.ngrok-free.app/api/payment/zalopay/callback",
 
             // 👉 CHỈ SỬA TIỀN
             amount: tongthanhtoan || 50000,

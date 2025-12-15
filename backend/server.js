@@ -13,7 +13,12 @@ import mausacRoutes from "./src/routes/mausacRoutes.js"; //Route màu sắc
 import bientheRoutes from "./src/routes/bientheRoutes.js"; //Route biến thể
 import donhangRoutes from "./src/routes/donhangRoutes.js"; //Route đơn hàng
 import chitietdonhangRoutes from "./src/routes/chitietdonhangRoutes.js"; //Route chi tiết đơn hàng
+
 import paymentRoutes from "./src/routes/paymentRoutes.js"; //Routes thanh toán
+
+import paymentRoutes from "./src/routes/paymentRoutes.js"; //Routes thanh toán
+import danhgiaRoute from "./src/routes/danhgiaRoutes.js"; //Routes đánh giá
+
 dotenv.config();
 
 const app = express();
@@ -52,6 +57,7 @@ app.use("/api/bienthe", bientheRoutes);
 app.use("/api/donhang", donhangRoutes);
 app.use("/api/chitietdonhang", chitietdonhangRoutes);
 app.use("/api/payment", paymentRoutes);
+app.use("/api/danhgia", danhgiaRoute);
 
 app.use("/images", express.static("public/images"));
 

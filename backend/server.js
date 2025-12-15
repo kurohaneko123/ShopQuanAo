@@ -13,7 +13,7 @@ import mausacRoutes from "./src/routes/mausacRoutes.js"; //Route màu sắc
 import bientheRoutes from "./src/routes/bientheRoutes.js"; //Route biến thể
 import donhangRoutes from "./src/routes/donhangRoutes.js"; //Route đơn hàng
 import chitietdonhangRoutes from "./src/routes/chitietdonhangRoutes.js"; //Route chi tiết đơn hàng
-import paymentRoutes from "./src/routes/paymentRoutes.js";//Routes thanh toán
+import paymentRoutes from "./src/routes/paymentRoutes.js"; //Routes thanh toán
 dotenv.config();
 
 const app = express();
@@ -24,18 +24,20 @@ app.use(express.json());
 
 // 🔰 Route test server
 app.get("/", (req, res) => {
-    res.send("💚 Backend server kết nối WAMP thành công & JWT đang hoạt động ngon lành!");
+  res.send(
+    "💚 Backend server kết nối WAMP thành công & JWT đang hoạt động ngon lành!"
+  );
 });
 
 // 🔍 Route test DB
 app.get("/test-db", async (req, res) => {
-    try {
-        const [rows] = await pool.query("SELECT 1 + 1 AS result");
-        res.json({ success: true, data: rows });
-    } catch (error) {
-        console.error("❌ Lỗi kết nối DB:", error);
-        res.status(500).json({ success: false, message: "Lỗi kết nối DB" });
-    }
+  try {
+    const [rows] = await pool.query("SELECT 1 + 1 AS result");
+    res.json({ success: true, data: rows });
+  } catch (error) {
+    console.error("❌ Lỗi kết nối DB:", error);
+    res.status(500).json({ success: false, message: "Lỗi kết nối DB" });
+  }
 });
 
 // 🚀 Gắn các route API chính

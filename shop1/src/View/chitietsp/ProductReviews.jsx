@@ -5,7 +5,7 @@ import ReviewItem from "../review/ReviewItem.jsx";
 import ReviewPagination from "../review/ReviewPagination.jsx";
 import ReviewAI from "../review/ReviewAI.jsx";
 import { normalizeReviews, buildStats } from "../utils/review.utils.js";
-
+import ReviewForm from "../review/ReviewForm.jsx";
 export default function ProductReviews({ BASE_URL, productId }) {
   const [raw, setRaw] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -185,7 +185,12 @@ export default function ProductReviews({ BASE_URL, productId }) {
               ))}
             </div>
           )}
-
+          <ReviewForm
+            productId={productId}
+            onSuccess={() => {
+              // gọi lại API load đánh giá
+            }}
+          />
           <ReviewPagination
             page={page}
             totalPages={totalPages}

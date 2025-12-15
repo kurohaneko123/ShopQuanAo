@@ -34,15 +34,15 @@ export const ZaloPayCreateOrder = async (req, res) => {
       callback_url:
         "https://f2e63b92d7b6.ngrok-free.app/api/payment/zalopay/callback",
 
-      // 👉 CHỈ SỬA TIỀN
+      // CHỈ SỬA TIỀN
       amount: tongthanhtoan || 50000,
 
-      // 👉 CHỈ SỬA MÔ TẢ
+      // CHỈ SỬA MÔ TẢ
       description: `Thanh toán đơn hàng #${transID}`,
       bank_code: "zalopayapp",
     };
 
-    // ❌ KHÔNG ĐỤNG
+    //
     const data = `${order.app_id}|${order.app_trans_id}|${order.app_user}|${order.amount}|${order.app_time}|${order.embed_data}|${order.item}`;
 
     order.mac = CryptoJS.HmacSHA256(data, config.key1).toString();

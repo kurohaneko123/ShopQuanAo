@@ -83,11 +83,11 @@ export default function HomePage() {
   const [quickProduct, setQuickProduct] = useState(null);
   const [quickVariants, setQuickVariants] = useState([]);
   const [priceMap, setPriceMap] = useState({});
-
+  // Hàm chuyển đến trang chi tiết sản phẩm
   const goToDetail = (id) => {
     navigate(`/product/${id}`);
   };
-
+  // Lấy key giỏ hàng dựa trên user hiện tại
   const getCartKey = () => {
     const uid = localStorage.getItem("activeUserId");
     return uid ? `cart_${uid}` : "cart_guest";
@@ -111,7 +111,6 @@ export default function HomePage() {
     ],
   };
   /* ====== Ưu đãi nổi bật ====== */
-
   useEffect(() => {
     const fetchVouchers = async () => {
       try {
@@ -159,7 +158,7 @@ export default function HomePage() {
         setVouchers(voucherRes.data.data || []);
       } catch (err) {
         console.error("Lỗi khi tải dữ liệu:", err);
-        setError("Không thể tải dữ liệu 😭");
+        setError("Không thể tải dữ liệu ");
       } finally {
         setLoading(false);
       }
@@ -167,6 +166,7 @@ export default function HomePage() {
 
     fetchData();
   }, []);
+  /* ====== Lấy giá sản phẩm ====== */
   const categoryNameMap = {
     aothun: "Áo Thun",
     somi: "Áo Sơ Mi",
@@ -180,6 +180,7 @@ export default function HomePage() {
     quanhogi: "Quần Jogger",
     khac: "Khác",
   };
+  // Tập hợp tất cả sản phẩm trên homepage để lấy giá
   const allHomeProducts = React.useMemo(() => {
     const map = new Map();
     [...dailyProducts, ...highlightProducts].forEach((p) => {
@@ -187,7 +188,7 @@ export default function HomePage() {
     });
     return Array.from(map.values());
   }, [dailyProducts, highlightProducts]);
-
+  // Lấy giá cho tất cả sản phẩm trên homepage
   useEffect(() => {
     if (allHomeProducts.length === 0) return;
 
@@ -286,8 +287,7 @@ export default function HomePage() {
     fetchCategories();
   }, []);
 
-  /* ====== 🛒 Hàm thêm sản phẩm vào giỏ hàng ====== */
-  /* ====== 🛒 Thêm nhanh vào giỏ hàng từ Homepage — BẢN XỊN ====== */
+  /* ====== thêm nhanh vào giỏ hàng từ Homepage — ====== */
   const handleAddToCart = async (p) => {
     try {
       const res = await axios.get(`http://localhost:5000/api/sanpham/${p.id}`);
@@ -342,6 +342,7 @@ export default function HomePage() {
             >
               Nam
             </button>
+
             <button
               onClick={() => setSelectedGender("nu")}
               className={`h-12 px-6 rounded-full font-semibold uppercase transition-all ${
@@ -394,7 +395,7 @@ export default function HomePage() {
             Xem thêm
           </Link>
         </div>
-
+        {/* ===== Slider sản phẩm ====== */}
         <section className="relative overflow-visible pb-20">
           <Slider {...settings}>
             {dailyProducts.map((p) => (
@@ -426,7 +427,7 @@ export default function HomePage() {
                   <div className="absolute bottom-4 left-0 w-full flex justify-center opacity-0 group-hover:opacity-100 transition">
                     <button
                       onClick={(e) => {
-                        e.stopPropagation(); // ⛔ chặn click lan sang card
+                        e.stopPropagation(); //  chặn click lan sang card
                         handleAddToCart(p);
                       }}
                       className="bg-black text-white px-5 py-2 rounded-full 
@@ -459,7 +460,7 @@ export default function HomePage() {
             Xem thêm
           </Link>
         </div>
-
+        {/* ===== Slider sản phẩm ====== */}
         <section className="relative overflow-visible pb-20">
           <Slider {...settings}>
             {highlightProducts.map((p) => (
@@ -551,7 +552,7 @@ export default function HomePage() {
                         {v.loaikhuyenmai === "%" ? "giảm giá" : "giảm tiền mặt"}
                       </span>
                     </div>
-
+                    {/* Hạn sử dụng và nút Sử dụng ngay */}
                     <div className="flex justify-between items-center mt-4">
                       <span className="text-sm text-gray-600">
                         HSD:{" "}
@@ -559,7 +560,7 @@ export default function HomePage() {
                           {new Date(v.ngayketthuc).toLocaleDateString("vi-VN")}
                         </span>
                       </span>
-
+                      {/* Nút Sử dụng ngay */}
                       <button
                         onClick={() => copyVoucher(v.magiamgia)} // ← thêm dòng này
                         className="bg-neutral-900 text-white text-sm px-5 py-2 rounded-full 
@@ -601,7 +602,9 @@ export default function HomePage() {
             hinhanh: variant.hinhanh?.[0] || quickProduct.img,
             sku: variant.sku,
           };
-
+          {
+            /* Kiểm tra nếu biến thể đã tồn tại trong giỏ hàng thì chỉ tăng số lượng */
+          }
           const exist = stored.find((i) => i.mabienthe === item.mabienthe);
           if (exist) exist.soluong += qty;
           else stored.push(item);

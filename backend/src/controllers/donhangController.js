@@ -1,5 +1,5 @@
 import db from "../config/db.js";
-import { taoDonHang, taoChiTietDonHang, layTatCaDonHang, layDonHangTheoID, capNhatDonHang } from "../models/donhangModel.js";
+import { taoDonHang, taoChiTietDonHang, layTatCaDonHang, layDonHangTheoID, capNhatDonHang, layDonHangTheoNguoiDung } from "../models/donhangModel.js";
 
 // Tạo 1 đơn hàng + TRỪ KHO BIẾN THỂ
 export const themDonHang = async (req, res) => {
@@ -283,6 +283,29 @@ export const layDonHangById = async (req, res) => {
         console.error("Lỗi lấy đơn hàng:", error);
         return res.status(500).json({
             message: "Lỗi server",
+        });
+    }
+};
+
+// ================================
+// LỊCH SỬ ĐƠN HÀNG THEO NGƯỜI DÙNG
+// ================================
+export const layLichSuDonHangCuaToi = async (req, res) => {
+    try {
+        // LẤY TỪ xacthucToken
+        const manguoidung = req.nguoidung.id;
+
+        const orders = await layDonHangTheoNguoiDung(manguoidung);
+
+        return res.status(200).json({
+            message: "Lấy lịch sử đơn hàng thành công!",
+            data: orders
+        });
+    } catch (error) {
+        console.error("Lỗi lấy lịch sử đơn hàng:", error);
+        return res.status(500).json({
+            message: "Lỗi máy chủ",
+            error: error.message
         });
     }
 };

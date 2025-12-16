@@ -53,22 +53,25 @@ export default function DonHang() {
     const fetchOrders = async () => {
       try {
         const storedUser = localStorage.getItem("user");
-        if (!storedUser) {
+        const token = localStorage.getItem("token");
+
+        if (!storedUser || !token) {
           setOrders([]);
           return;
         }
 
-        const user = JSON.parse(storedUser);
-
-        const res = await axios.get(BASE_URL);
-        const allOrders = res.data.data || [];
-
-        // ✅ LỌC ĐƠN HÀNG THEO USER ĐANG ĐĂNG NHẬP
-        const userOrders = allOrders.filter(
-          (o) => o.manguoidung === user.manguoidung || o.email === user.email
+        const res = await axios.get(
+          `${BASE_URL}/lsdonhang`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`, // ✅ ĐÚNG
+            },
+          }
         );
 
-        setOrders(userOrders);
+        const orders = res.data.data || [];
+        setOrders(orders);
+
       } catch (err) {
         console.error("Lỗi lấy đơn hàng:", err);
       } finally {
@@ -345,11 +348,10 @@ export default function DonHang() {
                   key={p}
                   onClick={() => goToPage(p)}
                   className={`h-10 w-10 rounded-full text-sm font-semibold transition
-          ${
-            active
-              ? "bg-slate-900 text-white"
-              : "text-slate-700 hover:bg-slate-50 border"
-          }
+          ${active
+                      ? "bg-slate-900 text-white"
+                      : "text-slate-700 hover:bg-slate-50 border"
+                    }
         `}
                   aria-label={`Trang ${p}`}
                 >
@@ -362,11 +364,10 @@ export default function DonHang() {
             onClick={() => goToPage(safePage + 1)}
             disabled={safePage === totalPages}
             className={`h-10 w-10 rounded-full border flex items-center justify-center transition
-      ${
-        safePage === totalPages
-          ? "opacity-40 cursor-not-allowed"
-          : "hover:bg-slate-50"
-      }
+      ${safePage === totalPages
+                ? "opacity-40 cursor-not-allowed"
+                : "hover:bg-slate-50"
+              }
     `}
             aria-label="Trang sau"
           >

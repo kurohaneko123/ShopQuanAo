@@ -264,3 +264,25 @@ export const adminHuyDonHang = async (req, res) => {
         });
     }
 };
+
+//Lấy đơn hàng theo id
+export const layDonHangById = async (req, res) => {
+    try {
+        const { madonhang } = req.params;
+
+        const donhang = await layDonHangTheoID(madonhang);
+
+        if (!donhang) {
+            return res.status(404).json({
+                message: "Không tìm thấy đơn hàng",
+            });
+        }
+
+        return res.json(donhang);
+    } catch (error) {
+        console.error("Lỗi lấy đơn hàng:", error);
+        return res.status(500).json({
+            message: "Lỗi server",
+        });
+    }
+};

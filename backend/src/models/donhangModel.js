@@ -73,7 +73,7 @@ export const layTatCaDonHang = async () => {
 // Lấy đơn hàng theo ID
 export const layDonHangTheoID = async (madonhang) => {
     const [rows] = await db.query(
-        `SELECT * FROM donhang WHERE madonhang = ?`,
+        `SELECT madonhang, dathanhtoan FROM donhang WHERE madonhang = ?`,
         [madonhang]
     );
     return rows[0];

@@ -20,12 +20,17 @@ export default function OrderSuccess() {
   }, [orderIdFromQuery, location.state]);
 
   const paymentMethod = useMemo(() => {
+    const methodFromQuery = params.get("method");
+    if (methodFromQuery === "zalopay") return "ZALOPAY";
+    if (methodFromQuery === "cod") return "COD";
+
     return (
       location.state?.paymentMethod ||
       localStorage.getItem("lastPaymentMethod") ||
       "COD"
     );
-  }, [location.state]);
+  }, [location.state, location.search]);
+
 
   const [checking, setChecking] = useState(paymentMethod === "ZALOPAY");
 
@@ -35,12 +40,24 @@ export default function OrderSuccess() {
 
     const timer = setInterval(async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/orders/${orderId}`);
+        // ✅ SỬA ĐÚNG ENDPOINT BACKEND
+        const res = await fetch(
+          `http://localhost:5000/api/donhang/${orderId}`
+        );
         const data = await res.json();
 
-        if (data.status === "PAID") {
+        // 👉 backend của anh dùng dathanhtoan
+        if (Number(data?.dathanhtoan) === 1) {
           clearInterval(timer);
           setChecking(false);
+
+          // ✅ XÓA GIỎ SAU KHI THANH TOÁN THÀNH CÔNG
+          const uid = localStorage.getItem("activeUserId");
+          const cartKey = uid ? `cart_${uid}` : "cart_guest";
+          localStorage.removeItem(cartKey);
+          localStorage.removeItem("checkoutPayload");
+
+          // (không xóa lastZaloOrderId để refresh vẫn xem được)
         }
       } catch (err) {
         console.error(err);
@@ -95,7 +112,6 @@ export default function OrderSuccess() {
               </p>
             </div>
           </div>
-
           {!checking && (
             <div className="mt-8 flex justify-end gap-3">
               <Link
@@ -123,7 +139,34 @@ export default function OrderSuccess() {
                 Xem đơn hàng
               </Link>
             </div>
+          {checking ? (
+            <p className="mt-2 text-center text-slate-600">
+              Vui lòng chờ trong giây lát
+            </p>
+          ) : (
+            <>
+              <p className="mt-2 text-center text-slate-600">
+                Cảm ơn bạn đã mua sắm tại Horizon
+              </p>
+
+              <div className="mt-8 flex justify-center gap-3">
+                <Link
+                  to="/"
+                  className="px-5 py-3 rounded-xl border text-sm font-semibold"
+                >
+                  Tiếp tục mua sắm
+                </Link>
+
+                <Link
+                  to="/donhang"
+                  className="px-5 py-3 rounded-xl bg-slate-900 text-white text-sm font-semibold"
+                >
+                  Xem đơn hàng
+                </Link>
+              </div>
+            </>
           )}
+
         </div>
       </div>
     </div>

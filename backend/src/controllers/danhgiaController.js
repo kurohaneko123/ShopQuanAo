@@ -10,55 +10,48 @@ import db from "../config/db.js";
  */
 export const taoDanhGia = async (req, res) => {
     try {
-        // Lấy user từ token
+        // 1️ Lấy user từ token
         const manguoidung = Number(req.nguoidung?.id);
 
-        // Lấy dữ liệu từ body
+        // 2️ Lấy dữ liệu từ body
         const masanpham = Number(req.body?.masanpham);
         const madonhang = Number(req.body?.madonhang);
         const sosao = Number(req.body?.sosao);
         const noidung = req.body?.noidung;
 
-        // Validate dữ liệu đầu vào
+        // 3️ Validate dữ liệu đầu vào
         if (!manguoidung || !masanpham || !madonhang || !sosao) {
             return res.status(400).json({
                 message: "Thiếu dữ liệu hoặc sai định dạng"
             });
         }
 
-        // 1️ Kiểm tra đơn hàng có thuộc user & đã thanh toán chưa
+        // 4️ Kiểm tra đơn hàng có thuộc user hay không
         const [donhang] = await db.query(
             `
-     SELECT madonhang, dathanhtoan, trangthai
-FROM donhang
-WHERE madonhang = ?
-  AND manguoidung = ?
-  AND TRIM(trangthai) = 'đã giao'
-      `,
+            SELECT madonhang
+            FROM donhang
+            WHERE madonhang = ?
+              AND manguoidung = ?
+            `,
             [madonhang, manguoidung]
         );
 
-        if (!donhang.length) {
+        if (donhang.length === 0) {
             return res.status(403).json({
-                message: "Chỉ có thể đánh giá khi đơn hàng đã giao"
+                message: "Đơn hàng không thuộc người dùng"
             });
         }
 
-        if (Number(donhang[0].dathanhtoan) !== 1) {
-            return res.status(403).json({
-                message: "Đơn hàng chưa thanh toán"
-            });
-        }
-
-        // 2️ Kiểm tra sản phẩm có thuộc đơn hàng không (qua biến thể)
+        // 5️ Kiểm tra sản phẩm có thuộc đơn hàng không (qua biến thể)
         const [kiemTraSanPham] = await db.query(
             `
-      SELECT ctdh.machitietdonhang
-      FROM chitietdonhang ctdh
-      JOIN bienthesanpham bt ON ctdh.mabienthe = bt.mabienthe
-      WHERE ctdh.madonhang = ?
-        AND bt.masanpham = ?
-      `,
+            SELECT ctdh.machitietdonhang
+            FROM chitietdonhang ctdh
+            JOIN bienthesanpham bt ON ctdh.mabienthe = bt.mabienthe
+            WHERE ctdh.madonhang = ?
+              AND bt.masanpham = ?
+            `,
             [madonhang, masanpham]
         );
 
@@ -67,16 +60,17 @@ WHERE madonhang = ?
                 message: "Sản phẩm không thuộc đơn hàng này"
             });
         }
-        // 3 Cái này dùng để tránh spam đánh giá
+
+        // 6️ Chống spam: mỗi sản phẩm chỉ được đánh giá 1 lần / đơn hàng
         const [daDanhGia] = await db.query(
             `
-  SELECT 1
-  FROM danhgia
-  WHERE masanpham = ?
-    AND manguoidung = ?
-    AND madonhang = ?
-  LIMIT 1
-  `,
+            SELECT 1
+            FROM danhgia
+            WHERE masanpham = ?
+              AND manguoidung = ?
+              AND madonhang = ?
+            LIMIT 1
+            `,
             [masanpham, manguoidung, madonhang]
         );
 
@@ -85,7 +79,8 @@ WHERE madonhang = ?
                 message: "Bạn đã đánh giá sản phẩm này rồi"
             });
         }
-        // 4 Tạo đánh giá
+
+        // 7️⃣ Tạo đánh giá
         await themDanhGia(
             masanpham,
             manguoidung,
@@ -105,6 +100,7 @@ WHERE madonhang = ?
         });
     }
 };
+
 
 /**
  * GET /api/danhgia/:masanpham

@@ -94,14 +94,6 @@ export default function Checkout() {
   };
 
   /* =====================================================
-   * 6. GỬI ĐƠN HÀNG
-   *    - Có await Promise.all map cart
-   *    - Chắc chắn không gửi null cho mabienthe, tennguoinhan, v.v.
-   * ===================================================== */
-  /* =====================================================
-   * 6. GỬI ĐƠN HÀNG + ZALOPAY
-   * ===================================================== */
-  /* =====================================================
    * 6. GỬI ĐƠN HÀNG + ZALOPAY
    * ===================================================== */
   const handleOrder = async (e) => {
@@ -166,11 +158,11 @@ export default function Checkout() {
 
         // ✅ lưu lại để refresh vẫn thấy
         localStorage.setItem("lastOrderId", String(orderId));
-        localStorage.setItem("lastPaymentMethod", formData.hinhthucthanhtoan);
+        localStorage.setItem("lastPaymentMethod", "COD");
 
-        // ✅ chuyển sang trang success (thay modal)
+        // ✅ chuyển sang trang success
         navigate("/ordersuccess", {
-          state: { orderId, paymentMethod: formData.hinhthucthanhtoan },
+          state: { orderId, paymentMethod: "COD" },
         });
         return;
       }
@@ -183,12 +175,11 @@ export default function Checkout() {
           const zaloRes = await axios.post(
             "http://localhost:5000/api/payment/zalopay/create",
             {
-              madonhang: orderId,       // ✅ ĐÚNG KEY BE CẦN
-              tongthanhtoan: total,    // ✅ ĐÚNG KEY BE CẦN
+              madonhang: orderId,        // ✅ ĐÚNG KEY BE CẦN
+              tongthanhtoan: total,     // ✅ ĐÚNG KEY BE CẦN
             }
           );
 
-          // Bắt tất cả kiểu trả về có thể xảy ra
           const payUrl =
             zaloRes.data?.order_url ||
             zaloRes.data?.orderurl ||
@@ -201,9 +192,18 @@ export default function Checkout() {
             return;
           }
 
-          // Xóa giỏ → chuyển sang trang thanh toán ZaloPay
-          localStorage.removeItem("cart");
-          window.location.href = payUrl;
+          // ✅ LƯU TRẠNG THÁI ĐỂ ORDER SUCCESS DÙNG
+          localStorage.setItem("lastZaloOrderId", String(orderId));
+          localStorage.setItem("lastPaymentMethod", "ZALOPAY");
+
+          // ✅ MỞ ZALOPAY Ở TAB MỚI
+          window.open(payUrl, "_blank");
+
+          // ✅ Ở TAB HIỆN TẠI → ĐI TỚI ORDER SUCCESS
+          navigate("/ordersuccess", {
+            state: { orderId, paymentMethod: "ZALOPAY" },
+          });
+
           return;
         } catch (error) {
           console.error("ZaloPay error:", error);

@@ -113,3 +113,26 @@ export const capNhatDonHang = async (id, data) => {
     const [result] = await db.query(sql, params);
     return result;
 };
+
+//Lịch sử đơn hàng ( dựa theo mã người dùng)
+// ================================
+// LẤY LỊCH SỬ ĐƠN HÀNG THEO NGƯỜI DÙNG
+// ================================
+export const layDonHangTheoNguoiDung = async (manguoidung) => {
+    const [rows] = await db.query(`
+        SELECT 
+            dh.madonhang,
+            dh.tennguoinhan,
+            dh.sodienthoai,
+            dh.diachigiao,
+            dh.hinhthucthanhtoan,
+            dh.tongthanhtoan,
+            dh.trangthai,
+            dh.ngaytao
+        FROM donhang dh
+        WHERE dh.manguoidung = ?
+        ORDER BY dh.ngaytao DESC
+    `, [manguoidung]);
+
+    return rows;
+};

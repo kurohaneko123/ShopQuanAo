@@ -31,7 +31,6 @@ export default function OrderSuccess() {
     );
   }, [location.state, location.search]);
 
-
   const [checking, setChecking] = useState(paymentMethod === "ZALOPAY");
 
   // 2️⃣ Polling khi là ZaloPay
@@ -41,9 +40,7 @@ export default function OrderSuccess() {
     const timer = setInterval(async () => {
       try {
         // ✅ SỬA ĐÚNG ENDPOINT BACKEND
-        const res = await fetch(
-          `http://localhost:5000/api/donhang/${orderId}`
-        );
+        const res = await fetch(`http://localhost:5000/api/donhang/${orderId}`);
         const data = await res.json();
 
         // 👉 backend của anh dùng dathanhtoan
@@ -112,35 +109,8 @@ export default function OrderSuccess() {
               </p>
             </div>
           </div>
-          {!checking && (
-            <div className="mt-8 flex justify-end gap-3">
-              <Link
-                to="/"
-                className="
-  px-5 py-3 rounded-xl border
-  text-sm font-semibold
-  border-[rgb(190,215,245)]
-  text-[rgb(60,110,190)]
-  hover:bg-[rgb(220,235,250)]
-"
-              >
-                Tiếp tục mua sắm
-              </Link>
-              <Link
-                to="/donhang"
-                className="
-  px-5 py-3 rounded-xl
-  bg-[rgb(96,148,216)] text-white
-  text-sm font-semibold
-  hover:bg-[rgb(72,128,204)]
-  transition
-"
-              >
-                Xem đơn hàng
-              </Link>
-            </div>
           {checking ? (
-            <p className="mt-2 text-center text-slate-600">
+            <p className="mt-6 text-center text-slate-600">
               Vui lòng chờ trong giây lát
             </p>
           ) : (
@@ -152,21 +122,32 @@ export default function OrderSuccess() {
               <div className="mt-8 flex justify-center gap-3">
                 <Link
                   to="/"
-                  className="px-5 py-3 rounded-xl border text-sm font-semibold"
+                  className="
+          px-5 py-3 rounded-xl border
+          text-sm font-semibold
+          border-[rgb(190,215,245)]
+          text-[rgb(60,110,190)]
+          hover:bg-[rgb(220,235,250)]
+        "
                 >
                   Tiếp tục mua sắm
                 </Link>
 
                 <Link
                   to="/donhang"
-                  className="px-5 py-3 rounded-xl bg-slate-900 text-white text-sm font-semibold"
+                  className="
+          px-5 py-3 rounded-xl
+          bg-[rgb(96,148,216)] text-white
+          text-sm font-semibold
+          hover:bg-[rgb(72,128,204)]
+          transition
+        "
                 >
                   Xem đơn hàng
                 </Link>
               </div>
             </>
           )}
-
         </div>
       </div>
     </div>

@@ -65,8 +65,10 @@ export default function OrderSuccess() {
         <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow">
           {/* Icon */}
           <div className="flex justify-center mb-6">
-            <div className="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center">
-              <span className="text-4xl text-emerald-600 font-bold">✓</span>
+            <div className="w-20 h-20 rounded-full bg-[rgb(220,235,250)] flex items-center justify-center">
+              <span className="text-4xl text-[rgb(60,110,190)] font-bold">
+                ✓
+              </span>
             </div>
           </div>
 
@@ -98,13 +100,25 @@ export default function OrderSuccess() {
             <div className="mt-8 flex justify-end gap-3">
               <Link
                 to="/"
-                className="px-5 py-3 rounded-xl border text-sm font-semibold"
+                className="
+  px-5 py-3 rounded-xl border
+  text-sm font-semibold
+  border-[rgb(190,215,245)]
+  text-[rgb(60,110,190)]
+  hover:bg-[rgb(220,235,250)]
+"
               >
                 Tiếp tục mua sắm
               </Link>
               <Link
                 to="/donhang"
-                className="px-5 py-3 rounded-xl bg-slate-900 text-white text-sm font-semibold"
+                className="
+  px-5 py-3 rounded-xl
+  bg-[rgb(96,148,216)] text-white
+  text-sm font-semibold
+  hover:bg-[rgb(72,128,204)]
+  transition
+"
               >
                 Xem đơn hàng
               </Link>

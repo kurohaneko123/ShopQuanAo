@@ -6,6 +6,7 @@ import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import QuickAddModal from "./QuickAddModal.jsx";
+import { ShoppingBag } from "lucide-react";
 
 /* ====== Import ảnh mẫu (tạm) ====== */
 import Aosomi from "../assets/aosomi.jpg";
@@ -424,16 +425,31 @@ export default function HomePage() {
                       <p className="text-slate-400 text-sm">Đang tải giá…</p>
                     )}
                   </div>
-                  <div className="absolute bottom-4 left-0 w-full flex justify-center opacity-0 group-hover:opacity-100 transition">
+                  <div
+                    className="
+  absolute top-3 right-3
+  opacity-0 group-hover:opacity-100
+  transition-all duration-300
+"
+                  >
                     <button
                       onClick={(e) => {
-                        e.stopPropagation(); //  chặn click lan sang card
+                        e.stopPropagation();
                         handleAddToCart(p);
                       }}
-                      className="bg-black text-white px-5 py-2 rounded-full 
-             text-sm font-medium hover:bg-gray-800"
+                      className="
+  w-11 h-11 rounded-full
+  bg-white text-slate-900
+  border border-slate-200
+  flex items-center justify-center
+  shadow-md
+  hover:bg-slate-900 hover:text-white hover:border-slate-900
+  hover:scale-105
+  transition-all duration-300
+"
+                      aria-label="Thêm vào giỏ hàng"
                     >
-                      Thêm vào giỏ hàng +
+                      <ShoppingBag size={22} />
                     </button>
                   </div>
                 </div>
@@ -563,10 +579,7 @@ export default function HomePage() {
                       {/* Nút Sử dụng ngay */}
                       <button
                         onClick={() => copyVoucher(v.magiamgia)} // ← thêm dòng này
-                        className="bg-neutral-900 text-white text-sm px-5 py-2 rounded-full 
-  font-semibold border border-neutral-900 shadow-sm 
-  hover:bg-transparent hover:text-neutral-900 
-  transition-all duration-300 ease-in-out"
+                        className="bg-[rgb(96,148,216)] border border-[rgb(60,110,190)] text-white px-5 py-2 rounded-lg hover:bg-[rgb(72,128,204)] transition font-semibold"
                       >
                         Sử dụng ngay
                       </button>

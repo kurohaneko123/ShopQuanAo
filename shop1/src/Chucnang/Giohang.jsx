@@ -456,7 +456,7 @@ export default function CartSlidebar({ onClose }) {
 
               <button
                 onClick={handleCheckout}
-                className="bg-red-600 text-white px-5 py-2 rounded-lg hover:bg-red-700 transition font-medium"
+                className="bg-[rgb(96,148,216)] border border-[rgb(60,110,190)] text-white px-5 py-2 rounded-lg hover:bg-[rgb(72,128,204)] transition font-semibold"
               >
                 THANH TOÁN
               </button>

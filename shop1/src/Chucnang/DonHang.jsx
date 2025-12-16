@@ -89,16 +89,27 @@ export default function DonHang() {
 
   const getStatusColor = (tt) => {
     tt = tt.toLowerCase();
+
+    // 🟦 CHỜ XÁC NHẬN → SYSTEM BLUE (đồng bộ CTA & icon)
     if (tt.includes("chờ"))
-      return "text-amber-700 bg-amber-100 border border-amber-200";
+      return "text-[rgb(60,110,190)] bg-[rgb(220,235,250)] border border-[rgb(190,215,245)]";
+
+    // 🟦 ĐÃ XÁC NHẬN
     if (tt.includes("xác nhận"))
-      return "text-blue-700 bg-blue-100 border border-blue-200";
+      return "text-blue-700 bg-blue-100 border border-blue-300";
+
+    // 🟣 ĐANG GIAO
     if (tt.includes("đang"))
       return "text-purple-700 bg-purple-100 border border-purple-200";
+
+    // 🟢 ĐÃ GIAO
     if (tt.includes("giao"))
       return "text-emerald-700 bg-emerald-100 border border-emerald-200";
+
+    // 🔴 ĐÃ HỦY
     if (tt.includes("hủy"))
       return "text-red-700 bg-red-100 border border-red-200";
+
     return "text-gray-600 bg-gray-100 border border-gray-200";
   };
 
@@ -115,7 +126,13 @@ export default function DonHang() {
         {/* HEADER KHỐI ĐƠN HÀNG */}
         <div className="mb-6">
           <h1 className="text-3xl md:text-4xl font-bold text-slate-900 flex items-center gap-3">
-            <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-md">
+            <span
+              className="
+  inline-flex h-11 w-11 items-center justify-center rounded-2xl
+  bg-[rgb(220,235,250)] text-[rgb(60,110,190)]
+  shadow-md
+"
+            >
               <ClipboardList size={22} />
             </span>
             Lịch sử đơn hàng
@@ -170,9 +187,16 @@ export default function DonHang() {
                   {/* HÀNG TITLE + TRẠNG THÁI */}
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-3">
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-2xl bg-slate-900 text-white flex items-center justify-center shadow">
+                      <div
+                        className="
+  h-10 w-10 rounded-2xl
+  bg-[rgb(220,235,250)] text-[rgb(60,110,190)]
+  flex items-center justify-center shadow
+"
+                      >
                         <Package size={20} />
                       </div>
+
                       <div>
                         <p className="text-sm font-medium text-slate-500">
                           Mã đơn hàng
@@ -206,7 +230,11 @@ export default function DonHang() {
                   <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-700">
                     <div className="space-y-2">
                       <p className="flex items-start gap-2">
-                        <User size={18} className="mt-0.5 text-slate-500" />
+                        <User
+                          size={18}
+                          className="mt-0.5 text-[rgb(60,110,190)]"
+                        />
+
                         <span>
                           <span className="text-slate-500">Người nhận: </span>
                           <span className="font-semibold text-slate-900">
@@ -216,19 +244,28 @@ export default function DonHang() {
                       </p>
 
                       <p className="flex items-start gap-2">
-                        <Phone size={18} className="mt-0.5 text-slate-500" />
+                        <Phone
+                          size={18}
+                          className="mt-0.5 text-[rgb(60,110,190)]"
+                        />
                         <span>{o.sodienthoai}</span>
                       </p>
 
                       <p className="flex items-start gap-2">
-                        <MapPin size={18} className="mt-0.5 text-slate-500" />
+                        <MapPin
+                          size={18}
+                          className="mt-0.5 text-[rgb(60,110,190)]"
+                        />
                         <span className="leading-snug">{o.diachigiao}</span>
                       </p>
                     </div>
 
                     <div className="space-y-2">
                       <p className="flex items-start gap-2">
-                        <Truck size={18} className="mt-0.5 text-slate-500" />
+                        <Truck
+                          size={18}
+                          className="mt-0.5 text-[rgb(60,110,190)]"
+                        />
                         <span>
                           <span className="text-slate-500">
                             Đơn vị vận chuyển:{" "}
@@ -240,7 +277,10 @@ export default function DonHang() {
                       </p>
 
                       <p className="flex items-start gap-2">
-                        <Package size={18} className="mt-0.5 text-slate-500" />
+                        <Package
+                          size={18}
+                          className="mt-0.5 text-[rgb(60,110,190)]"
+                        />
                         <span>
                           <span className="text-slate-500">
                             Hình thức thanh toán:{" "}

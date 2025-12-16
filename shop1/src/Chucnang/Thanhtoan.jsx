@@ -183,8 +183,8 @@ export default function Checkout() {
           const zaloRes = await axios.post(
             "http://localhost:5000/api/payment/zalopay/create",
             {
-              madonhang: orderId,       // ✅ ĐÚNG KEY BE CẦN
-              tongthanhtoan: total,    // ✅ ĐÚNG KEY BE CẦN
+              madonhang: orderId, // ✅ ĐÚNG KEY BE CẦN
+              tongthanhtoan: total, // ✅ ĐÚNG KEY BE CẦN
             }
           );
 
@@ -276,6 +276,7 @@ export default function Checkout() {
             <label className="flex items-center mb-2">
               <input
                 type="radio"
+                className="accent-[rgb(96,148,216)]"
                 name="shipping"
                 value="Tiêu chuẩn"
                 checked={formData.donvivanchuyen === "Tiêu chuẩn"}
@@ -289,6 +290,7 @@ export default function Checkout() {
             <label className="flex items-center">
               <input
                 type="radio"
+                className="accent-[rgb(96,148,216)]"
                 name="shipping"
                 value="Giao nhanh"
                 checked={formData.donvivanchuyen === "Giao nhanh"}
@@ -307,6 +309,7 @@ export default function Checkout() {
             <label className="flex items-center mb-2">
               <input
                 type="radio"
+                className="accent-[rgb(96,148,216)]"
                 name="payment"
                 value="COD"
                 checked={formData.hinhthucthanhtoan === "COD"}
@@ -323,6 +326,7 @@ export default function Checkout() {
             <label className="flex items-center mb-2">
               <input
                 type="radio"
+                className="accent-[rgb(96,148,216)]"
                 name="payment"
                 value="ZALOPAY"
                 checked={formData.hinhthucthanhtoan === "ZALOPAY"}
@@ -339,6 +343,7 @@ export default function Checkout() {
             <label className="flex items-center">
               <input
                 type="radio"
+                className="accent-[rgb(96,148,216)]"
                 name="payment"
                 value="MOMO"
                 checked={formData.hinhthucthanhtoan === "MOMO"}
@@ -362,7 +367,14 @@ export default function Checkout() {
             }
           />
 
-          <button className="w-full bg-red-600 text-white py-3 rounded-lg font-semibold mt-4">
+          <button
+            className="
+  w-full bg-[rgb(96,148,216)] text-white
+  py-3 rounded-xl font-semibold mt-4
+  hover:bg-[rgb(72,128,204)]
+  transition shadow
+"
+          >
             Đặt hàng
           </button>
         </form>

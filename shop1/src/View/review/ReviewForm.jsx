@@ -101,7 +101,7 @@ export default function ReviewForm({ productId, onSuccess }) {
       <button
         onClick={handleSubmit}
         disabled={loading}
-        className="px-4 py-2 rounded bg-black text-white"
+        className="bg-[rgb(96,148,216)] border border-[rgb(60,110,190)] text-white px-5 py-2 rounded-lg hover:bg-[rgb(72,128,204)] transition font-semibold"
       >
         {loading ? "Đang gửi..." : "Gửi đánh giá"}
       </button>

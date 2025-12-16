@@ -38,8 +38,8 @@ export default function ReviewFilters({
                 onClick={() => toggleRating(n)}
                 className={`px-3 py-1.5 rounded-full border text-sm font-semibold transition ${
                   active
-                    ? "bg-slate-900 text-white border-slate-900"
-                    : "bg-white border-slate-200 hover:border-slate-400"
+                    ? "bg-[rgb(96,148,216)] text-white border-[rgb(60,110,190)] ring-2 ring-[rgba(60,110,190,0.35)] font-bold"
+                    : "bg-white text-slate-800 border-slate-300 hover:border-[rgb(60,110,190)]"
                 }`}
               >
                 {n} ★

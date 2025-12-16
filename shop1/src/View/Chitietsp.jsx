@@ -336,11 +336,12 @@ export default function ChiTietSanPham() {
                   )}
                 </div>
 
-                <div className="mt-3 flex gap-2 flex-wrap">
+                <div className="mt-3 flex gap-3 flex-wrap">
                   {colorList.map((color) => {
                     const colorHex = variants.find(
                       (v) => v.tenmausac === color
                     )?.hexcode;
+
                     const active = selectedColor === color;
 
                     return (
@@ -355,20 +356,23 @@ export default function ChiTietSanPham() {
                             setSelectedSize(first);
                           }
                         }}
-                        className={`h-10 px-3 rounded-full border text-sm font-medium transition inline-flex items-center gap-2
-                          ${
-                            active
-                              ? "border-slate-900 bg-slate-900 text-white"
-                              : "border-slate-200 hover:border-slate-400 bg-white"
-                          }
-                        `}
                         title={color}
+                        className={`w-9 h-9 rounded-full border transition-all flex items-center justify-center
+            ${
+              active
+                ? "border-[rgb(60,110,190)] ring-2 ring-[rgba(60,110,190,0.35)]"
+                : "border-slate-300 hover:border-[rgb(60,110,190)]"
+            }
+          `}
                       >
                         <span
-                          className="h-4 w-4 rounded-full border border-white/60"
-                          style={{ backgroundColor: colorHex || "#cbd5e1" }}
+                          className="w-6 h-6 rounded-full"
+                          style={{
+                            background: colorHex?.startsWith("linear")
+                              ? colorHex
+                              : colorHex || "#CBD5E1",
+                          }}
                         />
-                        {color}
                       </button>
                     );
                   })}
@@ -401,11 +405,11 @@ export default function ChiTietSanPham() {
                         key={s}
                         onClick={() => enabled && setSelectedSize(s)}
                         disabled={!enabled}
-                        className={`px-4 py-2 rounded-full border text-sm font-semibold transition
+                        className={`w-10 h-10 rounded-full border flex items-center justify-center transition
                           ${
                             active
-                              ? "bg-slate-900 text-white border-slate-900"
-                              : "bg-white border-slate-200 hover:border-slate-400"
+                              ? "bg-[rgb(96,148,216)] text-white border-[rgb(60,110,190)] ring-2 ring-[rgba(60,110,190,0.35)] font-bold"
+                              : "bg-white text-slate-800 border-slate-300 hover:border-[rgb(60,110,190)]"
                           }
                           ${
                             !enabled
@@ -461,7 +465,17 @@ export default function ChiTietSanPham() {
               <button
                 onClick={handleAddToCart}
                 disabled={outOfStock}
-                className="flex items-center justify-center gap-2 bg-slate-900 text-white py-4 w-full rounded-2xl font-semibold hover:bg-slate-800 transition shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-slate-900"
+                className="
+  flex items-center justify-center gap-2
+  bg-[rgb(96,148,216)] text-white
+  border border-[rgb(60,110,190)]
+  py-4 w-full rounded-2xl font-semibold
+  hover:bg-[rgb(72,128,204)]
+  transition
+  shadow-[0_14px_32px_rgba(15,23,42,0.25)]
+  active:scale-[0.98]
+  disabled:opacity-50 disabled:cursor-not-allowed
+"
               >
                 <ShoppingBag size={20} />
                 {outOfStock ? "Hết hàng" : "Thêm vào giỏ hàng"}

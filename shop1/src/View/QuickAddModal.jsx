@@ -122,7 +122,7 @@ export default function QuickAddModal({
         {/* Header */}
         <div className="flex items-start justify-between gap-3 px-6 pt-5">
           <div className="min-w-0">
-            <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 truncate">
+            <h3 className="text-lg sm:text-xl font-semibold text-slate-900 truncate">
               {product?.name || product?.tensanpham || "Sản phẩm"}
             </h3>
             <p className="mt-1 text-sm font-bold text-rose-600">
@@ -185,8 +185,8 @@ export default function QuickAddModal({
                       className={`px-3 py-1.5 rounded-full border text-sm font-semibold transition
                         ${
                           active
-                            ? "bg-slate-900 text-white border-slate-900"
-                            : "bg-white border-slate-200 hover:border-slate-400"
+                            ? "border-[rgb(60,110,190)] ring-2 ring-[rgba(60,110,190,0.35)]"
+                            : "border-slate-300 hover:border-[rgb(60,110,190)]"
                         }`}
                     >
                       {c}
@@ -217,8 +217,8 @@ export default function QuickAddModal({
                       className={`h-10 w-10 rounded-full border text-sm font-extrabold transition
                         ${
                           active
-                            ? "bg-slate-900 text-white border-slate-900"
-                            : "bg-white border-slate-200 hover:border-slate-400"
+                            ? "bg-[rgb(96,148,216)] text-white border-[rgb(60,110,190)] ring-2 ring-[rgba(60,110,190,0.35)] font-bold"
+                            : "bg-white text-slate-800 border-slate-300 hover:border-[rgb(60,110,190)]"
                         }
                         ${
                           !enabled
@@ -235,7 +235,7 @@ export default function QuickAddModal({
 
             {/* Quantity */}
             <div className="flex items-center justify-between">
-              <p className="font-semibold text-slate-900">Số lượng</p>
+              <p className="font-bold text-slate-900">Số lượng</p>
 
               <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-2 py-1">
                 <button
@@ -259,24 +259,22 @@ export default function QuickAddModal({
             </div>
 
             {/* CTA */}
+            <div className="h-px w-full bg-slate-100" />
             <button
               disabled={!selectedVariant}
               onClick={handleConfirm}
-              className={`w-full rounded-2xl py-4 font-extrabold transition
-                ${
-                  selectedVariant
-                    ? "bg-slate-900 text-white hover:bg-slate-800 shadow-sm hover:shadow-md"
-                    : "bg-slate-200 text-slate-500 cursor-not-allowed"
-                }`}
+              className={`w-full rounded-2xl py-4 font-semibold transition-all
+    ${
+      selectedVariant
+        ? "bg-[rgb(96,148,216)] text-white border border-[rgb(60,110,190)] hover:bg-[rgb(72,128,204)] shadow-[0_14px_32px_rgba(15,23,42,0.25)] active:scale-[0.98]"
+        : "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed"
+    }`}
             >
               Thêm vào giỏ hàng
             </button>
 
             {/* Small note */}
-            <p className="text-xs text-slate-500">
-              * Popup “Quick Add” giúp thao tác nhanh mà vẫn chọn đúng biến thể
-              (đúng UX thương mại).
-            </p>
+            <p className="text-xs text-slate-500"></p>
           </div>
         </div>
       </div>

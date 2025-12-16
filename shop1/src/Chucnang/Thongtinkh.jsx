@@ -140,7 +140,8 @@ export default function ThongTinKhachHang() {
               </button>
 
               <button
-                className="px-5 py-2 bg-blue-600 text-white rounded-lg"
+                className="bg-[rgb(96,148,216)] hover:bg-[rgb(72,128,204)]
+"
                 onClick={handleUpdate}
               >
                 Lưu thay đổi
@@ -157,7 +158,8 @@ export default function ThongTinKhachHang() {
 
         <div className="space-y-6 text-lg">
           <div className="flex items-center gap-3">
-            <User className="text-blue-500 w-6 h-6" />
+            <User className="w-6 h-6 text-[rgb(60,110,190)]" />
+
             <p>
               <span className="font-semibold">Họ tên:</span>{" "}
               {user.hoten || "Chưa cập nhật"}
@@ -165,14 +167,14 @@ export default function ThongTinKhachHang() {
           </div>
 
           <div className="flex items-center gap-3">
-            <Mail className="text-blue-500 w-6 h-6" />
+            <Mail className="w-6 h-6 text-[rgb(60,110,190)]" />
             <p>
               <span className="font-semibold">Email:</span> {user.email}
             </p>
           </div>
 
           <div className="flex items-center gap-3">
-            <Phone className="text-blue-500 w-6 h-6" />
+            <Phone className="w-6 h-6 text-[rgb(60,110,190)]" />
             <p>
               <span className="font-semibold">Số điện thoại:</span>{" "}
               {user.sodienthoai || "Chưa cập nhật"}
@@ -180,7 +182,7 @@ export default function ThongTinKhachHang() {
           </div>
 
           <div className="flex items-center gap-3">
-            <MapPin className="text-blue-500 w-6 h-6" />
+            <MapPin className="w-6 h-6 text-[rgb(60,110,190)]" />
             <p>
               <span className="font-semibold">Địa chỉ:</span>{" "}
               {user.diachi || "Chưa cập nhật"}
@@ -188,7 +190,7 @@ export default function ThongTinKhachHang() {
           </div>
 
           <div className="flex items-center gap-3">
-            <User className="text-blue-500 w-6 h-6" />
+            <User className="w-6 h-6 text-[rgb(60,110,190)]" />
             <p>
               <span className="font-semibold">Vai trò:</span>{" "}
               {user.vaitro === "admin" ? "Quản trị viên" : "Thành viên"}
@@ -206,7 +208,13 @@ export default function ThongTinKhachHang() {
               });
               setShowEdit(true);
             }}
-            className="px-10 py-3 text-lg bg-blue-600 text-white font-semibold rounded-full hover:bg-blue-700 transition-all duration-300 shadow-lg"
+            className="
+  px-10 py-3 text-lg
+  bg-[rgb(96,148,216)] text-white
+  font-semibold rounded-full
+  hover:bg-[rgb(72,128,204)]
+  transition shadow-lg
+"
           >
             Cập Nhật Thông Tin
           </button>

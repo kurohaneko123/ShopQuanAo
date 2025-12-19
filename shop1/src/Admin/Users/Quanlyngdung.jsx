@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Pencil, Loader2, X } from "lucide-react";
-
+import Swal from "sweetalert2";
 export default function QuanLyNguoiDungAdmin() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [errors, setErrors] = useState({});
 
   // popup state
   const [showEdit, setShowEdit] = useState(false);
@@ -44,6 +45,25 @@ export default function QuanLyNguoiDungAdmin() {
       alert("Không đổi được trạng thái!");
     }
   };
+  const validateEdit = () => {
+    const e = {};
+
+    if (!form.hoten?.trim()) e.hoten = "Vui lòng nhập họ tên";
+
+    if (!form.email?.trim()) e.email = "Vui lòng nhập email";
+
+    if (!form.sodienthoai?.trim())
+      e.sodienthoai = "Vui lòng nhập số điện thoại";
+
+    if (!form.diachi?.trim()) e.diachi = "Vui lòng nhập địa chỉ";
+
+    if (!form.vaitro) e.vaitro = "Chọn vai trò";
+
+    if (!form.trangthai) e.trangthai = "Chọn trạng thái";
+
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
 
   // ====== LẤY DANH SÁCH USER ========
   useEffect(() => {
@@ -82,26 +102,27 @@ export default function QuanLyNguoiDungAdmin() {
 
   // ====== API UPDATE ADMIN ========
   const handleSave = async () => {
+    if (!validateEdit()) return;
+
     try {
       const token = localStorage.getItem("token");
+
       await axios.put(
         `http://localhost:5000/api/nguoidung/admin/sua/${selectedUser.manguoidung}`,
         form,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      alert("Cập nhật thành công!");
+      Swal.fire("Thành công", "Cập nhật người dùng thành công", "success");
       setShowEdit(false);
 
-      // FE tự cập nhật UI – KHÔNG reload
       setUsers((prev) =>
         prev.map((u) =>
           u.manguoidung === selectedUser.manguoidung ? { ...u, ...form } : u
         )
       );
     } catch (err) {
-      console.error("Update failed:", err);
-      alert("Cập nhật thất bại!");
+      Swal.fire("Lỗi", "Cập nhật thất bại", "error");
     }
   };
 
@@ -203,17 +224,72 @@ export default function QuanLyNguoiDungAdmin() {
             <h3 className="text-xl font-bold mb-4">Sửa người dùng</h3>
 
             <div className="space-y-3">
-              {["hoten", "sodienthoai", "diachi", "email"].map((field) => (
+              <div>
                 <input
-                  key={field}
-                  className="bg-[#1a1a1a] border border-white/10 w-full p-2 rounded-lg text-gray-200"
-                  value={form[field]}
-                  onChange={(e) =>
-                    setForm({ ...form, [field]: e.target.value })
-                  }
-                  placeholder={field}
+                  className={`bg-[#1a1a1a] border w-full p-2 rounded-lg text-gray-200
+      ${errors.hoten ? "border-red-500" : "border-white/10"}
+    `}
+                  value={form.hoten || ""}
+                  onChange={(e) => {
+                    setForm({ ...form, hoten: e.target.value });
+                    setErrors((p) => ({ ...p, hoten: "" }));
+                  }}
+                  placeholder="Họ tên"
                 />
-              ))}
+                {errors.hoten && (
+                  <p className="text-red-500 text-xs mt-1">{errors.hoten}</p>
+                )}
+              </div>
+              <div>
+                <input
+                  className={`bg-[#1a1a1a] border w-full p-2 rounded-lg text-gray-200
+      ${errors.sodienthoai ? "border-red-500" : "border-white/10"}
+    `}
+                  value={form.sodienthoai || ""}
+                  onChange={(e) => {
+                    setForm({ ...form, sodienthoai: e.target.value });
+                    setErrors((p) => ({ ...p, sodienthoai: "" }));
+                  }}
+                  placeholder="Số điện thoại"
+                />
+                {errors.sodienthoai && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.sodienthoai}
+                  </p>
+                )}
+              </div>
+              <div>
+                <input
+                  className={`bg-[#1a1a1a] border w-full p-2 rounded-lg text-gray-200
+      ${errors.diachi ? "border-red-500" : "border-white/10"}
+    `}
+                  value={form.diachi || ""}
+                  onChange={(e) => {
+                    setForm({ ...form, diachi: e.target.value });
+                    setErrors((p) => ({ ...p, diachi: "" }));
+                  }}
+                  placeholder="Địa chỉ (bắt buộc)"
+                />
+                {errors.diachi && (
+                  <p className="text-red-500 text-xs mt-1">{errors.diachi}</p>
+                )}
+              </div>
+              <div>
+                <input
+                  className={`bg-[#1a1a1a] border w-full p-2 rounded-lg text-gray-200
+      ${errors.email ? "border-red-500" : "border-white/10"}
+    `}
+                  value={form.email || ""}
+                  onChange={(e) => {
+                    setForm({ ...form, email: e.target.value });
+                    setErrors((p) => ({ ...p, email: "" }));
+                  }}
+                  placeholder="Email"
+                />
+                {errors.email && (
+                  <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+                )}
+              </div>
 
               {/* Vai trò */}
               <select

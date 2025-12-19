@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-
+import { ShoppingBag } from "lucide-react";
 export default function RecentViewed({
   currentId,
   currentProduct,
@@ -56,29 +56,61 @@ export default function RecentViewed({
 
       <div className="mt-4 flex gap-4 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {recentViewed.map((p) => (
-          <Link
-            to={`/product/${p.masanpham}`}
-            key={p.masanpham}
-            className="min-w-[260px] max-w-[260px] group"
-          >
-            <div className="rounded-3xl border border-slate-200 bg-white overflow-hidden shadow-sm hover:shadow-md transition">
-              <div className="aspect-[4/5] bg-slate-50">
+          <div key={p.masanpham} className="min-w-[260px] max-w-[260px]">
+            <div
+              className="
+        group cursor-pointer
+        rounded-3xl border border-slate-200 bg-white
+        overflow-hidden
+        shadow-sm hover:shadow-lg
+        transition
+      "
+              onClick={() => navigate(`/product/${p.masanpham}`)}
+            >
+              {/* ẢNH */}
+              <div className="relative aspect-[4/5] bg-slate-50 overflow-hidden">
                 <img
                   src={p.anhdaidien}
                   alt={p.tensanpham}
-                  className="w-full h-full object-contain group-hover:scale-[1.02] transition"
+                  className="w-full h-full object-contain group-hover:scale-[1.03] transition"
                 />
+
+                {/* ICON THÊM GIỎ */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // TODO: handleAddToCart(p)
+                  }}
+                  className="
+            absolute bottom-3 right-3
+            w-11 h-11 rounded-full
+            bg-white text-[rgb(96,148,216)]
+            border border-slate-200
+            flex items-center justify-center
+            shadow-md
+            hover:bg-[rgb(96,148,216)]
+            hover:text-white
+            hover:border-[rgb(60,110,190)]
+            hover:scale-105
+            transition-all duration-300
+          "
+                >
+                  <ShoppingBag size={22} />
+                </button>
               </div>
-              <div className="p-4">
-                <p className="text-sm font-bold text-slate-900 line-clamp-2">
+
+              {/* NỘI DUNG */}
+              <div className="p-4 space-y-1">
+                <p className="text-sm font-semibold text-slate-900 line-clamp-2">
                   {p.tensanpham}
                 </p>
-                <p className="mt-2 text-sm font-bold text-slate-900">
+
+                <p className="text-red-600 font-bold text-[15px]">
                   {Number(p.giaban || 0).toLocaleString("vi-VN")}₫
                 </p>
               </div>
             </div>
-          </Link>
+          </div>
         ))}
       </div>
     </div>

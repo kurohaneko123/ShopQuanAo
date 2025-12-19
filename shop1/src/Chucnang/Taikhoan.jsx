@@ -6,6 +6,7 @@ import { API_URL } from "../config/app.js"; //  import API backend
 import { useNavigate } from "react-router-dom";
 import Logo from "../assets/logo_header/logo.png";
 import { createPortal } from "react-dom";
+import Swal from "sweetalert2";
 
 export default function AccountModal({ isOpen, onClose }) {
   const [mode, setMode] = useState("login");
@@ -70,7 +71,6 @@ export default function AccountModal({ isOpen, onClose }) {
       setLoading(true);
 
       if (mode === "login") {
-        // 🟣 GỌI API ĐĂNG NHẬP
         const res = await fetch(`${API_URL}/dangnhap`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -83,17 +83,28 @@ export default function AccountModal({ isOpen, onClose }) {
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.nguoidung));
 
-        alert("Đăng nhập thành công!");
-        onClose();
-        if (data.nguoidung.vaitro === "admin") {
-          navigate("/admin");
-        } else {
-          window.location.reload();
-        }
-      }
-
-      // 🟢 ĐĂNG KÝ
-      else if (mode === "register") {
+        // SweetAlert2 thông báo thành công
+        Swal.fire({
+          title: "Đăng nhập thành công!",
+          icon: "success",
+          confirmButtonText: "OK",
+          background: "#f2f2f2",
+          color: "#4caf50",
+          willClose: () => {
+            setTimeout(() => {
+              onClose(); // Đảm bảo modal đóng lại sau khi thông báo đã hiển thị
+              if (data.nguoidung.vaitro === "admin") {
+                window.location.href = "/admin";
+              } else {
+                window.location.reload();
+              }
+            }, 300); // Đảm bảo thời gian đủ để thông báo đóng trước khi modal đóng
+          },
+          customClass: {
+            popup: "z-[1000]", // Tăng z-index của thông báo để nó luôn ở trên
+          },
+        });
+      } else if (mode === "register") {
         const res = await fetch(`${API_URL}/dangky`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -107,11 +118,24 @@ export default function AccountModal({ isOpen, onClose }) {
 
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || "Đăng ký thất bại");
-
-        alert("Đăng ký thành công! Vui lòng đăng nhập lại.");
-        setMode("login");
+        window.location.href = "/login";
+        // Thông báo thành công
+        Swal.fire({
+          title: "Đăng ký thành công!",
+          icon: "success",
+          confirmButtonText: "OK",
+          background: "#f2f2f2",
+          color: "#4caf50",
+          willClose: () => {
+            setTimeout(() => {
+              onClose(); // Đảm bảo modal đóng lại sau khi thông báo đã hiển thị
+            }, 300); // Đảm bảo thời gian đủ để thông báo đóng trước khi modal đóng
+          },
+          customClass: {
+            popup: "z-[1000]", // Tăng z-index của thông báo để nó luôn ở trên
+          },
+        });
       }
-
       // QUÊN MẬT KHẨU (Bước 1 & 2)
       else if (mode === "forgot") {
         if (resetStep === 1) {
@@ -125,7 +149,26 @@ export default function AccountModal({ isOpen, onClose }) {
           if (!res.ok)
             throw new Error(data.message || "Không thể gửi email xác nhận.");
 
-          alert(" Mã xác nhận đã được gửi đến email của bạn!");
+          Swal.fire({
+            title: "Đã gửi mã xác nhận đến mail của bạn !",
+            icon: "success",
+            confirmButtonText: "OK",
+            background: "#f2f2f2",
+            color: "#4caf50",
+            willClose: () => {
+              setTimeout(() => {
+                onClose(); // Đảm bảo modal đóng lại sau khi thông báo đã hiển thị
+                if (data.nguoidung.vaitro === "admin") {
+                  window.location.href = "/admin";
+                } else {
+                  window.location.reload();
+                }
+              }, 300); // Đảm bảo thời gian đủ để thông báo đóng trước khi modal đóng
+            },
+            customClass: {
+              popup: "z-[1000]", // Tăng z-index của thông báo để nó luôn ở trên
+            },
+          });
           setResetEmail(email);
           setResetStep(2);
         } else if (resetStep === 2) {
@@ -147,13 +190,40 @@ export default function AccountModal({ isOpen, onClose }) {
           if (!res.ok)
             throw new Error(data.message || "Không thể đặt lại mật khẩu.");
 
-          alert(" Đặt lại mật khẩu thành công! Hãy đăng nhập lại nhé.");
+          Swal.fire({
+            title: "Đặt lại mật khẩu thành công!",
+            icon: "success",
+            confirmButtonText: "OK",
+            background: "#f2f2f2",
+            color: "#4caf50",
+            willClose: () => {
+              setTimeout(() => {
+                onClose(); // Đảm bảo modal đóng lại sau khi thông báo đã hiển thị
+                if (data.nguoidung.vaitro === "admin") {
+                  window.location.href = "/admin";
+                } else {
+                  window.location.reload();
+                }
+              }, 300); // Đảm bảo thời gian đủ để thông báo đóng trước khi modal đóng
+            },
+            customClass: {
+              popup: "z-[1000]", // Tăng z-index của thông báo để nó luôn ở trên
+            },
+          });
           setMode("login");
           setResetStep(1);
         }
       }
     } catch (err) {
-      alert(err.message);
+      // Thông báo thất bại
+      Swal.fire({
+        title: "Lỗi!",
+        text: err.message,
+        icon: "error",
+        confirmButtonText: "OK",
+        background: "#f8d7da",
+        color: "#721c24",
+      });
     } finally {
       setLoading(false);
     }
@@ -161,12 +231,8 @@ export default function AccountModal({ isOpen, onClose }) {
 
   return createPortal(
     <div
-      className="
-      fixed inset-0 
-      bg-black/50 backdrop-blur-md
-      flex items-center justify-center
-      z-[99999]
-    "
+      className="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center z-[999]"
+      aria-hidden="true"
     >
       <div
         className="
@@ -241,9 +307,6 @@ export default function AccountModal({ isOpen, onClose }) {
                   src="https://www.svgrepo.com/show/475647/facebook-color.svg"
                   className="w-5 h-5"
                 />
-                <span className="text-sm font-medium text-gray-700">
-                  Facebook
-                </span>
               </button>
             </div>
           </>
@@ -312,12 +375,23 @@ export default function AccountModal({ isOpen, onClose }) {
               />
             </>
           )}
-
+          <div className="flex justify-between mt-4">
+            <button
+              onClick={() => setMode("login")}
+              className="text-sm text-blue-600 hover:underline"
+            >
+              Đã có tài khoản? Đăng nhập
+            </button>
+          </div>
           {mode === "forgot" && resetStep === 1 && (
             <input
               name="email"
               placeholder="Nhập email để đặt lại mật khẩu"
-              className="floating-input"
+              className="w-full px-4 py-3.5 text-[15px]
+    rounded-xl border border-gray-300 
+    bg-white
+    focus:border-blue-500 focus:ring-2 focus:ring-blue-300
+    transition shadow-sm"
               required
             />
           )}

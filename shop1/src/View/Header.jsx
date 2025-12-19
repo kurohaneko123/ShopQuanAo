@@ -10,7 +10,7 @@ import {
   UserCircle,
   ClipboardList, // thêm icon đơn hàng
 } from "lucide-react";
-
+import Swal from "sweetalert2";
 import AccountModal from "../Chucnang/Taikhoan.jsx";
 import bannerNam from "../assets/bannerdafix.jpg";
 import bannerNu from "../assets/aonu.jpg";
@@ -65,7 +65,21 @@ export default function Navbar() {
     localStorage.removeItem("checkoutPayload");
 
     setUser(null);
-    alert("Đăng xuất thành công!");
+    Swal.fire({
+      title: "Đăng xuất thành công!",
+      icon: "success",
+      confirmButtonText: "OK",
+      background: "#f2f2f2",
+      color: "#4caf50",
+      willClose: () => {
+        setTimeout(() => {
+          onClose(); // Đảm bảo modal đóng lại sau khi thông báo đã hiển thị
+        }, 300); // Đảm bảo thời gian đủ để thông báo đóng trước khi modal đóng
+      },
+      customClass: {
+        popup: "z-[1000]", // Tăng z-index của thông báo để nó luôn ở trên
+      },
+    });
     window.location.href = "/"; // về home
   };
 

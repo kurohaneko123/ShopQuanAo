@@ -1,7 +1,7 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
 /* Modal pop */
 @keyframes modalIn {
   from {
@@ -51,4 +51,14 @@
 }
 html {
   scrollbar-gutter: stable;
+}
+
+/* SweetAlert2 phải có z-index cực kỳ cao */
+.sweetalert2-popup {
+  z-index: 9999999 !important; /* Đảm bảo SweetAlert2 không bị đè */
+}
+
+/* Modal đăng nhập có z-index thấp hơn */
+.account-modal {
+  z-index: 99999 !important; /* Đảm bảo modal không bị đè lên */
 }

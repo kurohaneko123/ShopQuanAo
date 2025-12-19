@@ -29,12 +29,12 @@ export default function App() {
   function RequireAuth({ children }) {
     const token = localStorage.getItem("token");
 
-    // ❌ chưa đăng nhập → đá về trang chủ (hoặc /login)
+    //  chưa đăng nhập → đá về trang chủ (hoặc /login)
     if (!token) {
       return <Navigate to="/" replace />;
     }
 
-    // ✅ đã đăng nhập → cho vào
+    // đã đăng nhập → cho vào
     return children;
   }
 

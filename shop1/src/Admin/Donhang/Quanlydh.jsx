@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Eye, CheckCircle, XCircle } from "lucide-react";
+import Swal from "sweetalert2";
 
 const API = "http://localhost:5000/api/donhang";
 
@@ -49,20 +50,94 @@ export default function Quanlydh() {
 
   // ====================== CẬP NHẬT TRẠNG THÁI ======================
   const updateStatus = async (id, status) => {
+    const normalizedStatus = status.trim().toLowerCase();
+
     try {
-      await axios.put(
-        `${API}/sua/${id}`,
-        { trangthai: status },
-        { headers: { "Content-Type": "application/json" } }
+      const base = orders.find((o) => String(o.madonhang) === String(id));
+
+      if (!base) {
+        Swal.fire({
+          icon: "error",
+          title: "Thất bại",
+          text: "Không tìm thấy đơn hàng!",
+        });
+        return;
+      }
+
+      // bắt buộc theo controller
+      const tennguoinhan = base.tennguoinhan || "";
+      const sodienthoai = base.sodienthoai || "";
+      const diachigiao = base.diachigiao || "";
+
+      if (!tennguoinhan.trim() || !sodienthoai.trim() || !diachigiao.trim()) {
+        Swal.fire({
+          icon: "warning",
+          title: "Thiếu dữ liệu",
+          text: "Đơn hàng thiếu người nhận / số điện thoại / địa chỉ, không thể cập nhật.",
+        });
+        return;
+      }
+      const toNumber = (v) => {
+        if (v === null || v === undefined) return 0;
+        // nếu lỡ có "219,000" hoặc "219000.00" thì vẫn parse được
+        const n = Number(String(v).replace(/[^\d.-]/g, ""));
+        return Number.isFinite(n) ? n : 0;
+      };
+
+      let phiVC = toNumber(base.phivanchuyen);
+      let tongTT = toNumber(base.tongthanhtoan ?? base.tongtien ?? 0);
+
+      // ✅ chặn âm (đơn hàng không thể âm)
+      phiVC = Math.max(0, phiVC);
+      tongTT = Math.max(0, tongTT);
+
+      // ✅ GỬI ĐỦ FIELD MODEL UPDATE ĐANG DÙNG
+      const payload = {
+        tennguoinhan: tennguoinhan.trim(),
+        sodienthoai: sodienthoai.trim(),
+        diachigiao: diachigiao.trim(),
+
+        donvivanchuyen: base.donvivanchuyen || null,
+        hinhthucthanhtoan: base.hinhthucthanhtoan || null,
+        ghichu: base.ghichu || null,
+
+        phivanchuyen: phiVC, // ✅ number >= 0
+        tongthanhtoan: tongTT, // ✅ number >= 0
+
+        trangthai: normalizedStatus,
+      };
+
+      console.log("PUT payload:", payload);
+
+      await axios.put(`${API}/sua/${id}`, payload, {
+        headers: { "Content-Type": "application/json" },
+      });
+
+      setOrders((prev) =>
+        prev.map((o) =>
+          String(o.madonhang) === String(id)
+            ? { ...o, trangthai: normalizedStatus }
+            : o
+        )
       );
 
-      // cập nhật lại state FE
-      setOrders((prev) =>
-        prev.map((o) => (o.madonhang === id ? { ...o, trangthai: status } : o))
-      );
+      Swal.fire({
+        icon: "success",
+        title: "Thành công",
+        text: "Cập nhật trạng thái đơn hàng thành công",
+        timer: 1200,
+        showConfirmButton: false,
+      });
     } catch (err) {
       console.error("Lỗi cập nhật trạng thái:", err);
-      alert("Cập nhật trạng thái thất bại!");
+      Swal.fire({
+        icon: "error",
+        title: "Thất bại",
+        text:
+          err?.response?.data?.message ||
+          err?.response?.data?.error ||
+          "Lỗi máy chủ",
+      });
     }
   };
 
@@ -135,7 +210,7 @@ export default function Quanlydh() {
                 {/* ACTION */}
                 <td className="p-3">
                   <div className="flex justify-center gap-4">
-                    {/* Xem */}
+                    {/* XEM CHI TIẾT */}
                     <button
                       onClick={() => {
                         setSelectedOrder(x);
@@ -146,35 +221,29 @@ export default function Quanlydh() {
                       <Eye size={16} />
                     </button>
 
-                    {/* Chờ xác nhận */}
-                    {x.trangthai === "Chờ xác nhận" && (
+                    {/* CHỈ HIỆN KHI CHỜ XÁC NHẬN */}
+                    {x.trangthai?.toLowerCase() === "chờ xác nhận" && (
                       <>
+                        {/* NÚT XÁC NHẬN */}
                         <button
                           onClick={() =>
-                            updateStatus(x.madonhang, "Đã xác nhận")
+                            updateStatus(x.madonhang, "đã xác nhận")
                           }
-                          className="text-green-400 hover:text-green-300 font-semibold"
+                          className="flex items-center gap-1 text-green-400 hover:text-green-300 font-semibold"
                         >
-                          ✔ Xác nhận
+                          <CheckCircle size={16} />
+                          Xác nhận
                         </button>
 
+                        {/* NÚT HỦY */}
                         <button
-                          onClick={() => updateStatus(x.madonhang, "Đã hủy")}
-                          className="text-red-500 hover:text-red-400 font-semibold"
+                          onClick={() => updateStatus(x.madonhang, "đã hủy")}
+                          className="flex items-center gap-1 text-red-500 hover:text-red-400 font-semibold"
                         >
-                          ✖ Hủy
+                          <XCircle size={16} />
+                          Hủy
                         </button>
                       </>
-                    )}
-
-                    {/* Đã xác nhận */}
-                    {x.trangthai === "Đã xác nhận" && (
-                      <button
-                        onClick={() => updateStatus(x.madonhang, "Đang giao")}
-                        className="text-purple-400 hover:text-purple-300 font-semibold"
-                      >
-                        ➜ Đang giao
-                      </button>
                     )}
                   </div>
                 </td>

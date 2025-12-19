@@ -9,7 +9,7 @@ import {
   getAllColors,
   getAllSizes,
 } from "./productApi";
-
+import Swal from "sweetalert2";
 import ProductTable from "./ProductTable";
 import AddProductModal from "./AddProductModal";
 import EditProductModal from "./EditProductModal";
@@ -105,17 +105,25 @@ export default function QuanLySanPham() {
   // 🔵 Xóa sản phẩm
   // =============================
   const handleDelete = async (id) => {
-    if (!confirm("Xóa sản phẩm này?")) return;
+    const result = await Swal.fire({
+      title: "Bạn chắc chắn muốn xóa sản phẩm này?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Xóa",
+      cancelButtonText: "Hủy",
+    });
 
-    try {
-      await deleteProduct(id);
-      load();
-    } catch (err) {
-      console.error(err);
-      alert("Không thể xóa sản phẩm!");
+    if (result.isConfirmed) {
+      try {
+        await deleteProduct(id);
+        load();
+        Swal.fire("Đã xóa!", "Sản phẩm đã được xóa khỏi danh sách.", "success");
+      } catch (err) {
+        console.error(err);
+        Swal.fire("Lỗi!", "Không thể xóa sản phẩm!", "error");
+      }
     }
   };
-
   return (
     <div className="p-6">
       {/* =============================
@@ -140,7 +148,7 @@ export default function QuanLySanPham() {
           }}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700"
         >
-          ➕ Thêm sản phẩm
+          Thêm sản phẩm
         </button>
       </div>
 

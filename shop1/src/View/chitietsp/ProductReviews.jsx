@@ -22,31 +22,30 @@ export default function ProductReviews({ BASE_URL, productId }) {
   const [page, setPage] = useState(1);
   const pageSize = 5;
 
-  // // ✅ 1) LOAD API
-  // useEffect(() => {
-  //   const fetchReviews = async () => {
-  //     setLoading(true);
-  //     try {
-  //       const res = await axios.get(
-  //         `${BASE_URL}/api/reviews/product/${productId}`
-  //       );
-  //       const normalized = normalizeReviews(res.data || []);
-  //       setRaw(normalized);
-  //     } catch (e) {
-  //       if (e.response?.status === 404) {
-  //         // Backend chưa triển khai API đánh giá
-  //         setBackendReady(false);
-  //         setRaw([]);
-  //       } else {
-  //         console.error("Load reviews error:", e);
-  //       }
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   if (productId) fetchReviews();
-  // }, [BASE_URL, productId]);
+  // ✅ 1) LOAD API
+  const fetchReviews = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(
+        `${BASE_URL}/api/danhgia/sanpham/${productId}`
+      );
+      const normalized = normalizeReviews(res.data?.danhgia || []);
+      setRaw(normalized);
+      setBackendReady(true);
+    } catch (e) {
+      if (e.response?.status === 404) {
+        setBackendReady(false);
+        setRaw([]);
+      } else {
+        console.error("Load reviews error:", e);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    if (productId) fetchReviews();
+  }, [BASE_URL, productId]);
 
   // ✅ 2) FILTER + SORT (chạy ở FE cho chắc)
   const filtered = useMemo(() => {
@@ -103,27 +102,23 @@ export default function ProductReviews({ BASE_URL, productId }) {
   // ✅ thống kê
   const stats = useMemo(() => buildStats(raw), [raw]);
 
-  // ✅ 4) HOOK AI: chừa chỗ để gắn
-  const aiAdapter = async ({ question }) => {
-    // Mặc định: trả lời “demo” để không crash UI
-    // Khi em làm BE AI xong: mở comment axios phía dưới
-    return {
-      answer:
-        "AI hook đã sẵn sàng. Khi có API AI backend, em chỉ cần bật axios trong aiAdapter là chạy.",
-      sources: ["Tổng hợp từ đánh giá & thống kê"],
-    };
+  function getUserIdFromToken() {
+    const token = localStorage.getItem("token");
+    if (!token) return null;
 
-    /*
-    const res = await axios.post(`${BASE_URL}/api/ai/review-assistant`, {
-      productId,
-      question,
-      stats,
-      topReviews: raw.slice(0, 20),
-    });
-    return res.data;
-    */
-  };
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      return payload.id || payload.manguoidung || null;
+    } catch {
+      return null;
+    }
+  }
+  const userId = getUserIdFromToken();
+  const userReviewCount = useMemo(() => {
+    if (!userId) return 0;
 
+    return raw.filter((r) => String(r.userId) === String(userId)).length;
+  }, [raw, userId]);
   return (
     <section className="mt-12">
       <div className="flex items-end justify-between gap-4">
@@ -163,8 +158,6 @@ export default function ProductReviews({ BASE_URL, productId }) {
 
         {/* Right: List + AI */}
         <div className="lg:col-span-2 space-y-5">
-          <ReviewAI aiAdapter={aiAdapter} />
-
           {loading ? (
             <div className="rounded-3xl border border-slate-200 bg-white p-6 text-slate-600">
               Đang tải đánh giá...
@@ -187,10 +180,10 @@ export default function ProductReviews({ BASE_URL, productId }) {
           )}
           <ReviewForm
             productId={productId}
-            onSuccess={() => {
-              // gọi lại API load đánh giá
-            }}
+            reviewCount={userReviewCount}
+            onSuccess={fetchReviews}
           />
+
           <ReviewPagination
             page={page}
             totalPages={totalPages}

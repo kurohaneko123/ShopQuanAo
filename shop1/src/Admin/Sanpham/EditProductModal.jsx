@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { updateProduct, uploadProductAvatar } from "./productApi";
-
+import Swal from "sweetalert2";
 export default function EditProductModal({
   open,
   onClose,
@@ -36,14 +36,14 @@ export default function EditProductModal({
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!form.tensanpham || !form.madanhmuc) {
-      return alert("Tên sản phẩm và danh mục là bắt buộc!");
-    }
+    if (!editForm.giaban) e.giaban = "Giá không được trống";
+    if (!editForm.soluongton) e.soluongton = "Số lượng không được trống";
+    setEditErrors(e);
+    if (Object.keys(e).length > 0) return;
 
     try {
       setSaving(true);
 
-      // ✔ BƯỚC 1: Gửi dữ liệu sửa sản phẩm trước
       await updateProduct(product.masanpham, {
         tensanpham: form.tensanpham,
         madanhmuc: form.madanhmuc,
@@ -52,27 +52,34 @@ export default function EditProductModal({
         chatlieu: form.chatlieu,
         kieudang: form.kieudang,
         baoquan: form.baoquan,
-
-        // ⭐ GIỮ ẢNH CŨ NẾU KHÔNG ĐỔI
         anhdaidien: product.anhdaidien,
       });
 
-      // ✔ BƯỚC 2: Nếu có chọn avatar mới → upload
       if (newAvatar) {
         const uploadRes = await uploadProductAvatar(
           product.masanpham,
           newAvatar
         );
-
         console.log("Upload avatar result:", uploadRes);
       }
 
-      alert("Cập nhật sản phẩm thành công!");
+      Swal.fire({
+        title: "Thành công!",
+        text: "Cập nhật sản phẩm thành công!",
+        icon: "success",
+        confirmButtonText: "OK",
+      });
+
       onSuccess?.();
       onClose();
     } catch (err) {
       console.error(err);
-      alert("Lỗi khi cập nhật sản phẩm!");
+      Swal.fire({
+        title: "Lỗi!",
+        text: "Lỗi khi cập nhật sản phẩm!",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
     } finally {
       setSaving(false);
     }

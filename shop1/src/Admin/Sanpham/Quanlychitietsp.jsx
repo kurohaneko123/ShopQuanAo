@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import { Loader2, Pencil, Trash2, PlusCircle, X } from "lucide-react";
-
+import Swal from "sweetalert2";
 export default function Quanlychitietsp() {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
@@ -123,8 +123,19 @@ export default function Quanlychitietsp() {
       setShowAddPopup(false);
       setAddForm({ mamausac: "", makichthuoc: "", giaban: "", soluongton: "" });
       setAddErrors({});
+      Swal.fire({
+        title: "Thành công!",
+        text: "Thêm biến thể thành công!",
+        icon: "success",
+        confirmButtonText: "OK",
+      });
     } catch (err) {
-      alert("Lỗi khi thêm biến thể!");
+      Swal.fire({
+        title: "Lỗi!",
+        text: "Lỗi khi thêm biến thể!",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
     }
   };
 
@@ -152,8 +163,19 @@ export default function Quanlychitietsp() {
 
       setShowEditPopup(false);
       setEditErrors({});
+      Swal.fire({
+        title: "Thành công!",
+        text: "Chỉnh sửa biến thể thành công!",
+        icon: "success",
+        confirmButtonText: "OK",
+      });
     } catch (err) {
-      alert("Sửa thất bại!");
+      Swal.fire({
+        title: "Lỗi!",
+        text: "Sửa thất bại!",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
     }
   };
 
@@ -170,8 +192,19 @@ export default function Quanlychitietsp() {
       );
 
       setShowDeletePopup(false);
+      Swal.fire({
+        title: "Thành công!",
+        text: "Xóa biến thể thành công!",
+        icon: "success",
+        confirmButtonText: "OK",
+      });
     } catch (err) {
-      alert("Xoá thất bại!");
+      Swal.fire({
+        title: "Lỗi!",
+        text: "Xóa thất bại!",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
     }
   };
 

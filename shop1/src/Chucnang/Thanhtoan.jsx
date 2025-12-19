@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-
+import Swal from "sweetalert2";
 /* =====================================================
  * 1. HÀM LẤY MÃ BIẾN THỂ TỪ SKU (FE ONLY)
  *    - TẠM THỜI: nếu sku dạng "SP-21" → trả về 21
@@ -66,6 +66,15 @@ export default function Checkout() {
   const subtotal = cart.reduce((sum, item) => {
     return sum + Number(item.giakhuyenmai || 0) * Number(item.soluong || 0);
   }, 0);
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (user) {
+      setFormData((prevState) => ({
+        ...prevState,
+        tennguoinhan: user.hoten || "", // Tự điền tên người nhận từ thông tin khách hàng
+      }));
+    }
+  }, []);
 
   const shippingCost = formData.donvivanchuyen === "Giao nhanh" ? 40000 : 20000;
   const total = Math.max(0, subtotal - discount + shippingCost);
@@ -74,22 +83,64 @@ export default function Checkout() {
    * 5. VALIDATE FORM – KHÔNG ĐỂ GIÁ TRỊ RỖNG / NULL
    * ===================================================== */
   const validateForm = () => {
+    // Kiểm tra tên người nhận
     if (!formData.tennguoinhan.trim()) {
-      alert("Vui lòng nhập họ tên người nhận");
+      Swal.fire({
+        title: "Lỗi!",
+        text: "Vui lòng nhập họ tên người nhận",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
       return false;
     }
+
+    // Kiểm tra số điện thoại (chỉ cho phép nhập số)
+    const phoneRegex = /^[0-9]{10,11}$/;
     if (!formData.sodienthoai.trim()) {
-      alert("Vui lòng nhập số điện thoại");
+      Swal.fire({
+        title: "Lỗi!",
+        text: "Vui lòng nhập số điện thoại",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+      return false;
+    } else if (!phoneRegex.test(formData.sodienthoai)) {
+      Swal.fire({
+        title: "Lỗi!",
+        text: "Số điện thoại không hợp lệ, vui lòng nhập lại.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
       return false;
     }
-    if (!formData.diachigiao.trim()) {
-      alert("Vui lòng nhập địa chỉ giao hàng");
+
+    // Kiểm tra địa chỉ giao hàng
+    const addressRegex = /^\d+\s[\w\s]+,\s*Phường\s[\w\s]+,\s*Quận\s[\w\s]+$/;
+
+    if (
+      !formData.diachigiao.trim() ||
+      !addressRegex.test(formData.diachigiao)
+    ) {
+      Swal.fire({
+        title: "Lỗi!",
+        text: "Vui lòng nhập địa chỉ giao hàng đúng",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
       return false;
     }
+
+    // Kiểm tra giỏ hàng có sản phẩm không
     if (!cart.length) {
-      alert("Giỏ hàng đang trống");
+      Swal.fire({
+        title: "Lỗi!",
+        text: "Giỏ hàng đang trống",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
       return false;
     }
+
     return true;
   };
 
@@ -102,11 +153,16 @@ export default function Checkout() {
     try {
       const user = JSON.parse(localStorage.getItem("user"));
       if (!user) {
-        alert("Bạn chưa đăng nhập!");
+        Swal.fire({
+          title: "Lỗi!",
+          text: "Bạn chưa đăng nhập!",
+          icon: "error",
+          confirmButtonText: "OK",
+        });
         return;
       }
 
-      if (!validateForm()) return;
+      if (!validateForm()) return; // Kiểm tra form trước khi tiếp tục
 
       // ===== CHUẨN BỊ DỮ LIỆU ĐƠN HÀNG =====
       const payload = {
@@ -141,7 +197,12 @@ export default function Checkout() {
 
       const orderId = res.data?.madonhang;
       if (!orderId) {
-        alert("Không lấy được mã đơn hàng!");
+        Swal.fire({
+          title: "Lỗi!",
+          text: "Không lấy được mã đơn hàng!",
+          icon: "error",
+          confirmButtonText: "OK",
+        });
         return;
       }
 
@@ -175,10 +236,8 @@ export default function Checkout() {
           const zaloRes = await axios.post(
             "http://localhost:5000/api/payment/zalopay/create",
             {
-              madonhang: orderId, // ✅ ĐÚNG KEY BE CẦN
-              tongthanhtoan: total, // ✅ ĐÚNG KEY BE CẦN
-              madonhang: orderId, // ✅ ĐÚNG KEY BE CẦN
-              tongthanhtoan: total, // ✅ ĐÚNG KEY BE CẦN
+              madonhang: orderId,
+              tongthanhtoan: total,
             }
           );
 
@@ -190,7 +249,12 @@ export default function Checkout() {
 
           if (!payUrl) {
             console.error("BE trả về:", zaloRes.data);
-            alert("Không lấy được link thanh toán ZaloPay!");
+            Swal.fire({
+              title: "Lỗi!",
+              text: "Không lấy được link thanh toán ZaloPay!",
+              icon: "error",
+              confirmButtonText: "OK",
+            });
             return;
           }
 
@@ -209,13 +273,23 @@ export default function Checkout() {
           return;
         } catch (error) {
           console.error("ZaloPay error:", error);
-          alert("Không thể tạo thanh toán ZaloPay!");
+          Swal.fire({
+            title: "Lỗi!",
+            text: "Không thể tạo thanh toán ZaloPay!",
+            icon: "error",
+            confirmButtonText: "OK",
+          });
           return;
         }
       }
     } catch (err) {
       console.error("Lỗi tạo đơn:", err);
-      alert("Không thể tạo đơn hàng!");
+      Swal.fire({
+        title: "Lỗi!",
+        text: "Không thể tạo đơn hàng!",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
     }
   };
 

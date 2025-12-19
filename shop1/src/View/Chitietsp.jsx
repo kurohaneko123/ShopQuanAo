@@ -13,7 +13,7 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import axios from "axios";
-
+import Swal from "sweetalert2";
 import ProductRecommendations from "./chitietsp/ProductRecommendations";
 import RecentViewed from "./chitietsp/RecentViewed.jsx";
 import ProductReviews from "./chitietsp/ProductReviews.jsx";
@@ -29,7 +29,7 @@ export default function ChiTietSanPham() {
   const [selectedColor, setSelectedColor] = useState("");
   const [selectedSize, setSelectedSize] = useState("");
   const [loading, setLoading] = useState(true);
-
+  const [isAccountOpen, setIsAccountOpen] = useState(false);
   // UI-only: lỗi theo field
   const [errors, setErrors] = useState({ color: "", size: "" });
 
@@ -40,6 +40,20 @@ export default function ChiTietSanPham() {
   /* ====== 🛒 Hàm thêm sản phẩm vào giỏ hàng (giữ logic) ====== */
   const handleAddToCart = () => {
     try {
+      // Kiểm tra đăng nhập
+      const user = localStorage.getItem("user");
+      if (!user) {
+        Swal.fire({
+          title: "Bạn chưa đăng nhập!",
+          text: "Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng.",
+          icon: "warning",
+          showCancelButton: true,
+          cancelButtonText: "Hủy",
+        });
+        return;
+      }
+
+      // Tiếp tục nếu đã đăng nhập
       const variant = variants.find(
         (v) => v.tenmausac === selectedColor && v.tenkichthuoc === selectedSize
       );
@@ -90,19 +104,19 @@ export default function ChiTietSanPham() {
 
       const toast = document.createElement("div");
       toast.className = `
-        fixed z-[9999] top-[90px] right-[20px]
-        bg-white border border-slate-200 shadow-xl
-        rounded-2xl p-4 w-[340px]
-        flex items-center gap-3
-        animate-fadeIn
-      `;
+      fixed z-[9999] top-[90px] right-[20px]
+      bg-white border border-slate-200 shadow-xl
+      rounded-2xl p-4 w-[340px]
+      flex items-center gap-3
+      animate-fadeIn
+    `;
       toast.innerHTML = `
-        <img src="${newItem.hinhanh}" class="w-14 h-14 rounded-xl object-cover border border-slate-200" />
-        <div class="flex-1">
-          <p class="text-sm font-semibold text-slate-900">Đã thêm vào giỏ hàng</p>
-          <p class="text-xs text-slate-500 mt-0.5">${product.tensanpham} • ${newItem.mausac}, ${newItem.size}</p>
-        </div>
-      `;
+      <img src="${newItem.hinhanh}" class="w-14 h-14 rounded-xl object-cover border border-slate-200" />
+      <div class="flex-1">
+        <p class="text-sm font-semibold text-slate-900">Đã thêm vào giỏ hàng</p>
+        <p class="text-xs text-slate-500 mt-0.5">${product.tensanpham} • ${newItem.mausac}, ${newItem.size}</p>
+      </div>
+    `;
       document.body.appendChild(toast);
       setTimeout(() => toast.remove(), 2500);
     } catch (error) {
@@ -167,6 +181,12 @@ export default function ChiTietSanPham() {
   useEffect(() => {
     setErrors({ color: "", size: "" });
     setQuantity(1);
+    if (!selectedColor && variants.length > 0) {
+      setSelectedColor(""); // Đảm bảo không chọn màu mặc định
+    }
+    if (!selectedSize && variants.length > 0) {
+      setSelectedSize(""); // Đảm bảo không chọn kích cỡ mặc định
+    }
     if (currentImages.length > 0) setMainImage(currentImages[0]);
     else setMainImage(product?.anhdaidien || "");
   }, [selectedColor, variants]); // eslint-disable-line
@@ -342,27 +362,16 @@ export default function ChiTietSanPham() {
                       (v) => v.tenmausac === color
                     )?.hexcode;
 
-                    const active = selectedColor === color;
-
                     return (
                       <button
                         key={color}
-                        onClick={() => {
-                          setSelectedColor(color);
-                          if (!availableSizesForColor.has(selectedSize)) {
-                            const first =
-                              variants.find((v) => v.tenmausac === color)
-                                ?.tenkichthuoc || "";
-                            setSelectedSize(first);
-                          }
-                        }}
-                        title={color}
+                        onClick={() => setSelectedColor(color)}
                         className={`w-9 h-9 rounded-full border transition-all flex items-center justify-center
-            ${
-              active
-                ? "border-[rgb(60,110,190)] ring-2 ring-[rgba(60,110,190,0.35)]"
-                : "border-slate-300 hover:border-[rgb(60,110,190)]"
-            }
+          ${
+            selectedColor === color
+              ? "border-[rgb(60,110,190)] ring-2 ring-[rgba(60,110,190,0.35)]"
+              : "border-slate-300 hover:border-[rgb(60,110,190)]"
+          }
           `}
                       >
                         <span
@@ -395,30 +404,28 @@ export default function ChiTietSanPham() {
                 </div>
 
                 <div className="mt-3 flex gap-2 flex-wrap">
-                  {sizeList.map((s) => {
+                  {sizeList.map((size) => {
                     const enabled =
-                      !selectedColor || availableSizesForColor.has(s);
-                    const active = selectedSize === s;
-
+                      !selectedColor || availableSizesForColor.has(size);
                     return (
                       <button
-                        key={s}
-                        onClick={() => enabled && setSelectedSize(s)}
+                        key={size}
+                        onClick={() => enabled && setSelectedSize(size)}
                         disabled={!enabled}
                         className={`w-10 h-10 rounded-full border flex items-center justify-center transition
-                          ${
-                            active
-                              ? "bg-[rgb(96,148,216)] text-white border-[rgb(60,110,190)] ring-2 ring-[rgba(60,110,190,0.35)] font-bold"
-                              : "bg-white text-slate-800 border-slate-300 hover:border-[rgb(60,110,190)]"
-                          }
-                          ${
-                            !enabled
-                              ? "opacity-40 cursor-not-allowed hover:border-slate-200"
-                              : ""
-                          }
-                        `}
+          ${
+            selectedSize === size
+              ? "bg-[rgb(96,148,216)] text-white border-[rgb(60,110,190)] ring-2 ring-[rgba(60,110,190,0.35)] font-bold"
+              : "bg-white text-slate-800 border-slate-300 hover:border-[rgb(60,110,190)]"
+          }
+          ${
+            !enabled
+              ? "opacity-40 cursor-not-allowed hover:border-slate-200"
+              : ""
+          }
+          `}
                       >
-                        {s}
+                        {size}
                       </button>
                     );
                   })}

@@ -439,13 +439,13 @@ export default function HomePage() {
                       }}
                       className="
   w-11 h-11 rounded-full
-  bg-white text-slate-900
+  bg-white text-[rgb(96,148,216)]
   border border-slate-200
   flex items-center justify-center
   shadow-md
-  hover:bg-slate-900 hover:text-white hover:border-slate-900
-  hover:scale-105
-  transition-all duration-300
+  hover:bg-[rgb(96,148,216)] hover:text-white hover:[rgb(60,110,190)]
+ hover:scale-105
+    transition-all duration-300
 "
                       aria-label="Thêm vào giỏ hàng"
                     >
@@ -590,7 +590,7 @@ export default function HomePage() {
             </div>
           ) : (
             <p className="text-gray-500 italic text-center">
-              Hiện chưa có ưu đãi nào 🥲
+              Hiện chưa có ưu đãi nào
             </p>
           )}
         </section>

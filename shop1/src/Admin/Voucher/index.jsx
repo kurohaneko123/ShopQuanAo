@@ -6,7 +6,7 @@ import {
   updateVoucher,
   deleteVoucher,
 } from "./voucherApi";
-
+import Swal from "sweetalert2";
 import VoucherTable from "./VoucherTable";
 import AddVoucherModal from "./AddVoucherModal";
 import EditVoucherModal from "./EditVoucherModal";
@@ -53,7 +53,8 @@ export default function QuanLyVoucher() {
 
     if (!d.ngaybatdau) e.ngaybatdau = "Chọn ngày bắt đầu";
     if (!d.ngayketthuc) e.ngayketthuc = "Chọn ngày kết thúc";
-
+    if (newData.ngaybatdau === newData.ngayketthuc)
+      e.ngayketthuc = "Ngày kết thúc phải sau ngày bắt đầu";
     if (
       d.ngaybatdau &&
       d.ngayketthuc &&
@@ -106,7 +107,12 @@ export default function QuanLyVoucher() {
       setVouchers(res.data.data);
     } catch (err) {
       console.error("Lỗi tải voucher:", err);
-      alert("Không thể tải danh sách voucher!");
+      Swal.fire({
+        title: "Lỗi!",
+        text: "Không thể tải danh sách voucher!",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
     }
     setLoading(false);
   };
@@ -123,10 +129,21 @@ export default function QuanLyVoucher() {
       load();
       setAddOpen(false);
       setAddErrors({});
+      Swal.fire({
+        title: "Thành công!",
+        text: "Thêm voucher thành công!",
+        icon: "success",
+        confirmButtonText: "OK",
+      });
     } catch (err) {
       console.error(err);
       // FE: không biết BE chửi field nào, nhưng ít nhất không phá form
-      alert("Thêm voucher thất bại. Kiểm tra dữ liệu!");
+      Swal.fire({
+        title: "Lỗi!",
+        text: "Thêm voucher thất bại. Kiểm tra dữ liệu!",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
     }
   };
 
@@ -151,7 +168,12 @@ export default function QuanLyVoucher() {
     if (!validateEdit()) return;
 
     if (!editData.magiamgia) {
-      alert("Thiếu mã giảm giá!");
+      Swal.fire({
+        title: "Lỗi!",
+        text: "Thiếu mã giảm giá!",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
       return;
     }
 
@@ -173,27 +195,44 @@ export default function QuanLyVoucher() {
 
     try {
       await updateVoucher(editData.magiamgia, payload);
-      alert("Cập nhật voucher thành công!");
+      Swal.fire({
+        title: "Thành công!",
+        text: "Cập nhật voucher thành công!",
+        icon: "success",
+        confirmButtonText: "OK",
+      });
       setEditOpen(false);
       load();
     } catch (err) {
       console.error("Lỗi update voucher:", err.response?.data || err);
 
-      alert(
-        err.response?.data?.message || "Sửa voucher thất bại! Kiểm tra dữ liệu."
-      );
+      Swal.fire({
+        title: "Lỗi!",
+        text: "Sửa voucher thất bại! Kiểm tra dữ liệu.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
     }
   };
 
   const handleDelete = async (magiamgia) => {
-    if (!confirm("Xóa voucher này?")) return;
-    await deleteVoucher(magiamgia);
-    load();
-  };
-
-  const confirmDelete = async () => {
-    if (!deleteTarget?.magiamgia) return;
-    await deleteVoucher(deleteTarget.magiamgia);
+    const result = await Swal.fire({
+      title: "Bạn chắc chắn muốn xóa sản phẩm này?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Xóa",
+      cancelButtonText: "Hủy",
+    });
+    if (result.isConfirmed) {
+      try {
+        await deleteVoucher(magiamgia);
+        load();
+        Swal.fire("Đã xóa!", "Voucher đã được xóa khỏi danh sách.", "success");
+      } catch (err) {
+        console.error(err);
+        Swal.fire("Lỗi!", "Không thể xóa voucher!", "error");
+      }
+    }
   };
 
   return (
@@ -222,7 +261,7 @@ export default function QuanLyVoucher() {
           }}
           className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg shadow-lg transition"
         >
-          ➕ Thêm voucher
+          Thêm voucher
         </button>
       </div>
 

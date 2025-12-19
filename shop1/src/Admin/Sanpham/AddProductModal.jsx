@@ -5,6 +5,8 @@ import {
   uploadVariantImage,
   getProductDetail,
 } from "./productApi";
+import Swal from "sweetalert2";
+import { Loader2 } from "lucide-react";
 
 export default function AddProductModal({
   open,
@@ -36,7 +38,10 @@ export default function AddProductModal({
       image2: null,
     },
   ]);
+  //  ================================
+  const [errors, setErrors] = useState({});
 
+  const [loading, setLoading] = useState(false);
   // ================================
   // THÊM BIẾN THỂ
   // ================================
@@ -70,21 +75,43 @@ export default function AddProductModal({
     if (variants.length === 1) return;
     setVariants(variants.filter((_, i) => i !== index));
   };
+  const validate = () => {
+    const e = {};
 
+    if (!data.tensanpham?.trim()) e.tensanpham = "Vui lòng nhập tên sản phẩm";
+
+    if (!data.madanhmuc) e.madanhmuc = "Vui lòng chọn danh mục";
+
+    if (!data.thuonghieu?.trim()) e.thuonghieu = "Vui lòng nhập thương hiệu";
+
+    if (!avatarFile) e.anhdaidien = "Vui lòng chọn ảnh đại diện";
+
+    variants.forEach((v, i) => {
+      if (!v.size) e[`size_${i}`] = "Chọn size";
+      if (!v.color) e[`color_${i}`] = "Chọn màu";
+      if (!v.giaban || Number(v.giaban) <= 0)
+        e[`giaban_${i}`] = "Giá bán phải > 0";
+      if (!v.ton || Number(v.ton) <= 0) e[`ton_${i}`] = "Số lượng phải > 0";
+    });
+
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
   // ================================
   // SUBMIT
   // ================================
   const handleSubmit = async () => {
-    if (!data.tensanpham || !data.madanhmuc) {
-      alert("Tên sản phẩm và danh mục là bắt buộc!");
-      return;
-    }
+    if (!validate()) return;
 
-    if (!avatarFile) {
-      alert("Vui lòng chọn ảnh đại diện!");
-      return;
-    }
-
+    // Hiển thị loading
+    Swal.fire({
+      title: "Đang thêm sản phẩm...",
+      html: "Vui lòng chờ trong giây lát",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
     try {
       // ============================
       // 1️⃣ TẠO PRODUCT TRƯỚC
@@ -113,7 +140,13 @@ export default function AddProductModal({
 
       const masanpham = res.productId; // ⬅ backend trả field này
       if (!masanpham) {
-        alert("Không nhận được mã sản phẩm từ server!");
+        Swal.fire({
+          title: "Lỗi!",
+          text: "Thêm sản phẩm thất bại!",
+          icon: "error",
+          confirmButtonText: "OK",
+        });
+
         return;
       }
 
@@ -126,7 +159,12 @@ export default function AddProductModal({
 
       const avatarRes = await uploadProductAvatar(masanpham, avatarFile);
       if (!avatarRes.url) {
-        alert("Upload ảnh đại diện thất bại!");
+        Swal.fire({
+          title: "Lỗi!",
+          text: "Vui lòng chọn ảnh đại diện!",
+          icon: "error",
+          confirmButtonText: "OK",
+        });
         return;
       }
 
@@ -163,8 +201,27 @@ export default function AddProductModal({
           await uploadVariantImage(mabienthe, variants[i].image2, 2);
         }
       }
-
-      alert("Thêm sản phẩm thành công!");
+      setVariants((prev) => [...prev, res.data.newVariant]);
+      setShowAddPopup(false);
+      setAddForm({
+        mamausac: "",
+        makichthuoc: "",
+        tendanhmuc: "",
+        giaban: "",
+        soluongton: "",
+        mota: "",
+        thuonghieu: "",
+        chatlieu: "",
+        kieudang: "",
+        baoquan: "",
+        anhdaidien: "",
+      });
+      Swal.fire({
+        title: "Thành công!",
+        text: "Thêm sản phẩm thành công!",
+        icon: "success",
+        confirmButtonText: "OK",
+      });
 
       // Gọi load() để cập nhật bảng ngoài
       onSuccess();
@@ -199,7 +256,13 @@ export default function AddProductModal({
       onClose();
     } catch (err) {
       console.error("Lỗi thêm sản phẩm:", err);
-      alert("Thêm sản phẩm thất bại!");
+      Swal.close();
+      Swal.fire({
+        title: "Lỗi!",
+        text: "Thêm sản phẩm thất bại!",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
     }
   };
 
@@ -225,10 +288,19 @@ export default function AddProductModal({
               Tên sản phẩm *
             </label>
             <input
-              className="bg-[#1a1a1a] border border-white/10 p-2 rounded-lg w-full text-gray-200"
+              className={`bg-[#1a1a1a] border p-2 rounded-lg w-full
+    ${errors.tensanpham ? "border-red-500" : "border-white/10"}
+  `}
               value={data.tensanpham}
-              onChange={(e) => setData({ ...data, tensanpham: e.target.value })}
+              onChange={(e) => {
+                setData({ ...data, tensanpham: e.target.value });
+                setErrors((p) => ({ ...p, tensanpham: "" }));
+              }}
             />
+
+            {errors.tensanpham && (
+              <p className="text-red-500 text-xs mt-1">{errors.tensanpham}</p>
+            )}
           </div>
 
           {/* Danh mục */}
@@ -237,9 +309,14 @@ export default function AddProductModal({
               Danh mục *
             </label>
             <select
-              className="bg-[#1a1a1a] border border-white/10 p-2 rounded-lg w-full"
+              className={`bg-[#1a1a1a] border p-2 rounded-lg w-full
+    ${errors.madanhmuc ? "border-red-500" : "border-white/10"}
+  `}
               value={data.madanhmuc}
-              onChange={(e) => setData({ ...data, madanhmuc: e.target.value })}
+              onChange={(e) => {
+                setData({ ...data, madanhmuc: e.target.value });
+                setErrors((p) => ({ ...p, madanhmuc: "" }));
+              }}
             >
               <option value="">-- Chọn --</option>
               {categories.map((c) => (
@@ -286,11 +363,21 @@ export default function AddProductModal({
           <label className="text-gray-300 text-sm font-medium">
             Ảnh đại diện *
           </label>
+
           <input
             type="file"
-            className="bg-[#1a1a1a] border border-white/10 p-2 rounded-lg w-60 text-gray-300"
-            onChange={(e) => setAvatarFile(e.target.files[0])}
+            className={`bg-[#1a1a1a] border p-2 rounded-lg w-60 text-gray-300
+      ${errors.anhdaidien ? "border-red-500" : "border-white/10"}
+    `}
+            onChange={(e) => {
+              setAvatarFile(e.target.files?.[0] || null);
+              setErrors((p) => ({ ...p, anhdaidien: "" }));
+            }}
           />
+
+          {errors.anhdaidien && (
+            <p className="text-red-500 text-xs mt-1">{errors.anhdaidien}</p>
+          )}
         </div>
 
         {/* BIẾN THỂ */}
@@ -323,6 +410,9 @@ export default function AddProductModal({
                   </option>
                 ))}
               </select>
+              {errors[`size_${idx}`] && (
+                <p className="text-red-500 text-xs">{errors[`size_${idx}`]}</p>
+              )}
 
               {/* MÀU */}
               <select
@@ -337,14 +427,27 @@ export default function AddProductModal({
                   </option>
                 ))}
               </select>
+              {errors[`color_${idx}`] && (
+                <p className="text-red-500 text-xs">{errors[`color_${idx}`]}</p>
+              )}
 
               {/* GIÁ */}
               <input
-                className="bg-[#1a1a1a] border border-white/10 p-2 rounded-lg text-gray-200"
-                placeholder="Giá bán"
+                className={`bg-[#1a1a1a] border p-2 rounded-lg
+    ${errors[`giaban_${idx}`] ? "border-red-500" : "border-white/10"}
+  `}
                 value={v.giaban}
-                onChange={(e) => updateVariant(idx, "giaban", e.target.value)}
+                onChange={(e) => {
+                  updateVariant(idx, "giaban", e.target.value);
+                  setErrors((p) => ({ ...p, [`giaban_${idx}`]: "" }));
+                }}
               />
+
+              {errors[`giaban_${idx}`] && (
+                <p className="text-red-500 text-xs">
+                  {errors[`giaban_${idx}`]}
+                </p>
+              )}
 
               {/* TỒN */}
               <input
@@ -353,6 +456,9 @@ export default function AddProductModal({
                 value={v.ton}
                 onChange={(e) => updateVariant(idx, "ton", e.target.value)}
               />
+              {errors[`ton_${idx}`] && (
+                <p className="text-red-500 text-xs">{errors[`ton_${idx}`]}</p>
+              )}
 
               {/* ẢNH 1 */}
               <input
@@ -362,6 +468,9 @@ export default function AddProductModal({
                   updateVariant(idx, "image1", e.target.files[0])
                 }
               />
+              {errors[`vimg_${idx}`] && (
+                <p className="text-red-500 text-xs">{errors[`vimg_${idx}`]}</p>
+              )}
 
               {/* ẢNH 2 */}
               <input
@@ -371,6 +480,9 @@ export default function AddProductModal({
                   updateVariant(idx, "image2", e.target.files[0])
                 }
               />
+              {errors[`vimg_${idx}`] && (
+                <p className="text-red-500 text-xs">{errors[`vimg_${idx}`]}</p>
+              )}
 
               {/* XOÁ */}
               <button

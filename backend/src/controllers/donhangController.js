@@ -1,5 +1,5 @@
 import db from "../config/db.js";
-import { taoDonHang, taoChiTietDonHang, layTatCaDonHang, layDonHangTheoID, capNhatDonHang } from "../models/donhangModel.js";
+import { taoDonHang, taoChiTietDonHang, layTatCaDonHang, layDonHangTheoID, capNhatDonHang, layDonHangTheoNguoiDung } from "../models/donhangModel.js";
 
 // Tạo 1 đơn hàng + TRỪ KHO BIẾN THỂ
 export const themDonHang = async (req, res) => {
@@ -111,8 +111,15 @@ export const suaDonHang = async (req, res) => {
             });
         }
 
-        // 🔥 CHUẨN HÓA TRẠNG THÁI HIỆN TẠI
-        const trangThaiHienTai = donhangHienTai.trangthai.trim().toLowerCase();
+        const trangThaiHienTai = donhangHienTai.trangthai
+            ? donhangHienTai.trangthai.trim().toLowerCase()
+            : null;
+
+        if (!trangThaiHienTai) {
+            return res.status(400).json({
+                message: "Đơn hàng không có trạng thái hợp lệ!"
+            });
+        }
 
         // 2. Check logic trạng thái (chỉ cho sửa khi: chờ xác nhận, đã xác nhận, đang chuẩn bị)
         if (!TRANG_THAI_CHO_PHEP_SUA.includes(trangThaiHienTai)) {
@@ -173,48 +180,75 @@ const TRANG_THAI_KHACH_DUOC_HUY = [
 ];
 
 export const khachHuyDonHang = async (req, res) => {
+    const connection = await db.getConnection();
     try {
         const madonhang = req.params.id;
+        await connection.beginTransaction();
 
-        // 1. Lấy đơn hàng
         const donhang = await layDonHangTheoID(madonhang);
         if (!donhang) {
-            return res.status(404).json({
-                message: "Không tìm thấy đơn hàng!"
-            });
+            await connection.rollback();
+            return res.status(404).json({ message: "Không tìm thấy đơn hàng!" });
         }
 
-        const tt = donhang.trangthai.trim().toLowerCase();
-
-        // 2. Check logic khách hủy
-        if (!TRANG_THAI_KHACH_DUOC_HUY.includes(tt)) {
+        // ❌ Đã thanh toán → không cho khách hủy
+        if (donhang.dathanhtoan === 1) {
+            await connection.rollback();
             return res.status(400).json({
-                message: `Khách không thể hủy đơn ở trạng thái hiện tại: ${donhang.trangthai}`
+                message: "Đơn hàng đã thanh toán, vui lòng liên hệ admin"
             });
         }
 
-        // 3. Cập nhật trạng thái
-        await capNhatDonHang(madonhang, {
-            ...donhang,
-            trangthai: "đã hủy"
-        });
+        const tt = donhang.trangthai
+            ? donhang.trangthai.trim().toLowerCase()
+            : "chờ xác nhận";
 
-        return res.status(200).json({
-            message: "Khách hủy đơn hàng thành công!",
+        if (!TRANG_THAI_KHACH_DUOC_HUY.includes(tt)) {
+            await connection.rollback();
+            return res.status(400).json({
+                message: `Khách không thể hủy đơn ở trạng thái: ${donhang.trangthai}`
+            });
+        }
+
+        const [chitiet] = await connection.query(
+            `SELECT mabienthe, soluong FROM chitietdonhang WHERE madonhang = ?`,
+            [madonhang]
+        );
+
+        for (const item of chitiet) {
+            await connection.query(
+                `UPDATE bienthesanpham
+         SET soluongton = soluongton + ?
+         WHERE mabienthe = ?`,
+                [item.soluong, item.mabienthe]
+            );
+        }
+
+        // ✅ Update đơn bằng transaction
+        await connection.query(
+            `UPDATE donhang
+       SET trangthai = 'đã hủy',
+           ngaycapnhat = NOW()
+       WHERE madonhang = ?`,
+            [madonhang]
+        );
+
+        await connection.commit();
+
+        res.json({
+            message: "Khách hủy đơn hàng thành công & đã hoàn kho",
             madonhang,
-            oldStatus: donhang.trangthai,
-            newStatus: "đã hủy"
+            restoredItems: chitiet.length
         });
-
-    } catch (error) {
-        console.error("Lỗi khách hủy đơn:", error);
-        res.status(500).json({
-            message: "Lỗi máy chủ!",
-            error: error.message
-        });
+    } catch (err) {
+        await connection.rollback();
+        console.error("Lỗi khách hủy đơn:", err);
+        res.status(500).json({ message: "Lỗi máy chủ", error: err.message });
+    } finally {
+        connection.release();
     }
 };
-//Admin hủy đơn hàng
+// Admin hủy đơn hàng
 const TRANG_THAI_ADMIN_DUOC_HUY = [
     "chờ xác nhận",
     "đã xác nhận",
@@ -223,45 +257,72 @@ const TRANG_THAI_ADMIN_DUOC_HUY = [
 ];
 
 export const adminHuyDonHang = async (req, res) => {
+    const connection = await db.getConnection();
     try {
         const madonhang = req.params.id;
+        await connection.beginTransaction();
 
-        // 1. Lấy đơn hàng
         const donhang = await layDonHangTheoID(madonhang);
         if (!donhang) {
-            return res.status(404).json({
-                message: "Không tìm thấy đơn hàng!"
-            });
+            await connection.rollback();
+            return res.status(404).json({ message: "Không tìm thấy đơn hàng!" });
         }
 
-        const tt = donhang.trangthai.trim().toLowerCase();
+        const tt = donhang.trangthai
+            ? donhang.trangthai.trim().toLowerCase()
+            : "chờ xác nhận";
 
-        // 2. Check logic admin hủy
         if (!TRANG_THAI_ADMIN_DUOC_HUY.includes(tt)) {
+            await connection.rollback();
             return res.status(400).json({
                 message: `Admin không thể hủy đơn ở trạng thái: ${donhang.trangthai}`
             });
         }
 
-        // 3. Update
-        await capNhatDonHang(madonhang, {
-            ...donhang,
-            trangthai: "đã hủy"
-        });
+        // 🔹 Lấy chi tiết đơn hàng
+        const [chitiet] = await connection.query(
+            `SELECT mabienthe, soluong FROM chitietdonhang WHERE madonhang = ?`,
+            [madonhang]
+        );
 
-        return res.status(200).json({
-            message: "Admin đã hủy đơn hàng!",
+        // 🔹 Hoàn kho
+        for (const item of chitiet) {
+            await connection.query(
+                `UPDATE bienthesanpham
+         SET soluongton = soluongton + ?
+         WHERE mabienthe = ?`,
+                [item.soluong, item.mabienthe]
+            );
+        }
+
+        // 🔹 Update đơn hàng (DÙNG connection)
+        await connection.query(
+            `
+      UPDATE donhang
+      SET trangthai = 'đã hủy',
+          ngaycapnhat = NOW()
+      WHERE madonhang = ?
+      `,
+            [madonhang]
+        );
+
+        await connection.commit();
+
+        return res.json({
+            message: "Admin đã hủy đơn hàng & hoàn kho thành công",
             madonhang,
             oldStatus: donhang.trangthai,
-            newStatus: "đã hủy"
+            newStatus: "đã hủy",
+            restoredItems: chitiet.length,
+            needRefund: donhang.dathanhtoan === 1
         });
 
-    } catch (error) {
-        console.error("Lỗi admin hủy đơn:", error);
-        res.status(500).json({
-            message: "Lỗi máy chủ!",
-            error: error.message
-        });
+    } catch (err) {
+        await connection.rollback();
+        console.error("Lỗi admin hủy đơn:", err);
+        res.status(500).json({ message: "Lỗi máy chủ", error: err.message });
+    } finally {
+        connection.release();
     }
 };
 
@@ -283,6 +344,29 @@ export const layDonHangById = async (req, res) => {
         console.error("Lỗi lấy đơn hàng:", error);
         return res.status(500).json({
             message: "Lỗi server",
+        });
+    }
+};
+
+// ================================
+// LỊCH SỬ ĐƠN HÀNG THEO NGƯỜI DÙNG
+// ================================
+export const layLichSuDonHangCuaToi = async (req, res) => {
+    try {
+        // LẤY TỪ xacthucToken
+        const manguoidung = req.nguoidung.id;
+
+        const orders = await layDonHangTheoNguoiDung(manguoidung);
+
+        return res.status(200).json({
+            message: "Lấy lịch sử đơn hàng thành công!",
+            data: orders
+        });
+    } catch (error) {
+        console.error("Lỗi lấy lịch sử đơn hàng:", error);
+        return res.status(500).json({
+            message: "Lỗi máy chủ",
+            error: error.message
         });
     }
 };

@@ -6,7 +6,7 @@ import {
   deleteCategory,
 } from "./categoryApi";
 import { PlusCircle, X, Pencil, Trash2 } from "lucide-react";
-
+import Swal from "sweetalert2";
 export default function CategoriesPage() {
   const [categories, setCategories] = useState([]);
   const [open, setOpen] = useState(false);
@@ -64,8 +64,17 @@ export default function CategoriesPage() {
   };
 
   const save = async () => {
-    // chỉ báo lỗi field sai, không alert vô tội vạ
     if (!validate()) return;
+
+    // ===== SWAL LOADING =====
+    Swal.fire({
+      title: editMode ? "Đang cập nhật danh mục..." : "Đang thêm danh mục...",
+      html: "Vui lòng chờ trong giây lát",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
 
     try {
       if (editMode) {
@@ -73,23 +82,65 @@ export default function CategoriesPage() {
       } else {
         await createCategory(form);
       }
+
       setOpen(false);
       setTouched({});
       setErrors({});
-      load();
+      await load();
+
+      // ===== SWAL SUCCESS =====
+      Swal.fire({
+        icon: "success",
+        title: "Thành công!",
+        text: editMode
+          ? "Cập nhật danh mục thành công"
+          : "Thêm danh mục thành công",
+        timer: 1500,
+        showConfirmButton: false,
+      });
     } catch (err) {
-      alert("Lỗi khi lưu danh mục!");
-      console.log(err);
+      console.error(err);
+
+      Swal.fire({
+        icon: "error",
+        title: "Thất bại",
+        text: err?.response?.data?.message || "Không thể lưu danh mục",
+      });
     }
   };
-
   const handleDelete = async () => {
     if (!deleteTarget?.id) return;
 
-    await deleteCategory(deleteTarget.id);
-    setOpenDelete(false);
-    setDeleteTarget(null);
-    load();
+    Swal.fire({
+      title: "Đang xóa danh mục...",
+      html: "Vui lòng chờ",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+
+    try {
+      await deleteCategory(deleteTarget.id);
+
+      setOpenDelete(false);
+      setDeleteTarget(null);
+      await load();
+
+      Swal.fire({
+        icon: "success",
+        title: "Đã xóa",
+        text: "Danh mục đã được xóa thành công",
+        timer: 1200,
+        showConfirmButton: false,
+      });
+    } catch (err) {
+      Swal.fire({
+        icon: "error",
+        title: "Lỗi",
+        text: "Không thể xóa danh mục",
+      });
+    }
   };
 
   return (
@@ -237,7 +288,6 @@ export default function CategoriesPage() {
                   value={form.tendanhmuc}
                   onChange={(e) => setField("tendanhmuc", e.target.value)}
                   onBlur={() => setTouched((p) => ({ ...p, tendanhmuc: true }))}
-                  placeholder="VD: Áo sơ mi"
                   className={`w-full px-3 py-2 rounded-lg
               bg-black/40 text-gray-200
               border ${

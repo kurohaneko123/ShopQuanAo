@@ -140,6 +140,36 @@ export default function Quanlydh() {
       });
     }
   };
+  const adminHuyDon = async (id) => {
+    const confirm = await Swal.fire({
+      title: "Xác nhận hủy đơn?",
+      text: "Admin sẽ hủy đơn & hoàn kho!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Hủy đơn",
+      cancelButtonText: "Không",
+    });
+
+    if (!confirm.isConfirmed) return;
+
+    try {
+      await axios.put(`${API}/admin/huy/${id}`);
+
+      setOrders((prev) =>
+        prev.map((o) =>
+          String(o.madonhang) === String(id) ? { ...o, trangthai: "đã hủy" } : o
+        )
+      );
+
+      Swal.fire("Thành công", "Admin đã hủy đơn hàng", "success");
+    } catch (err) {
+      Swal.fire(
+        "Lỗi",
+        err?.response?.data?.message || "Không thể hủy đơn",
+        "error"
+      );
+    }
+  };
 
   if (loading)
     return (
@@ -237,7 +267,7 @@ export default function Quanlydh() {
 
                         {/* NÚT HỦY */}
                         <button
-                          onClick={() => updateStatus(x.madonhang, "đã hủy")}
+                          onClick={() => adminHuyDon(x.madonhang)}
                           className="flex items-center gap-1 text-red-500 hover:text-red-400 font-semibold"
                         >
                           <XCircle size={16} />

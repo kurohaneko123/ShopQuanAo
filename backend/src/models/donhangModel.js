@@ -73,11 +73,26 @@ export const layTatCaDonHang = async () => {
 // Lấy đơn hàng theo ID
 export const layDonHangTheoID = async (madonhang) => {
     const [rows] = await db.query(
-        `SELECT madonhang, dathanhtoan FROM donhang WHERE madonhang = ?`,
+        `
+        SELECT 
+            madonhang,
+            trangthai,
+            dathanhtoan,
+            tennguoinhan,
+            sodienthoai,
+            diachigiao,
+            donvivanchuyen,
+            hinhthucthanhtoan,
+            phivanchuyen,
+            tongthanhtoan
+        FROM donhang
+        WHERE madonhang = ?
+        `,
         [madonhang]
     );
     return rows[0];
 };
+
 
 // Cập nhật đơn hàng ( dùng chung cho sửa và hủy)
 export const capNhatDonHang = async (id, data) => {

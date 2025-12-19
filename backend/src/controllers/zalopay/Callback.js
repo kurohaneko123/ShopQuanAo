@@ -50,27 +50,72 @@ export const ZaloPayCallback = async (req, res) => {
         }
 
         /* =======================
-           4️⃣ UPDATE ĐƠN HÀNG
-           (CHỐNG CALLBACK TRÙNG)
+           🚫 CASE KHÁCH HỦY / THANH TOÁN THẤT BẠI
+        ======================= */
+        if (dataObj.status !== 1) {
+            console.log("⚠️ Giao dịch bị hủy / thất bại:", dataObj.status);
+
+            // 1️ HOÀN KHO
+            const [items] = await db.query(
+                `
+        SELECT mabienthe, soluong
+        FROM chitietdonhang
+        WHERE madonhang = ?
+        `,
+                [madonhang]
+            );
+
+            for (const item of items) {
+                await db.query(
+                    `
+            UPDATE bienthesanpham
+            SET soluongton = soluongton + ?
+            WHERE mabienthe = ?
+            `,
+                    [item.soluong, item.mabienthe]
+                );
+            }
+
+            // 2️ UPDATE ĐƠN HÀNG
+            await db.query(
+                `
+        UPDATE donhang
+        SET trangthai = 'đã hủy',
+            ngaycapnhat = NOW()
+        WHERE madonhang = ?
+          AND dathanhtoan = 0
+        `,
+                [madonhang]
+            );
+
+            return res.json({
+                return_code: 1,
+                return_message: "Đã xử lý hủy giao dịch",
+            });
+        }
+
+        /* =======================
+           4️ UPDATE ĐƠN HÀNG
+           (THANH TOÁN THÀNH CÔNG)
         ======================= */
         const [result] = await db.query(
             `
-      UPDATE donhang
-      SET dathanhtoan = 1,
-          trangthai = 'đã xác nhận',
-          zalopay_trans_id = ?,
-          ngaythanhtoan = NOW(),
-          ngaycapnhat = NOW()
-      WHERE madonhang = ?
-        AND dathanhtoan = 0
-      `,
+            UPDATE donhang
+            SET dathanhtoan = 1,
+                trangthai = 'đã xác nhận',
+                zalopay_trans_id = ?,
+                ngaythanhtoan = NOW(),
+                ngaycapnhat = NOW()
+            WHERE madonhang = ?
+              AND dathanhtoan = 0
+            `,
             [dataObj.zp_trans_id, madonhang]
         );
 
         if (result.affectedRows === 0) {
-            console.log("⚠️ Callback trùng hoặc đơn đã thanh toán:", madonhang);
+            console.log("Callback trùng hoặc đơn đã thanh toán:", madonhang);
         } else {
-            console.log("✅ Đã cập nhật đơn hàng:", madonhang);
+            console.log("Đã cập nhật đơn hàng:", madonhang);
         }
 
         /* =======================
@@ -82,7 +127,7 @@ export const ZaloPayCallback = async (req, res) => {
         });
 
     } catch (err) {
-        console.log("❌ Lỗi callback:", err);
+        console.log("Lỗi callback:", err);
         return res.json({
             return_code: 0,
             return_message: "Lỗi backend",

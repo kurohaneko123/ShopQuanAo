@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Pencil, Loader2, X } from "lucide-react";
 import Swal from "sweetalert2";
+import Pagination from "../Pagination";
 export default function QuanLyNguoiDungAdmin() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -10,6 +11,8 @@ export default function QuanLyNguoiDungAdmin() {
   // popup state
   const [showEdit, setShowEdit] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const ITEMS_PER_PAGE = 5;
+  const [page, setPage] = useState(1);
 
   const [form, setForm] = useState({
     hoten: "",
@@ -125,6 +128,11 @@ export default function QuanLyNguoiDungAdmin() {
       Swal.fire("Lỗi", "Cập nhật thất bại", "error");
     }
   };
+  useEffect(() => {
+    const totalPages = Math.ceil(users.length / ITEMS_PER_PAGE);
+    if (page > totalPages && totalPages > 0) setPage(totalPages);
+    if (users.length === 0) setPage(1);
+  }, [users.length]);
 
   if (loading)
     return (
@@ -132,6 +140,8 @@ export default function QuanLyNguoiDungAdmin() {
         <Loader2 className="animate-spin mr-2" /> Đang tải dữ liệu...
       </div>
     );
+  const start = (page - 1) * ITEMS_PER_PAGE;
+  const paginatedUsers = users.slice(start, start + ITEMS_PER_PAGE);
 
   return (
     <div className="p-6 text-gray-200">
@@ -154,7 +164,7 @@ export default function QuanLyNguoiDungAdmin() {
           </thead>
 
           <tbody>
-            {users.map((u) => (
+            {paginatedUsers.map((u) => (
               <tr
                 key={u.manguoidung}
                 className="hover:bg-white/5 border-b border-white/5 transition"
@@ -208,6 +218,16 @@ export default function QuanLyNguoiDungAdmin() {
           </tbody>
         </table>
       </div>
+
+      <Pagination
+        totalItems={users.length}
+        itemsPerPage={ITEMS_PER_PAGE}
+        currentPage={page}
+        onPageChange={(p) => {
+          setPage(p);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }}
+      />
 
       {/* ======== MODAL EDIT ======== */}
       {showEdit && (

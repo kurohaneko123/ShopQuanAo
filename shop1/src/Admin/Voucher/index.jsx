@@ -10,7 +10,7 @@ import Swal from "sweetalert2";
 import VoucherTable from "./VoucherTable";
 import AddVoucherModal from "./AddVoucherModal";
 import EditVoucherModal from "./EditVoucherModal";
-
+import Pagination from "../Pagination";
 export default function QuanLyVoucher() {
   const [vouchers, setVouchers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -37,6 +37,8 @@ export default function QuanLyVoucher() {
   });
   const [addErrors, setAddErrors] = useState({});
   const [editErrors, setEditErrors] = useState({});
+  const ITEMS_PER_PAGE = 1;
+  const [page, setPage] = useState(1);
 
   const [editData, setEditData] = useState({});
   const validateAdd = () => {
@@ -147,6 +149,9 @@ export default function QuanLyVoucher() {
     }
   };
 
+  const start = (page - 1) * ITEMS_PER_PAGE;
+  const paginatedVouchers = vouchers.slice(start, start + ITEMS_PER_PAGE);
+
   const normalizeDate = (s) => {
     if (!s) return null;
     if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
@@ -178,7 +183,7 @@ export default function QuanLyVoucher() {
     }
 
     const payload = {
-      mavoucher: editData.magiamgia, // ⭐ CHỐT LỖI Ở ĐÂY
+      mavoucher: editData.magiamgia,
       magiamgia: editData.magiamgia,
       mota: editData.mota,
       loaikhuyenmai: editData.loaikhuyenmai,
@@ -269,7 +274,7 @@ export default function QuanLyVoucher() {
         <div>Đang tải...</div>
       ) : (
         <VoucherTable
-          vouchers={vouchers}
+          vouchers={paginatedVouchers}
           onEdit={(v) => {
             setEditData({
               mavoucher: v.mavoucher, // ✅ QUAN TRỌNG
@@ -291,6 +296,12 @@ export default function QuanLyVoucher() {
           onDelete={handleDelete}
         />
       )}
+      <Pagination
+        totalItems={vouchers.length}
+        itemsPerPage={ITEMS_PER_PAGE}
+        currentPage={page}
+        onPageChange={setPage}
+      />
 
       <AddVoucherModal
         open={addOpen}

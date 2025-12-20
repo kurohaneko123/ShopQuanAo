@@ -2,12 +2,15 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Eye, CheckCircle, XCircle } from "lucide-react";
 import Swal from "sweetalert2";
+import Pagination from "../Pagination";
 
 const API = "http://localhost:5000/api/donhang";
 
 export default function Quanlydh() {
   const [showDetail, setShowDetail] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const ITEMS_PER_PAGE = 7; //QUY dinh số item trên mỗi trang
+  const [page, setPage] = useState(1); //trang hiện tại
 
   const [orders, setOrders] = useState([]);
   const [filtered, setFiltered] = useState([]);
@@ -175,6 +178,8 @@ export default function Quanlydh() {
     return (
       <p className="text-center text-gray-500 mt-10">Đang tải đơn hàng...</p>
     );
+  const start = (page - 1) * ITEMS_PER_PAGE;
+  const paginatedOrders = filtered.slice(start, start + ITEMS_PER_PAGE);
 
   return (
     <div className="p-6 text-gray-200">
@@ -204,7 +209,7 @@ export default function Quanlydh() {
           </thead>
 
           <tbody>
-            {filtered.map((x) => (
+            {paginatedOrders.map((x) => (
               <tr
                 key={x.madonhang}
                 className="border-b border-white/5 hover:bg-white/5 transition"
@@ -282,6 +287,13 @@ export default function Quanlydh() {
           </tbody>
         </table>
       </div>
+      <Pagination
+        totalItems={filtered.length}
+        itemsPerPage={ITEMS_PER_PAGE}
+        currentPage={page}
+        onPageChange={setPage}
+      />
+
       {showDetail && selectedOrder && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
           <div className="bg-[#111] w-[600px] max-h-[90vh] overflow-y-auto p-6 rounded-xl border border-white/10">

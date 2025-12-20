@@ -7,6 +7,7 @@ import {
 } from "./categoryApi";
 import { PlusCircle, X, Pencil, Trash2 } from "lucide-react";
 import Swal from "sweetalert2";
+import Pagination from "../Pagination";
 export default function CategoriesPage() {
   const [categories, setCategories] = useState([]);
   const [open, setOpen] = useState(false);
@@ -15,12 +16,15 @@ export default function CategoriesPage() {
   const [touched, setTouched] = useState({});
   const [openDelete, setOpenDelete] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null); // { id, name }
+  const ITEMS_PER_PAGE = 5;
+  const [page, setPage] = useState(1);
 
   const [form, setForm] = useState({
     tendanhmuc: "",
     gioitinh: "",
     mota: "",
   });
+
   const setField = (name, value) => {
     setForm((prev) => ({ ...prev, [name]: value }));
     // đang gõ lại thì xóa lỗi của field đó thôi
@@ -142,6 +146,8 @@ export default function CategoriesPage() {
       });
     }
   };
+  const start = (page - 1) * ITEMS_PER_PAGE;
+  const paginatedCategories = categories.slice(start, start + ITEMS_PER_PAGE);
 
   return (
     <div className="text-gray-200">
@@ -189,7 +195,7 @@ export default function CategoriesPage() {
           </thead>
 
           <tbody>
-            {categories.map((c) => (
+            {paginatedCategories.map((c) => (
               <tr
                 key={c.madanhmuc}
                 className="hover:bg-white/5 transition-colors border-b border-white/5"
@@ -390,6 +396,12 @@ export default function CategoriesPage() {
           </div>
         </div>
       )}
+      <Pagination
+        totalItems={categories.length}
+        itemsPerPage={ITEMS_PER_PAGE}
+        currentPage={page}
+        onPageChange={setPage}
+      />
     </div>
   );
 }

@@ -3,11 +3,14 @@ import axios from "axios";
 import { useParams } from "react-router-dom";
 import { Loader2, Pencil, Trash2, PlusCircle, X } from "lucide-react";
 import Swal from "sweetalert2";
+import Pagination from "../Pagination";
 export default function Quanlychitietsp() {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [variants, setVariants] = useState([]);
   const [loading, setLoading] = useState(true);
+  const ITEMS_PER_PAGE = 5;
+  const [page, setPage] = useState(1);
 
   const [colors, setColors] = useState([]);
   const [sizes, setSizes] = useState([]);
@@ -237,6 +240,8 @@ export default function Quanlychitietsp() {
   );
 
   // ============================================================
+  const start = (page - 1) * ITEMS_PER_PAGE;
+  const paginatedVariants = variants.slice(start, start + ITEMS_PER_PAGE);
 
   return (
     <div className="p-6">
@@ -315,7 +320,7 @@ export default function Quanlychitietsp() {
           </thead>
 
           <tbody>
-            {variants.map((v) => (
+            {paginatedVariants.map((v) => (
               <tr key={v.mabienthe} className="bg-white/5 text-gray-400">
                 <td className="px-4 py-3 text-gray-200">{v.tenmausac}</td>
                 <td className="px-4 py-3 text-gray-200">{v.tenkichthuoc}</td>
@@ -386,6 +391,12 @@ export default function Quanlychitietsp() {
           </tbody>
         </table>
       </div>
+      <Pagination
+        totalItems={variants.length}
+        itemsPerPage={ITEMS_PER_PAGE}
+        currentPage={page}
+        onPageChange={setPage}
+      />
 
       {/* ===================================== POPUP ADD */}
       {showAddPopup && (

@@ -13,7 +13,7 @@ import Swal from "sweetalert2";
 import ProductTable from "./ProductTable";
 import AddProductModal from "./AddProductModal";
 import EditProductModal from "./EditProductModal";
-
+import Pagination from "../Pagination";
 export default function QuanLySanPham() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -124,6 +124,13 @@ export default function QuanLySanPham() {
       }
     }
   };
+  const ITEMS_PER_PAGE = 4;
+  const [page, setPage] = useState(1);
+  const totalPages = Math.ceil(products.length / ITEMS_PER_PAGE);
+
+  const start = (page - 1) * ITEMS_PER_PAGE;
+  const paginatedProducts = products.slice(start, start + ITEMS_PER_PAGE);
+
   return (
     <div className="p-6">
       {/* =============================
@@ -159,7 +166,7 @@ export default function QuanLySanPham() {
         <div>Đang tải...</div>
       ) : (
         <ProductTable
-          products={products}
+          products={paginatedProducts}
           categories={categories}
           onEdit={(p) => {
             setEditData(p);
@@ -169,6 +176,15 @@ export default function QuanLySanPham() {
           onView={(id) => (window.location.href = `/admin/products/${id}`)}
         />
       )}
+      <Pagination
+        totalItems={products.length}
+        itemsPerPage={ITEMS_PER_PAGE}
+        currentPage={page}
+        onPageChange={(p) => {
+          setPage(p);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }}
+      />
 
       {/* =============================
            MODAL THÊM

@@ -1,143 +1,272 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Swal from "sweetalert2";
-/* =====================================================
- * 1. HÀM LẤY MÃ BIẾN THỂ TỪ SKU (FE ONLY)
- *    - TẠM THỜI: nếu sku dạng "SP-21" → trả về 21
- *    - Nếu format khác thì anh chỉnh lại trong hàm này
- * ===================================================== */
-// Lấy biến thể đúng size + màu từ backend
-
-const fetchVariantBySku = async (sku) => {
-  if (!sku) return null;
-
-  // 👉 Trường hợp SKU dạng "SP-21" → lấy số 21
-  const id = Number(String(sku).replace(/\D/g, ""));
-  if (!id) return null;
-
-  // Ở đây chị cho FE dùng luôn số đó làm mabienthe
-  // (giả sử bảng bienthesanpham.mabienthe trùng với số trong SKU)
-  return id;
-};
+import ghnApi from "../apighn/ghnApi"; // ✅ tạo file ghnApi.js như chị hướng dẫn
 
 export default function Checkout() {
   const navigate = useNavigate();
   const [discount, setDiscount] = useState(0);
   const [coupon, setCoupon] = useState(null);
+  const [cart, setCart] = useState([]);
 
+  // =========================
+  // GHN address data
+  // =========================
+  const [provinces, setProvinces] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [wards, setWards] = useState([]);
+
+  // phí ship GHN trả về
+  const [shippingCost, setShippingCost] = useState(0);
+  const [shippingLoading, setShippingLoading] = useState(false);
+
+  /* =====================================================
+   * FORM DATA
+   * - Thêm các field tỉnh/quận/phường để CHẶT địa chỉ
+   * ===================================================== */
+  const [formData, setFormData] = useState({
+    tennguoinhan: "",
+    sodienthoai: "",
+    // địa chỉ sẽ được GHN chuẩn hóa từ dropdown + số nhà/đường
+    diachigiao: "",
+
+    // địa chỉ chi tiết (số nhà/đường) - user nhập
+    diachi_chitiet: "",
+
+    // id ghép theo GHN
+    province_id: "",
+    district_id: "",
+    ward_code: "",
+
+    ghichu: "",
+    hinhthucthanhtoan: "COD",
+    donvivanchuyen: "GHN",
+  });
+
+  // =========================
+  // Load checkout payload
+  // =========================
   useEffect(() => {
     const raw = localStorage.getItem("checkoutPayload");
-
     if (!raw) {
-      // Không có payload → không cho vào checkout
       navigate("/");
       return;
     }
-
     const data = JSON.parse(raw);
-
     setCart(data.cart || []);
     setCoupon(data.coupon || null);
     setDiscount(data.totals?.discountValue || 0);
   }, [navigate]);
 
-  /* =====================================================
-   * 2. STATE FORM – KHỞI TẠO KHÔNG BỊ NULL
-   * ===================================================== */
-  const [formData, setFormData] = useState({
-    tennguoinhan: "",
-    sodienthoai: "",
-    diachigiao: "",
-    ghichu: "",
-    hinhthucthanhtoan: "COD",
-    donvivanchuyen: "Tiêu chuẩn",
-  });
-
-  const [cart, setCart] = useState([]);
-
-  /* =====================================================
-   * 3. LOAD CART TỪ LOCALSTORAGE – CHUẨN HÓA DỮ LIỆU
-   * ===================================================== */
-
-  /* =====================================================
-   * 4. TÍNH TIỀN – CHỐNG NaN
-   * ===================================================== */
-  const subtotal = cart.reduce((sum, item) => {
-    return sum + Number(item.giakhuyenmai || 0) * Number(item.soluong || 0);
-  }, 0);
+  // =========================
+  // auto fill name from user
+  // =========================
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
     if (user) {
-      setFormData((prevState) => ({
-        ...prevState,
-        tennguoinhan: user.hoten || "", // Tự điền tên người nhận từ thông tin khách hàng
+      setFormData((prev) => ({
+        ...prev,
+        tennguoinhan: user.hoten || "",
       }));
     }
   }, []);
 
-  const shippingCost = formData.donvivanchuyen === "Giao nhanh" ? 40000 : 20000;
+  // =========================
+  // subtotal
+  // =========================
+  const subtotal = useMemo(() => {
+    return cart.reduce(
+      (sum, item) =>
+        sum + Number(item.giakhuyenmai || 0) * Number(item.soluong || 0),
+      0
+    );
+  }, [cart]);
+
+  // total
   const total = Math.max(0, subtotal - discount + shippingCost);
 
   /* =====================================================
-   * 5. VALIDATE FORM – KHÔNG ĐỂ GIÁ TRỊ RỖNG / NULL
+   * GHN: load provinces on mount
+   * ===================================================== */
+  useEffect(() => {
+    const loadProvinces = async () => {
+      try {
+        const res = await ghnApi.get("/provinces");
+        setProvinces(res.data || []);
+      } catch (e) {
+        console.error(e);
+        Swal.fire(
+          "Lỗi!",
+          "Không tải được danh sách tỉnh/thành (GHN).",
+          "error"
+        );
+      }
+    };
+    loadProvinces();
+  }, []);
+
+  /* =====================================================
+   * Khi chọn TỈNH -> load QUẬN
+   * ===================================================== */
+  const handleChooseProvince = async (provinceId) => {
+    setFormData((prev) => ({
+      ...prev,
+      province_id: provinceId,
+      district_id: "",
+      ward_code: "",
+    }));
+    setDistricts([]);
+    setWards([]);
+    setShippingCost(0);
+
+    if (!provinceId) return;
+
+    try {
+      const res = await ghnApi.get(`/districts?province_id=${provinceId}`);
+      setDistricts(res.data || []);
+    } catch (e) {
+      console.error(e);
+      Swal.fire("Lỗi!", "Không tải được danh sách quận/huyện (GHN).", "error");
+    }
+  };
+
+  /* =====================================================
+   * Khi chọn QUẬN -> load PHƯỜNG
+   * ===================================================== */
+  const handleChooseDistrict = async (districtId) => {
+    setFormData((prev) => ({
+      ...prev,
+      district_id: districtId,
+      ward_code: "",
+    }));
+    setWards([]);
+    setShippingCost(0);
+
+    if (!districtId) return;
+
+    try {
+      const res = await ghnApi.get(`/wards?district_id=${districtId}`);
+      setWards(res.data || []);
+    } catch (e) {
+      console.error(e);
+      Swal.fire("Lỗi!", "Không tải được danh sách phường/xã (GHN).", "error");
+    }
+  };
+
+  /* =====================================================
+   * Ghép địa chỉ chuẩn để lưu vào formData.diachigiao
+   * ===================================================== */
+  const buildFullAddress = (next = formData) => {
+    const p = provinces.find(
+      (x) => String(x.ProvinceID) === String(next.province_id)
+    );
+    const d = districts.find(
+      (x) => String(x.DistrictID) === String(next.district_id)
+    );
+    const w = wards.find((x) => String(x.WardCode) === String(next.ward_code));
+
+    // số nhà/đường là optional nhưng nên có
+    const detail = (next.diachi_chitiet || "").trim();
+
+    // format: "Số nhà..., Phường..., Quận..., Tỉnh..."
+    const parts = [
+      detail || null,
+      w ? w.WardName : null,
+      d ? d.DistrictName : null,
+      p ? p.ProvinceName : null,
+    ].filter(Boolean);
+
+    return parts.join(", ");
+  };
+
+  /* =====================================================
+   * Khi chọn PHƯỜNG -> gọi GHN fee
+   * ===================================================== */
+  const handleChooseWard = async (wardCode) => {
+    const next = { ...formData, ward_code: wardCode };
+    setFormData(next);
+    setShippingCost(0);
+
+    if (!next.district_id || !wardCode) return;
+
+    // ✅ Ghép địa chỉ hiển thị
+    const fullAddress = buildFullAddress(next);
+    setFormData((prev) => ({ ...prev, diachigiao: fullAddress }));
+
+    // ✅ gọi fee
+    try {
+      setShippingLoading(true);
+
+      // weight/insurance_value: anh có thể tính theo cart, chị để đơn giản
+      const weight = 800; // gram (demo)
+      const insurance_value = Number(subtotal || 0);
+
+      const res = await ghnApi.post("/fee", {
+        to_district_id: Number(next.district_id),
+        to_ward_code: String(wardCode),
+        weight,
+        insurance_value,
+        service_type_id: 2,
+      });
+
+      // GHN trả về: total
+      const fee = Number(res.data?.total || 0);
+      setShippingCost(fee);
+    } catch (e) {
+      console.error(e);
+      Swal.fire("Lỗi!", "Không tính được phí vận chuyển (GHN).", "error");
+      setShippingCost(0);
+    } finally {
+      setShippingLoading(false);
+    }
+  };
+
+  /* =====================================================
+   * Validate
    * ===================================================== */
   const validateForm = () => {
-    // Kiểm tra tên người nhận
     if (!formData.tennguoinhan.trim()) {
-      Swal.fire({
-        title: "Lỗi!",
-        text: "Vui lòng nhập họ tên người nhận",
-        icon: "error",
-        confirmButtonText: "OK",
-      });
+      Swal.fire("Lỗi!", "Vui lòng nhập họ tên người nhận", "error");
       return false;
     }
 
-    // Kiểm tra số điện thoại (chỉ cho phép nhập số)
     const phoneRegex = /^[0-9]{10,11}$/;
     if (!formData.sodienthoai.trim()) {
-      Swal.fire({
-        title: "Lỗi!",
-        text: "Vui lòng nhập số điện thoại",
-        icon: "error",
-        confirmButtonText: "OK",
-      });
+      Swal.fire("Lỗi!", "Vui lòng nhập số điện thoại", "error");
       return false;
-    } else if (!phoneRegex.test(formData.sodienthoai)) {
-      Swal.fire({
-        title: "Lỗi!",
-        text: "Số điện thoại không hợp lệ, vui lòng nhập lại.",
-        icon: "error",
-        confirmButtonText: "OK",
-      });
+    }
+    if (!phoneRegex.test(formData.sodienthoai.trim())) {
+      Swal.fire(
+        "Lỗi!",
+        "Số điện thoại không hợp lệ, vui lòng nhập lại.",
+        "error"
+      );
       return false;
     }
 
-    // Kiểm tra địa chỉ giao hàng
-    const addressRegex = /^\d+\s[\w\s]+,\s*Phường\s[\w\s]+,\s*Quận\s[\w\s]+$/;
-
-    if (
-      !formData.diachigiao.trim() ||
-      !addressRegex.test(formData.diachigiao)
-    ) {
-      Swal.fire({
-        title: "Lỗi!",
-        text: "Vui lòng nhập địa chỉ giao hàng đúng",
-        icon: "error",
-        confirmButtonText: "OK",
-      });
+    // ✅ địa chỉ bắt buộc chọn đủ tỉnh/quận/phường
+    if (!formData.province_id || !formData.district_id || !formData.ward_code) {
+      Swal.fire(
+        "Lỗi!",
+        "Vui lòng chọn đầy đủ Tỉnh/Quận/Phường để giao hàng.",
+        "error"
+      );
       return false;
     }
 
-    // Kiểm tra giỏ hàng có sản phẩm không
+    // ✅ bắt buộc có phí ship GHN tính được (tránh spam)
+    if (shippingCost <= 0) {
+      Swal.fire(
+        "Lỗi!",
+        "Chưa tính được phí vận chuyển. Vui lòng chọn lại địa chỉ.",
+        "error"
+      );
+      return false;
+    }
+
     if (!cart.length) {
-      Swal.fire({
-        title: "Lỗi!",
-        text: "Giỏ hàng đang trống",
-        icon: "error",
-        confirmButtonText: "OK",
-      });
+      Swal.fire("Lỗi!", "Giỏ hàng đang trống", "error");
       return false;
     }
 
@@ -145,7 +274,7 @@ export default function Checkout() {
   };
 
   /* =====================================================
-   * 6. GỬI ĐƠN HÀNG + ZALOPAY
+   * Submit order (giữ logic của anh)
    * ===================================================== */
   const handleOrder = async (e) => {
     e.preventDefault();
@@ -153,25 +282,27 @@ export default function Checkout() {
     try {
       const user = JSON.parse(localStorage.getItem("user"));
       if (!user) {
-        Swal.fire({
-          title: "Lỗi!",
-          text: "Bạn chưa đăng nhập!",
-          icon: "error",
-          confirmButtonText: "OK",
-        });
+        Swal.fire("Lỗi!", "Bạn chưa đăng nhập!", "error");
         return;
       }
 
-      if (!validateForm()) return; // Kiểm tra form trước khi tiếp tục
+      if (!validateForm()) return;
 
-      // ===== CHUẨN BỊ DỮ LIỆU ĐƠN HÀNG =====
+      // ✅ update diachigiao lần cuối (nếu user đổi số nhà/đường)
+      const finalAddress = buildFullAddress(formData);
       const payload = {
         manguoidung: user.manguoidung,
         tennguoinhan: formData.tennguoinhan.trim(),
         sodienthoai: formData.sodienthoai.trim(),
-        diachigiao: formData.diachigiao.trim(),
+        diachigiao: finalAddress, // lưu địa chỉ chuẩn
+
+        // optional: lưu thêm meta GHN (nếu BE muốn)
+        to_province_id: formData.province_id,
+        to_district_id: formData.district_id,
+        to_ward_code: formData.ward_code,
+
         ghichu: formData.ghichu.trim(),
-        donvivanchuyen: formData.donvivanchuyen,
+        donvivanchuyen: "GHN",
         hinhthucthanhtoan: formData.hinhthucthanhtoan,
 
         magiamgia: coupon?.code || null,
@@ -189,7 +320,6 @@ export default function Checkout() {
         })),
       };
 
-      // ===== 1) GỬI ĐƠN LÊN BACKEND =====
       const res = await axios.post(
         "http://localhost:5000/api/donhang/them",
         payload
@@ -197,40 +327,26 @@ export default function Checkout() {
 
       const orderId = res.data?.madonhang;
       if (!orderId) {
-        Swal.fire({
-          title: "Lỗi!",
-          text: "Không lấy được mã đơn hàng!",
-          icon: "error",
-          confirmButtonText: "OK",
-        });
+        Swal.fire("Lỗi!", "Không lấy được mã đơn hàng!", "error");
         return;
       }
 
-      // ============================
-      // ======= 2) COD ============
-      // ============================
+      // COD
       if (formData.hinhthucthanhtoan === "COD") {
-        // ✅ clear đúng dữ liệu
         localStorage.removeItem("checkoutPayload");
 
         const uid = localStorage.getItem("activeUserId");
         const cartKey = uid ? `cart_${uid}` : "cart_guest";
         localStorage.removeItem(cartKey);
 
-        // ✅ lưu lại để refresh vẫn thấy
         localStorage.setItem("lastOrderId", String(orderId));
         localStorage.setItem("lastPaymentMethod", "COD");
 
-        // ✅ chuyển sang trang success
-        navigate("/ordersuccess", {
-          state: { orderId, paymentMethod: "COD" },
-        });
+        navigate("/ordersuccess", { state: { orderId, paymentMethod: "COD" } });
         return;
       }
 
-      // ============================
-      // ====== 3) ZALOPAY =========
-      // ============================
+      // ZALOPAY
       if (formData.hinhthucthanhtoan === "ZALOPAY") {
         try {
           const zaloRes = await axios.post(
@@ -249,53 +365,34 @@ export default function Checkout() {
 
           if (!payUrl) {
             console.error("BE trả về:", zaloRes.data);
-            Swal.fire({
-              title: "Lỗi!",
-              text: "Không lấy được link thanh toán ZaloPay!",
-              icon: "error",
-              confirmButtonText: "OK",
-            });
+            Swal.fire(
+              "Lỗi!",
+              "Không lấy được link thanh toán ZaloPay!",
+              "error"
+            );
             return;
           }
 
-          // ✅ LƯU TRẠNG THÁI ĐỂ ORDER SUCCESS DÙNG
           localStorage.setItem("lastZaloOrderId", String(orderId));
           localStorage.setItem("lastPaymentMethod", "ZALOPAY");
 
-          // ✅ MỞ ZALOPAY Ở TAB MỚI
           window.open(payUrl, "_blank");
-
-          // ✅ Ở TAB HIỆN TẠI → ĐI TỚI ORDER SUCCESS
           navigate("/ordersuccess", {
             state: { orderId, paymentMethod: "ZALOPAY" },
           });
-
           return;
         } catch (error) {
           console.error("ZaloPay error:", error);
-          Swal.fire({
-            title: "Lỗi!",
-            text: "Không thể tạo thanh toán ZaloPay!",
-            icon: "error",
-            confirmButtonText: "OK",
-          });
+          Swal.fire("Lỗi!", "Không thể tạo thanh toán ZaloPay!", "error");
           return;
         }
       }
     } catch (err) {
       console.error("Lỗi tạo đơn:", err);
-      Swal.fire({
-        title: "Lỗi!",
-        text: "Không thể tạo đơn hàng!",
-        icon: "error",
-        confirmButtonText: "OK",
-      });
+      Swal.fire("Lỗi!", "Không thể tạo đơn hàng!", "error");
     }
   };
 
-  /* =====================================================
-   * 7. JSX RENDER
-   * ===================================================== */
   return (
     <div className="min-h-screen bg-white text-black mt-32 px-8">
       <div className="flex items-center justify-end mb-6">
@@ -334,48 +431,84 @@ export default function Checkout() {
             required
           />
 
+          {/* ✅ Địa chỉ GHN: Tỉnh */}
+          <select
+            className="w-full border rounded-lg p-3 mb-3 bg-white"
+            value={formData.province_id}
+            onChange={(e) => handleChooseProvince(e.target.value)}
+          >
+            <option value="">Chọn Tỉnh/Thành phố</option>
+            {provinces.map((p) => (
+              <option key={p.ProvinceID} value={p.ProvinceID}>
+                {p.ProvinceName}
+              </option>
+            ))}
+          </select>
+
+          {/* ✅ Quận */}
+          <select
+            className="w-full border rounded-lg p-3 mb-3 bg-white"
+            value={formData.district_id}
+            onChange={(e) => handleChooseDistrict(e.target.value)}
+            disabled={!formData.province_id}
+          >
+            <option value="">Chọn Quận/Huyện</option>
+            {districts.map((d) => (
+              <option key={d.DistrictID} value={d.DistrictID}>
+                {d.DistrictName}
+              </option>
+            ))}
+          </select>
+
+          {/* ✅ Phường */}
+          <select
+            className="w-full border rounded-lg p-3 mb-3 bg-white"
+            value={formData.ward_code}
+            onChange={(e) => handleChooseWard(e.target.value)}
+            disabled={!formData.district_id}
+          >
+            <option value="">Chọn Phường/Xã</option>
+            {wards.map((w) => (
+              <option key={w.WardCode} value={w.WardCode}>
+                {w.WardName}
+              </option>
+            ))}
+          </select>
+
+          {/* ✅ Số nhà/đường */}
           <input
             type="text"
-            placeholder="Địa chỉ giao hàng"
+            placeholder="Số nhà, tên đường (khuyến khích nhập)"
             className="w-full border rounded-lg p-3 mb-3"
-            value={formData.diachigiao}
-            onChange={(e) =>
-              setFormData({ ...formData, diachigiao: e.target.value })
-            }
-            required
+            value={formData.diachi_chitiet}
+            onChange={(e) => {
+              const next = { ...formData, diachi_chitiet: e.target.value };
+              setFormData(next);
+              // update địa chỉ hiển thị (không tự tính ship lại, vì ship dựa quận/phường)
+              setFormData((prev) => ({
+                ...prev,
+                diachigiao: buildFullAddress(next),
+              }));
+            }}
           />
 
-          {/* Shipping */}
+          {/* Hiển thị địa chỉ ghép */}
+          <div className="text-sm text-slate-600 mb-3">
+            <span className="font-semibold">Địa chỉ:</span>{" "}
+            {formData.diachigiao ? formData.diachigiao : "Chưa hoàn tất"}
+          </div>
+
+          {/* Shipping info */}
           <div className="border p-4 rounded-lg mb-4">
-            <h3 className="font-semibold mb-3">Phương thức giao hàng</h3>
-
-            <label className="flex items-center mb-2">
-              <input
-                type="radio"
-                className="accent-[rgb(96,148,216)]"
-                name="shipping"
-                value="Tiêu chuẩn"
-                checked={formData.donvivanchuyen === "Tiêu chuẩn"}
-                onChange={(e) =>
-                  setFormData({ ...formData, donvivanchuyen: e.target.value })
-                }
-              />
-              <span className="ml-2">Giao hàng tiêu chuẩn - 20.000đ</span>
-            </label>
-
-            <label className="flex items-center">
-              <input
-                type="radio"
-                className="accent-[rgb(96,148,216)]"
-                name="shipping"
-                value="Giao nhanh"
-                checked={formData.donvivanchuyen === "Giao nhanh"}
-                onChange={(e) =>
-                  setFormData({ ...formData, donvivanchuyen: e.target.value })
-                }
-              />
-              <span className="ml-2">Giao nhanh - 40.000đ</span>
-            </label>
+            <h3 className="font-semibold mb-3">Vận chuyển (GHN)</h3>
+            <div className="text-sm flex items-center justify-between">
+              <span>Phí vận chuyển:</span>
+              <span>
+                {shippingLoading
+                  ? "Đang tính..."
+                  : `${shippingCost.toLocaleString()}đ`}
+              </span>
+            </div>
           </div>
 
           {/* Payment */}
@@ -445,13 +578,14 @@ export default function Checkout() {
 
           <button
             className="
-  w-full bg-[rgb(96,148,216)] text-white
-  py-3 rounded-xl font-semibold mt-4
-  hover:bg-[rgb(72,128,204)]
-  transition shadow
-"
+              w-full bg-[rgb(96,148,216)] text-white
+              py-3 rounded-xl font-semibold mt-4
+              hover:bg-[rgb(72,128,204)]
+              transition shadow
+            "
+            disabled={shippingLoading}
           >
-            Đặt hàng
+            {shippingLoading ? "Đang tính phí ship..." : "Đặt hàng"}
           </button>
         </form>
 
@@ -487,8 +621,12 @@ export default function Checkout() {
           </div>
 
           <div className="flex justify-between text-sm mb-2">
-            <span>Phí vận chuyển:</span>
-            <span>{shippingCost.toLocaleString()}đ</span>
+            <span>Phí vận chuyển (GHN):</span>
+            <span>
+              {shippingLoading
+                ? "Đang tính..."
+                : `${shippingCost.toLocaleString()}đ`}
+            </span>
           </div>
 
           <div className="flex justify-between font-bold text-lg">

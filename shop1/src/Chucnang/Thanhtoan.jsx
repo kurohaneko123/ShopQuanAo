@@ -272,6 +272,55 @@ export default function Checkout() {
 
     return true;
   };
+  // ✅ Tạo vận đơn GHN theo đơn hàng vừa tạo (orderId)
+  const createGhnShipping = async ({ orderId, payloadOrder }) => {
+    // payloadOrder là payload em đã gửi qua /api/donhang/them (để lấy thông tin người nhận + cart)
+    // build items GHN từ cart
+    const items = cart.map((it) => {
+      const price = Number(it.giakhuyenmai ?? it.giagoc ?? 0); // ✅ lấy giá bán
+      return {
+        name: it.tensanpham || "Sản phẩm",
+        quantity: Number(it.soluong || 1),
+        weight: Number(it.weight || 300),
+        price: Math.max(0, Math.round(price)), // ✅ GHN cần số nguyên VND
+      };
+    });
+
+    const totalWeight = items.reduce(
+      (sum, it) => sum + it.weight * it.quantity,
+      0
+    );
+
+    // ✅ payload gửi BE /api/ghn/create-order
+    const ghnPayload = {
+      madonhang: orderId, // 🔥 bắt buộc để BE update DB
+
+      to_name: payloadOrder.tennguoinhan,
+      to_phone: payloadOrder.sodienthoai,
+      to_address: payloadOrder.diachigiao,
+
+      // ✅ ĐÚNG KEY GHN
+      to_district_id: Number(payloadOrder.district_id),
+      to_ward_code: String(payloadOrder.ward_code),
+
+      weight: Math.max(100, totalWeight),
+      insurance_value: Number(
+        payloadOrder.tongthanhtoan || payloadOrder.tongtien || 0
+      ),
+      cod_amount:
+        payloadOrder.hinhthucthanhtoan === "COD"
+          ? Number(payloadOrder.tongthanhtoan || payloadOrder.tongtien || 0)
+          : 0,
+      items,
+    };
+
+    const res = await axios.post(
+      "http://localhost:5000/api/ghn/create-order",
+      ghnPayload
+    );
+
+    return res.data; // BE trả { saved: {ghn_order_code, ghn_fee}, ... }
+  };
 
   /* =====================================================
    * Submit order (giữ logic của anh)
@@ -329,6 +378,50 @@ export default function Checkout() {
       if (!orderId) {
         Swal.fire("Lỗi!", "Không lấy được mã đơn hàng!", "error");
         return;
+      }
+      // ✅ Sau khi tạo đơn nội bộ thành công -> tạo vận đơn GHN và lưu DB
+      let ghnSaved = null;
+
+      try {
+        Swal.fire({
+          title: "Đang tạo vận đơn GHN...",
+          text: "Vui lòng chờ xíu nha ",
+          allowOutsideClick: false,
+          didOpen: () => Swal.showLoading(),
+        });
+
+        const ghnRes = await createGhnShipping({
+          orderId,
+          payloadOrder: {
+            tennguoinhan: payload.tennguoinhan,
+            sodienthoai: payload.sodienthoai,
+            diachigiao: payload.diachigiao,
+            district_id: payload.to_district_id,
+            ward_code: payload.to_ward_code,
+            tongtien: payload.tongtien,
+            tongthanhtoan: payload.tongthanhtoan,
+            hinhthucthanhtoan: payload.hinhthucthanhtoan,
+          },
+        });
+
+        ghnSaved = ghnRes?.saved || null;
+
+        Swal.fire({
+          icon: "success",
+          title: "Tạo vận đơn GHN thành công!",
+          text: `Mã GHN: ${ghnSaved?.ghn_order_code || "—"}`,
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      } catch (err) {
+        console.error("GHN create-order FE error:", err?.response?.data || err);
+
+        // ⚠️ Quan trọng: GHN fail thì vẫn cho đặt hàng (vì đơn nội bộ đã tạo)
+        Swal.fire({
+          icon: "warning",
+          title: "Đơn đã tạo nhưng GHN lỗi",
+          text: "Em có thể tạo lại vận đơn GHN ở admin (nếu cần).",
+        });
       }
 
       // COD

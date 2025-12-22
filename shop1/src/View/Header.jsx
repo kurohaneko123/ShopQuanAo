@@ -282,19 +282,6 @@ export default function Navbar() {
               </div>
             </li>
 
-            {/* KHUYẾN MÃI */}
-            <li className="group relative h-full flex items-center">
-              <a
-                href="/sale"
-                className="relative px-4 py-5 font-semibold text-red-500
-                before:absolute before:bottom-0 before:left-0 before:h-[3px]
-                before:w-0 before:bg-red-500 before:transition-all before:duration-300
-                hover:before:w-full"
-              >
-                Khuyến mãi
-              </a>
-            </li>
-
             {/* LIÊN HỆ */}
             <li className="group h-full flex items-center">
               <a

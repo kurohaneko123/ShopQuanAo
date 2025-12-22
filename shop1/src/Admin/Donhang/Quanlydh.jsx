@@ -199,10 +199,10 @@ export default function Quanlydh() {
         <table className="w-full text-sm table-fixed">
           <thead className="bg-white/5 text-gray-400 uppercase tracking-wide">
             <tr>
-              <th className="p-3 w-[90px] text-left">Mã đơn</th>
-              <th className="p-3 w-[180px] text-left">Người nhận</th>
-              <th className="p-3 w-[130px] text-left">SĐT</th>
-              <th className="p-3 w-[130px] text-left">Tổng tiền</th>
+              <th className="p-3 w-[90px] text-center">Mã đơn</th>
+              <th className="p-3 w-[90px] text-center">Người nhận</th>
+              <th className="p-3 w-[90px] text-center">SĐT</th>
+              <th className="p-3 w-[90px] text-center">Tổng tiền</th>
               <th className="p-3 w-[150px] text-center">Trạng thái</th>
               <th className="p-3 w-[160px] text-center">Hành động</th>
             </tr>
@@ -214,12 +214,16 @@ export default function Quanlydh() {
                 key={x.madonhang}
                 className="border-b border-white/5 hover:bg-white/5 transition"
               >
-                <td className="p-3 text-gray-300 font-semibold">
+                <td className="p-3 text-gray-300 font-semibold text-center">
                   {x.madonhang}
                 </td>
-                <td className="p-3 text-gray-200">{x.tennguoinhan}</td>
-                <td className="p-3 text-gray-300">{x.sodienthoai}</td>
-                <td className="p-3 text-teal-300 font-semibold">
+                <td className="p-3 text-gray-200 text-center">
+                  {x.tennguoinhan}
+                </td>
+                <td className="p-3 text-gray-300 text-center">
+                  {x.sodienthoai}
+                </td>
+                <td className="p-3 text-teal-300 font-semibold text-center">
                   {Number(x.tongthanhtoan).toLocaleString()}đ
                 </td>
 

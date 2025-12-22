@@ -13,18 +13,37 @@ export default function EditProductModal({
   const [saving, setSaving] = useState(false);
   const [newAvatar, setNewAvatar] = useState(null); // ảnh mới
   const [preview, setPreview] = useState(""); // preview ảnh
+  const [editForm, setEditForm] = useState({
+    tensanpham: "",
+    madanhmuc: "",
+  });
 
+  const [editErrors, setEditErrors] = useState({});
   useEffect(() => {
-    setForm(product || {});
-    setPreview(product?.anhdaidien || "");
-    setNewAvatar(null); // reset ảnh mới
+    if (product) {
+      setForm(product);
+      setPreview(product?.anhdaidien || "");
+      setNewAvatar(null);
+
+      setEditForm({
+        tensanpham: product.tensanpham || "",
+        madanhmuc: product.madanhmuc || "",
+      });
+
+      setEditErrors({});
+    }
   }, [product]);
 
   if (!open || !product) return null;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
     setForm((prev) => ({ ...prev, [name]: value }));
+
+    if (editForm.hasOwnProperty(name)) {
+      setEditForm((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleAvatarChange = (e) => {
@@ -36,10 +55,19 @@ export default function EditProductModal({
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!editForm.giaban) e.giaban = "Giá không được trống";
-    if (!editForm.soluongton) e.soluongton = "Số lượng không được trống";
-    setEditErrors(e);
-    if (Object.keys(e).length > 0) return;
+    const errors = {};
+
+    if (!editForm.tensanpham.trim()) {
+      errors.tensanpham = "Tên sản phẩm không được để trống";
+    }
+
+    if (!editForm.madanhmuc) {
+      errors.madanhmuc = "Vui lòng chọn danh mục";
+    }
+
+    setEditErrors(errors);
+
+    if (Object.keys(errors).length > 0) return;
 
     try {
       setSaving(true);
@@ -52,22 +80,16 @@ export default function EditProductModal({
         chatlieu: form.chatlieu,
         kieudang: form.kieudang,
         baoquan: form.baoquan,
-        anhdaidien: product.anhdaidien,
       });
 
       if (newAvatar) {
-        const uploadRes = await uploadProductAvatar(
-          product.masanpham,
-          newAvatar
-        );
-        console.log("Upload avatar result:", uploadRes);
+        await uploadProductAvatar(product.masanpham, newAvatar);
       }
 
       Swal.fire({
-        title: "Thành công!",
-        text: "Cập nhật sản phẩm thành công!",
         icon: "success",
-        confirmButtonText: "OK",
+        title: "Thành công",
+        text: "Cập nhật sản phẩm thành công!",
       });
 
       onSuccess?.();
@@ -75,10 +97,9 @@ export default function EditProductModal({
     } catch (err) {
       console.error(err);
       Swal.fire({
-        title: "Lỗi!",
-        text: "Lỗi khi cập nhật sản phẩm!",
         icon: "error",
-        confirmButtonText: "OK",
+        title: "Lỗi",
+        text: "Lỗi khi cập nhật sản phẩm!",
       });
     } finally {
       setSaving(false);
@@ -113,6 +134,11 @@ export default function EditProductModal({
                 onChange={handleChange}
                 className="w-full bg-[#1a1a1a] border border-white/10 px-3 py-2 rounded-lg mt-1 text-gray-200"
               />
+              {editErrors.tensanpham && (
+                <p className="text-red-400 text-xs mt-1">
+                  {editErrors.tensanpham}
+                </p>
+              )}
             </div>
 
             {/* Danh mục */}
@@ -133,6 +159,11 @@ export default function EditProductModal({
                   </option>
                 ))}
               </select>
+              {editErrors.madanhmuc && (
+                <p className="text-red-400 text-xs mt-1">
+                  {editErrors.madanhmuc}
+                </p>
+              )}
             </div>
 
             {/* 4 input còn lại */}
@@ -174,10 +205,16 @@ export default function EditProductModal({
             </label>
 
             <div className="flex items-center gap-4 mt-3">
-              <img
-                src={preview}
-                className="w-24 h-24 rounded-lg object-cover border border-white/10 bg-[#222]"
-              />
+              {preview ? (
+                <img
+                  src={preview}
+                  className="w-24 h-24 rounded-lg object-cover border border-white/10 bg-[#222]"
+                />
+              ) : (
+                <div className="w-24 h-24 flex items-center justify-center text-xs text-gray-500 border border-white/10 rounded-lg">
+                  No Image
+                </div>
+              )}
 
               <input
                 type="file"

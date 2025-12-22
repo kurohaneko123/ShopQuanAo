@@ -47,26 +47,78 @@ export default function AccountModal({ isOpen, onClose }) {
       // ✅ tránh dính dữ liệu checkout / form của user cũ
       localStorage.removeItem("checkoutPayload");
 
-      alert("Đăng nhập Google thành công!");
+      Swal.fire({
+        title: "Đăng nhập Google thành công!",
+        icon: "success",
+        showConfirmButton: false,
+        timer: 1500,
+        background: "#f2f2f2",
+        color: "#4caf50",
+        customClass: {
+          popup: "z-[1000]",
+        },
+      });
       onClose?.();
       if (vaitro === "admin") window.location.href = "/admin";
       else window.location.reload();
     } catch (error) {
       console.error("Lỗi đăng nhập Google:", error);
-      alert("Đăng nhập Google thất bại!");
+      Swal.fire({
+        title: "Lỗi!",
+        text: "Đăng nhập Google thất bại. Vui lòng thử lại.",
+        icon: "error",
+        confirmButtonText: "OK",
+        background: "#f8d7da",
+        color: "#721c24",
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  // ✅ Gửi request lên API backend
+  // Gửi request lên API backend
   const handleSubmit = async (e) => {
     e.preventDefault();
     const email = e.target.email?.value.trim();
     const password = e.target.password?.value?.trim();
     const name = e.target.hoten?.value?.trim();
     const phone = e.target.sodienthoai?.value?.trim();
+    // ================= VALIDATE CHỈ CHO REGISTER =================
+    if (mode === "register") {
+      if (!name || name.length < 2) {
+        Swal.fire("Lỗi!", "Họ tên phải có ít nhất 2 ký tự", "error");
+        return;
+      }
 
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+
+      if (!emailRegex.test(email)) {
+        Swal.fire(
+          "Lỗi!",
+          "Chỉ cho phép đăng ký bằng email @gmail.com",
+          "error"
+        );
+        return;
+      }
+
+      const phoneRegex = /^(03|05|07|08|09)[0-9]{8}$/;
+      if (!phoneRegex.test(phone)) {
+        Swal.fire("Lỗi!", "Số điện thoại không hợp lệ ", "error");
+        return;
+      }
+
+      if (!password || password.length < 8) {
+        Swal.fire("Lỗi!", "Mật khẩu phải có ít nhất 8 ký tự", "error");
+        return;
+      }
+
+      const hasLetter = /[a-zA-Z]/.test(password);
+      const hasNumber = /[0-9]/.test(password);
+      if (!hasLetter || !hasNumber) {
+        Swal.fire("Lỗi!", "Mật khẩu phải chứa cả chữ và số", "error");
+        return;
+      }
+    }
     try {
       setLoading(true);
 

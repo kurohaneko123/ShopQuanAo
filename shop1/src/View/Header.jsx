@@ -50,6 +50,35 @@ export default function Navbar() {
   }, []);
 
   /* ===== ĐĂNG NHẬP & ĐĂNG XUẤT ===== */
+  const clearLocalWhenLogout = () => {
+    try {
+      const uid = localStorage.getItem("activeUserId");
+
+      //  xoá giỏ hàng theo user
+      if (uid) {
+        localStorage.removeItem(`cart_${uid}`);
+      }
+
+      // xoá giỏ guest
+      localStorage.removeItem("cart_guest");
+
+      // xoá dữ liệu checkout
+      localStorage.removeItem("checkoutPayload");
+
+      // xoá auth
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      localStorage.removeItem("activeUserId");
+
+      //  xoá mấy key phụ nếu có
+      localStorage.removeItem("lastOrderId");
+      localStorage.removeItem("lastPaymentMethod");
+      localStorage.removeItem("lastZaloOrderId");
+    } catch (e) {
+      console.error("Logout clear local error:", e);
+    }
+  };
+
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) setUser(JSON.parse(storedUser));
@@ -410,16 +439,26 @@ export default function Navbar() {
                 </div>
                 <div className="h-px bg-gray-100" />
                 <button
-                  onClick={handleLogout}
+                  onClick={() => {
+                    clearLocalWhenLogout();
+
+                    Swal.fire({
+                      icon: "success",
+                      title: "Đã đăng xuất",
+                      timer: 1200,
+                      showConfirmButton: false,
+                    }).then(() => {
+                      window.location.href = "/";
+                    });
+                  }}
                   className="
-      w-full flex items-center gap-3
-      px-4 py-3 text-sm font-medium
-      text-gray-700
-      hover:bg-red-50 hover:text-red-600
-      transition
-    "
+    w-full flex items-center gap-3
+    px-4 py-3 text-sm font-medium
+    text-gray-700
+    hover:bg-red-50 hover:text-red-600
+    transition
+  "
                 >
-                  <LogOut size={16} />
                   Đăng xuất
                 </button>
               </div>

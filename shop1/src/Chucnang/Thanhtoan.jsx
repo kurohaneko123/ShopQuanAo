@@ -43,7 +43,19 @@ export default function Checkout() {
     hinhthucthanhtoan: "COD",
     donvivanchuyen: "GHN",
   });
+  const clearAuthStorage = () => {
+    const uid = localStorage.getItem("activeUserId");
 
+    if (uid) {
+      localStorage.removeItem(`cart_${uid}`);
+    }
+
+    localStorage.removeItem("cart_guest");
+    localStorage.removeItem("checkoutPayload");
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    localStorage.removeItem("activeUserId");
+  };
   // =========================
   // Load checkout payload
   // =========================
@@ -231,17 +243,10 @@ export default function Checkout() {
       return false;
     }
 
-    const phoneRegex = /^[0-9]{10,11}$/;
-    if (!formData.sodienthoai.trim()) {
-      Swal.fire("Lỗi!", "Vui lòng nhập số điện thoại", "error");
-      return false;
-    }
+    const phoneRegex = /^(03|05|07|08|09)[0-9]{8}$/;
+
     if (!phoneRegex.test(formData.sodienthoai.trim())) {
-      Swal.fire(
-        "Lỗi!",
-        "Số điện thoại không hợp lệ, vui lòng nhập lại.",
-        "error"
-      );
+      Swal.fire("Lỗi!", "Số điện thoại không hợp lệ ", "error");
       return false;
     }
 
@@ -420,7 +425,6 @@ export default function Checkout() {
         Swal.fire({
           icon: "warning",
           title: "Đơn đã tạo nhưng GHN lỗi",
-          text: "Em có thể tạo lại vận đơn GHN ở admin (nếu cần).",
         });
       }
 
@@ -431,10 +435,8 @@ export default function Checkout() {
         const uid = localStorage.getItem("activeUserId");
         const cartKey = uid ? `cart_${uid}` : "cart_guest";
         localStorage.removeItem(cartKey);
-
         localStorage.setItem("lastOrderId", String(orderId));
         localStorage.setItem("lastPaymentMethod", "COD");
-
         navigate("/ordersuccess", { state: { orderId, paymentMethod: "COD" } });
         return;
       }

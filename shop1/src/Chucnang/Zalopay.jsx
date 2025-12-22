@@ -47,7 +47,7 @@ export default function ZaloPayPage() {
         data?.order_url || data?.orderurl || data?.data?.order_url;
 
       if (orderUrl) {
-        // ✅ LƯU LẠI ĐỂ KHI USER QUAY VỀ SITE CÒN BIẾT ĐƠN NÀO
+        //LƯU LẠI ĐỂ KHI USER QUAY VỀ SITE CÒN BIẾT ĐƠN NÀO
         localStorage.setItem("lastZaloOrderId", orderId);
         localStorage.setItem("lastPaymentMethod", "ZALOPAY");
 
@@ -63,8 +63,7 @@ export default function ZaloPayPage() {
       setCreateLoading(false);
     }
   };
-
-  // 4️⃣ UI (Less is more, sạch & premium hơn)
+  // 4️ UI (Less is more, sạch & premium hơn)
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-6">
       <div className="w-full max-w-xl">

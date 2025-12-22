@@ -82,13 +82,91 @@ export default function DonHang() {
     fetchOrders();
   }, []);
 
-  const cancelOrder = async (id) => {
-    if (!window.confirm("Bạn có chắc muốn hủy đơn hàng này?")) return;
-    await axios.put(`${BASE_URL}/huy/${id}`);
-    setOrders((prev) =>
-      prev.map((o) => (o.madonhang === id ? { ...o, trangthai: "Đã hủy" } : o))
-    );
+  /* ================================
+      LOGIC HỦY / HOÀN TIỀN
+     - COD     → hủy đơn
+     - ZALOPAY → hoàn tiền
+  ================================ */
+  const cancelOrder = async (order) => {
+    if (!window.confirm("Bạn có chắc muốn hủy / hoàn tiền đơn hàng này?")) return;
+
+    const token = localStorage.getItem("token");
+
+    try {
+      // COD → hủy đơn
+      if (order.hinhthucthanhtoan === "COD") {
+        await axios.put(`${BASE_URL}/huy/${order.madonhang}`,
+          {},
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        setOrders((prev) =>
+          prev.map((o) =>
+            o.madonhang === order.madonhang
+              ? { ...o, trangthai: "Đã hủy" }
+              : o
+          )
+        );
+        return;
+      }
+
+      // 🔵 ZALOPAY → REFUND (ASYNC)
+      if (order.hinhthucthanhtoan === "ZALOPAY") {
+        const refundRes = await axios.post(
+          "http://localhost:5000/api/payment/zalopay/refund",
+          { madonhang: order.madonhang },
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        const refund_id = refundRes.data?.result?.refund_id;
+        if (!refund_id) throw new Error("Refund không hợp lệ");
+
+        setOrders((prev) =>
+          prev.map((o) =>
+            o.madonhang === order.madonhang
+              ? { ...o, trangthai: "Đang hoàn tiền" }
+              : o
+          )
+        );
+
+        setTimeout(async () => {
+          try {
+            const statusRes = await axios.get(
+              "http://localhost:5000/api/payment/zalopay/refund-status",
+              {
+                params: { refund_id },
+                headers: { Authorization: `Bearer ${token}` },
+              }
+            );
+
+            if (statusRes.data?.return_code === 1) {
+              setOrders((prev) =>
+                prev.map((o) =>
+                  o.madonhang === order.madonhang
+                    ? { ...o, trangthai: "Đã hoàn tiền" }
+                    : o
+                )
+              );
+            }
+          } catch (e) {
+            console.error("Lỗi query refund-status:", e);
+          }
+        }, 2000);
+      }
+    } catch (err) {
+      console.error("Lỗi hủy / hoàn tiền:", err);
+      alert(
+        err.response?.data?.message ||
+        err.message ||
+        "Không thể hủy / hoàn tiền đơn hàng này"
+      );
+    }
   };
+
 
   const getStatusColor = (tt) => {
     tt = tt.toLowerCase();
@@ -310,7 +388,7 @@ export default function DonHang() {
                     <div className="flex flex-wrap gap-2 justify-start md:justify-end">
                       {!o.trangthai.toLowerCase().includes("hủy") && (
                         <button
-                          onClick={() => cancelOrder(o.madonhang)}
+                          onClick={() => cancelOrder(o)}
                           className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium
                           bg-red-500 text-white hover:bg-red-600 shadow-sm hover:shadow transition"
                         >

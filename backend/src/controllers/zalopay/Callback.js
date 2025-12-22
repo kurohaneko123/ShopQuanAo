@@ -5,132 +5,73 @@ export const ZaloPayCallback = async (req, res) => {
     try {
         const { data, mac } = req.body;
 
-        /* =======================
-           1️⃣ VERIFY MAC
-        ======================= */
-        const macCheck = CryptoJS
-            .HmacSHA256(data, process.env.ZALO_KEY2)
-            .toString();
+        // 0) Log để biết callback có vô hay không
+        console.log(">>> ZALO CALLBACK RAW BODY:", req.body);
 
+        // 1) Verify MAC
+        const macCheck = CryptoJS.HmacSHA256(data, process.env.ZALO_KEY2).toString();
         if (mac !== macCheck) {
-            return res.json({
-                return_code: -1,
-                return_message: "MAC không hợp lệ",
-            });
+            console.log(">>> MAC INVALID", { mac, macCheck });
+            return res.json({ return_code: -1, return_message: "MAC không hợp lệ" });
         }
 
-        /* =======================
-           2️⃣ PARSE DATA
-        ======================= */
+        // 2) Parse data
         const dataObj = JSON.parse(data);
+        console.log(">>> ZALO CALLBACK DATA OBJ:", dataObj);
 
-        console.log("✅ ZaloPay callback hợp lệ:", dataObj);
-
-        /* =======================
-           3️⃣ LẤY MÃ ĐƠN HÀNG
-        ======================= */
+        // 3) Lấy madonhang
         let madonhang = null;
 
-        // Ưu tiên embed_data
         if (dataObj.embed_data) {
-            const embedData = JSON.parse(dataObj.embed_data);
-            madonhang = embedData.madonhang;
+            try {
+                const embedData =
+                    typeof dataObj.embed_data === "string"
+                        ? JSON.parse(dataObj.embed_data)
+                        : dataObj.embed_data;
+                madonhang = embedData?.madonhang ?? null;
+            } catch (e) {
+                console.log(">>> PARSE embed_data FAILED:", e.message);
+            }
         }
 
-        // Fallback từ app_trans_id
         if (!madonhang && dataObj.app_trans_id) {
-            madonhang = dataObj.app_trans_id.split("_")[1];
+            // app_trans_id = "YYMMDD_<transID>"
+            madonhang = String(dataObj.app_trans_id).split("_")[1];
         }
 
         if (!madonhang) {
-            return res.json({
-                return_code: 0,
-                return_message: "Không xác định được mã đơn hàng",
-            });
+            console.log(">>> Cannot detect madonhang");
+            return res.json({ return_code: 0, return_message: "Không xác định được mã đơn hàng" });
         }
 
-        /* =======================
-           🚫 CASE KHÁCH HỦY / THANH TOÁN THẤT BẠI
-        ======================= */
-        if (dataObj.status !== 1) {
-            console.log("⚠️ Giao dịch bị hủy / thất bại:", dataObj.status);
-
-            // 1️ HOÀN KHO
-            const [items] = await db.query(
-                `
-        SELECT mabienthe, soluong
-        FROM chitietdonhang
-        WHERE madonhang = ?
-        `,
-                [madonhang]
-            );
-
-            for (const item of items) {
-                await db.query(
-                    `
-            UPDATE bienthesanpham
-            SET soluongton = soluongton + ?
-            WHERE mabienthe = ?
-            `,
-                    [item.soluong, item.mabienthe]
-                );
-            }
-
-            // 2️ UPDATE ĐƠN HÀNG
-            await db.query(
-                `
-        UPDATE donhang
-        SET trangthai = 'đã hủy',
-            ngaycapnhat = NOW()
-        WHERE madonhang = ?
-          AND dathanhtoan = 0
-        `,
-                [madonhang]
-            );
-
-            return res.json({
-                return_code: 1,
-                return_message: "Đã xử lý hủy giao dịch",
-            });
+        // 4) Callback THÀNH CÔNG: phải có zp_trans_id
+        const zpTransId = dataObj.zp_trans_id;
+        if (!zpTransId) {
+            console.log(">>> Missing zp_trans_id => không update đơn", dataObj);
+            // vẫn trả 1 để ZaloPay không retry spam
+            return res.json({ return_code: 1, return_message: "No zp_trans_id" });
         }
 
-        /* =======================
-           4️ UPDATE ĐƠN HÀNG
-           (THANH TOÁN THÀNH CÔNG)
-        ======================= */
+        // 5) Update đơn hàng
         const [result] = await db.query(
             `
-            UPDATE donhang
-            SET dathanhtoan = 1,
-                trangthai = 'đã xác nhận',
-                zalopay_trans_id = ?,
-                ngaythanhtoan = NOW(),
-                ngaycapnhat = NOW()
-            WHERE madonhang = ?
-              AND dathanhtoan = 0
-            `,
-            [dataObj.zp_trans_id, madonhang]
+      UPDATE donhang
+      SET dathanhtoan = 1,
+          trangthai = 'đã xác nhận',
+          zalopay_trans_id = ?,
+          ngaythanhtoan = NOW(),
+          ngaycapnhat = NOW()
+      WHERE madonhang = ?
+        AND dathanhtoan = 0
+      `,
+            [zpTransId, madonhang]
         );
 
-        if (result.affectedRows === 0) {
-            console.log("Callback trùng hoặc đơn đã thanh toán:", madonhang);
-        } else {
-            console.log("Đã cập nhật đơn hàng:", madonhang);
-        }
+        console.log(">>> UPDATE RESULT:", result);
 
-        /* =======================
-           5️⃣ TRẢ KẾT QUẢ CHO ZALOPAY
-        ======================= */
-        return res.json({
-            return_code: 1,
-            return_message: "Xử lý thành công",
-        });
-
+        return res.json({ return_code: 1, return_message: "Xử lý thành công" });
     } catch (err) {
-        console.log("Lỗi callback:", err);
-        return res.json({
-            return_code: 0,
-            return_message: "Lỗi backend",
-        });
+        console.log(">>> CALLBACK ERROR:", err);
+        return res.json({ return_code: 0, return_message: "Lỗi backend" });
     }
 };

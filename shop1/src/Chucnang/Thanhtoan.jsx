@@ -115,20 +115,20 @@ export default function Checkout() {
     }
 
     // Kiểm tra địa chỉ giao hàng
-    const addressRegex = /^\d+\s[\w\s]+,\s*Phường\s[\w\s]+,\s*Quận\s[\w\s]+$/;
+    // const addressRegex = /^\d+\s[\w\s]+,\s*Phường\s[\w\s]+,\s*Quận\s[\w\s]+$/;
 
-    if (
-      !formData.diachigiao.trim() ||
-      !addressRegex.test(formData.diachigiao)
-    ) {
-      Swal.fire({
-        title: "Lỗi!",
-        text: "Vui lòng nhập địa chỉ giao hàng đúng",
-        icon: "error",
-        confirmButtonText: "OK",
-      });
-      return false;
-    }
+    // if (
+    //   !formData.diachigiao.trim() ||
+    //   !addressRegex.test(formData.diachigiao)
+    // ) {
+    //   Swal.fire({
+    //     title: "Lỗi!",
+    //     text: "Vui lòng nhập địa chỉ giao hàng đúng",
+    //     icon: "error",
+    //     confirmButtonText: "OK",
+    //   });
+    //   return false;
+    // }
 
     // Kiểm tra giỏ hàng có sản phẩm không
     if (!cart.length) {

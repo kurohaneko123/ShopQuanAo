@@ -5,103 +5,190 @@ import db from "../../config/db.js";
 
 export const ZaloPayRefund = async (req, res) => {
     try {
-        const { madonhang, sotienhoan } = req.body;
+        const { madonhang } = req.body;
 
-        if (!madonhang || !sotienhoan) {
-            return res.status(400).json({ message: "Thiếu mã đơn hàng hoặc số tiền hoàn" });
-        }
+        /* ============================
+           CONFIG (GIỐNG PHP)
+        ============================ */
+        const config = {
+            app_id: Number(process.env.ZALO_APP_ID),
+            key1: process.env.ZALO_KEY1,
+            refund_url: process.env.ZALO_REFUND,
+        };
 
-        /* =====================
-           1️⃣ LẤY GIAO DỊCH ZALOPAY
-        ===================== */
-        const [donhang] = await db.query(
-            `
-            SELECT zalopay_trans_id, dathanhtoan
-            FROM donhang
-            WHERE madonhang = ?
-            `,
+        /* ============================
+           0️⃣ CHẶN REFUND TRÙNG (CỰC QUAN TRỌNG)
+        ============================ */
+        const [exists] = await db.query(
+            `SELECT 1 FROM hoantien
+             WHERE madonhang = ?
+             AND trangthai IN ('dang_xu_ly', 'thanh_cong')
+             LIMIT 1`,
             [madonhang]
         );
 
-        if (donhang.length === 0) {
+        if (exists.length) {
+            return res.status(400).json({
+                message: "Đơn hàng đã có giao dịch hoàn tiền",
+            });
+        }
+
+        /* ============================
+           1️⃣ LẤY ĐƠN HÀNG
+        ============================ */
+        const [[order]] = await db.query(
+            `SELECT * FROM donhang WHERE madonhang = ?`,
+            [madonhang]
+        );
+
+        if (!order) {
             return res.status(404).json({ message: "Không tìm thấy đơn hàng" });
         }
 
-        if (donhang[0].dathanhtoan !== 1) {
-            return res.status(400).json({ message: "Đơn hàng chưa thanh toán" });
+        /* ============================
+           2️⃣ CHECK GIAO DỊCH ZALOPAY
+        ============================ */
+        if (Number(order.dathanhtoan) !== 1 || !order.zalopay_trans_id) {
+            return res.status(400).json({
+                message: "Đơn hàng chưa có giao dịch ZaloPay hợp lệ",
+            });
         }
 
-        const magiaodich_zalopay = donhang[0].zalopay_trans_id;
+        /* ============================
+           3️⃣ THAM SỐ REFUND
+        ============================ */
+        const timestamp = Date.now();
+        const zp_trans_id = Number(order.zalopay_trans_id);
+        const amount = Number(order.tongtien);
+        const uid = `${timestamp}${Math.floor(Math.random() * 900 + 100)}`;
 
-        console.log("Lấy đơn hàng từ DB:", donhang); // log đơn hàng
-
-        /* =====================
-           2️⃣ TẠO MÃ HOÀN TIỀN
-        ===================== */
-        const mahoantien =
-            `${moment().format("YYMMDD")}_${process.env.ZALO_APP_ID}_${Date.now()}`;
-
-        const dulieu = {
-            app_id: process.env.ZALO_APP_ID,
-            zp_trans_id: magiaodich_zalopay,
-            amount: sotienhoan,
-            refund_fee_amount: 1, // Phí hoàn tiền hợp lệ
-            description: `Hoàn tiền cho đơn hàng #${madonhang}`,
-            timestamp: Date.now(),
+        const params = {
+            app_id: config.app_id,
+            m_refund_id: `${moment().format("YYMMDD")}_${config.app_id}_${uid}`,
+            timestamp,
+            zp_trans_id,
+            amount,
+            description: `Hoàn tiền đơn hàng #${order.madonhang}`,
         };
 
-        console.log("Dữ liệu gửi lên ZaloPay:", dulieu); // log dữ liệu gửi lên
+        /* ============================
+           4️⃣ MAC (Y HỆT PHP)
+        ============================ */
+        const data_mac =
+            `${params.app_id}|${params.zp_trans_id}|${params.amount}` +
+            `|${params.description}|${params.timestamp}`;
 
-        /* =====================
-           🔐 MAC – SỬA ĐÚNG FORMAT ZALOPAY
-        ===================== */
-        const macData =
-            `${dulieu.app_id}|${dulieu.zp_trans_id}|${dulieu.amount}|${dulieu.refund_fee_amount}|${dulieu.timestamp}`; // Đảm bảo thứ tự đúng
-
-
-        dulieu.mac = CryptoJS
-            .HmacSHA256(macData, process.env.ZALO_KEY1)
+        params.mac = CryptoJS
+            .HmacSHA256(data_mac, config.key1)
             .toString();
 
-        console.log("MAC đã tạo:", dulieu.mac); // log MAC
+        console.log("ZaloPay refund request:", params);
 
-        /* =====================
-           3️⃣ GỌI ZALOPAY
-        ===================== */
+        /* ============================
+           5️⃣ CALL REFUND
+        ============================ */
         const response = await axios.post(
-            process.env.ZALO_REFUND,
-            dulieu
+            config.refund_url,
+            new URLSearchParams(params).toString(),
+            {
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+            }
         );
 
-        console.log("Phản hồi từ ZaloPay:", response.data); // log phản hồi từ ZaloPay
+        console.log("ZaloPay refund response:", response.data);
 
-        /* =====================
-           4️⃣ LƯU DB
-        ===================== */
+        const result = response.data;
+
+        /* ============================
+           6️⃣ XỬ LÝ KẾT QUẢ (ĐÚNG NGHIỆP VỤ)
+        ============================ */
+
+        // ✅ Thành công NGAY (hiếm)
+        if (result.return_code === 1) {
+            await db.query(
+                `UPDATE donhang
+                 SET trangthai = 'Đã hoàn tiền', dathanhtoan = 0
+                 WHERE madonhang = ?`,
+                [madonhang]
+            );
+
+            await db.query(
+                `INSERT INTO hoantien
+   (madonhang, m_refund_id, magiaodich_zalopay, sotienhoan, trangthai, phanhoi_zalopay)
+   VALUES (?, ?, ?, ?, ?, ?)`,
+                [
+                    madonhang,
+                    params.m_refund_id,
+                    zp_trans_id,
+                    amount,
+                    "thanh_cong",
+                    JSON.stringify(result),
+                ]
+            );
+
+            return res.json({
+                message: "Hoàn tiền thành công qua ZaloPay",
+                result,
+            });
+        }
+
+        // 🟡 Đang xử lý (case CHUẨN)
+        if (result.return_code === 3 || result.sub_return_code === -101) {
+            await db.query(
+                `UPDATE donhang
+                 SET trangthai = 'Đang hoàn tiền'
+                 WHERE madonhang = ?`,
+                [madonhang]
+            );
+
+            await db.query(
+                `INSERT INTO hoantien
+   (madonhang, m_refund_id, magiaodich_zalopay, sotienhoan, trangthai, phanhoi_zalopay)
+   VALUES (?, ?, ?, ?, ?, ?)`,
+                [
+                    madonhang,
+                    params.m_refund_id,
+                    zp_trans_id,
+                    amount,
+                    "dang_xu_ly",
+                    JSON.stringify(result),
+                ]
+            );
+
+
+            return res.json({
+                message: "Hoàn tiền đang được xử lý",
+                result,
+            });
+        }
+
+        // ❌ Thất bại THẬT
         await db.query(
-            `
-            INSERT INTO hoantien
-              (mahoantien, madonhang, magiaodich_zalopay, sotienhoan, trangthai, phanhoi_zalopay)
-            VALUES (?, ?, ?, ?, ?, ?)
-            `,
+            `INSERT INTO hoantien
+   (madonhang, m_refund_id, magiaodich_zalopay, sotienhoan, trangthai, phanhoi_zalopay)
+   VALUES (?, ?, ?, ?, ?, ?)`,
             [
-                mahoantien,
                 madonhang,
-                magiaodich_zalopay,
-                sotienhoan,
-                response.data.return_code === 1 ? "thanh_cong" : "that_bai",
-                JSON.stringify(response.data),
+                params.m_refund_id,
+                zp_trans_id,
+                amount,
+                "that_bai",
+                JSON.stringify(result),
             ]
         );
 
-        res.json({
-            mahoantien,
-            ...response.data,
+
+        return res.status(400).json({
+            message: "Hoàn tiền thất bại",
+            result,
         });
+
     } catch (err) {
-        console.log("Lỗi hoàn tiền từ ZaloPay:", err.response?.data || err.message); // log lỗi
-        res.status(500).json({
-            message: "Lỗi hoàn tiền ZaloPay",
+        console.error("Lỗi refund ZaloPay:", err.response?.data || err.message);
+        return res.status(500).json({
+            message: "Lỗi hệ thống khi hoàn tiền",
             detail: err.response?.data || err.message,
         });
     }

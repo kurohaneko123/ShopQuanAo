@@ -127,8 +127,8 @@ export const calcFee = async (req, res) => {
 export const createGhnOrder = async (req, res) => {
   try {
     const {
-      madonhang, // ✅ bắt buộc để lưu vào bảng donhang
-      order_code, // (optional) mã đơn nội bộ dạng string nếu em thích
+      madonhang, //  bắt buộc để lưu vào bảng donhang
+      order_code, //
       to_name,
       to_phone,
       to_address,

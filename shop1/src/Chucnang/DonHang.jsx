@@ -42,7 +42,7 @@ export default function DonHang() {
   };
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
+    const storedUser = localStorage.getItem("userinfo");
     if (!storedUser) {
       setOrders([]);
       setLoading(false);
@@ -53,7 +53,7 @@ export default function DonHang() {
 
     const fetchOrders = async () => {
       try {
-        const storedUser = localStorage.getItem("user");
+        const storedUser = localStorage.getItem("userinfo");
         const token = localStorage.getItem("token");
 
         if (!storedUser || !token) {

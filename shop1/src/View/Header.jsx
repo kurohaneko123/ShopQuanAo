@@ -68,7 +68,7 @@ export default function Navbar() {
 
       // xoá auth
       localStorage.removeItem("token");
-      localStorage.removeItem("user");
+      localStorage.removeItem("userinfo");
       localStorage.removeItem("activeUserId");
 
       //  xoá mấy key phụ nếu có
@@ -81,7 +81,8 @@ export default function Navbar() {
   };
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
+    const storedUser = localStorage.getItem("userinfo");
+
     if (storedUser) setUser(JSON.parse(storedUser));
   }, []);
 

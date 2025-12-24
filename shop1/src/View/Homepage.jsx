@@ -132,7 +132,7 @@ export default function HomePage() {
         Swal.fire({
           icon: "success",
           title: "Đã copy mã!",
-          text: `Đã copy mã: ${code} vào clipboard.`,
+          text: `Đã copy mã: ${code}`,
         });
       })
       .catch(() => {

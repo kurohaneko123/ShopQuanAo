@@ -130,6 +130,31 @@ export default function Quanlydh() {
     }
   };
 
+  const adminXacNhanDon = async (id) => {
+    const confirm = await Swal.fire({
+      title: "Xác nhận đơn hàng?",
+      text: "Đơn hàng sẽ được trừ kho và chuyển sang trạng thái đã xác nhận",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Xác nhận",
+      cancelButtonText: "Hủy",
+    });
+
+    if (!confirm.isConfirmed) return;
+
+    try {
+      await axios.put(`${API}/xacnhan/${id}`);
+      Swal.fire("Thành công", "Đã xác nhận đơn hàng", "success");
+      fetchOrders();
+    } catch (err) {
+      Swal.fire(
+        "Lỗi",
+        err?.response?.data?.message || "Không thể xác nhận đơn",
+        "error"
+      );
+    }
+  };
+
   const checkHoanTien = async (mahoantien) => {
     if (!mahoantien) {
       return Swal.fire("Lỗi", "Không có mã hoàn tiền", "error");
@@ -207,6 +232,9 @@ export default function Quanlydh() {
           <tbody>
             {paginatedOrders.map((x) => {
               const isDaHuy = x.trangthai?.toLowerCase() === "đã hủy";
+              const isChoXacNhan =
+                x.trangthai?.trim().toLowerCase() === "chờ xác nhận";
+
               const isHoanTien = x.trangthai_hoantien === "thanh_cong";
               const disableEdit = isDaHuy || isHoanTien;
               const disableCancel = isDaHuy || isHoanTien;
@@ -231,7 +259,7 @@ export default function Quanlydh() {
                   </td>
 
                   <td className="p-3">
-                    <div className="grid grid-cols-4 gap-2 place-items-center">
+                    <div className="grid grid-cols-5 gap-2 place-items-center">
                       {/* XEM */}
                       <button
                         className={`${actionBtn(false)} bg-indigo-600`}
@@ -243,6 +271,23 @@ export default function Quanlydh() {
                         title="Xem chi tiết"
                       >
                         <Eye size={16} />
+                      </button>
+                      {/* XÁC NHẬN */}
+
+                      <button
+                        className={`${actionBtn(!isChoXacNhan)} bg-green-600`}
+                        disabled={!isChoXacNhan}
+                        onClick={() => {
+                          if (!isChoXacNhan) return;
+                          adminXacNhanDon(x.madonhang);
+                        }}
+                        title={
+                          isChoXacNhan
+                            ? "Xác nhận đơn hàng"
+                            : "Chỉ xác nhận khi chờ xác nhận"
+                        }
+                      >
+                        <CheckCircle size={16} />
                       </button>
 
                       {/* SỬA */}

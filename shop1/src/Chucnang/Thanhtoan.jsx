@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Swal from "sweetalert2";
-import ghnApi from "../apighn/ghnApi"; // ✅ tạo file ghnApi.js như chị hướng dẫn
+import ghnApi from "../apighn/ghnApi"; //  tạo file ghnApi.js như chị hướng dẫn
 
 export default function Checkout() {
   const navigate = useNavigate();
@@ -53,7 +53,7 @@ export default function Checkout() {
     localStorage.removeItem("cart_guest");
     localStorage.removeItem("checkoutPayload");
     localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    localStorage.removeItem("userinfo");
     localStorage.removeItem("activeUserId");
   };
   // =========================
@@ -75,7 +75,7 @@ export default function Checkout() {
   // auto fill name from user
   // =========================
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
+    const user = JSON.parse(localStorage.getItem("userinfo"));
     if (user) {
       setFormData((prev) => ({
         ...prev,
@@ -202,11 +202,11 @@ export default function Checkout() {
 
     if (!next.district_id || !wardCode) return;
 
-    // ✅ Ghép địa chỉ hiển thị
+    // Ghép địa chỉ hiển thị
     const fullAddress = buildFullAddress(next);
     setFormData((prev) => ({ ...prev, diachigiao: fullAddress }));
 
-    // ✅ gọi fee
+    // gọi fee
     try {
       setShippingLoading(true);
 
@@ -250,7 +250,7 @@ export default function Checkout() {
       return false;
     }
 
-    // ✅ địa chỉ bắt buộc chọn đủ tỉnh/quận/phường
+    //  địa chỉ bắt buộc chọn đủ tỉnh/quận/phường
     if (!formData.province_id || !formData.district_id || !formData.ward_code) {
       Swal.fire(
         "Lỗi!",
@@ -260,7 +260,7 @@ export default function Checkout() {
       return false;
     }
 
-    // ✅ bắt buộc có phí ship GHN tính được (tránh spam)
+    // bắt buộc có phí ship GHN tính được (tránh spam)
     if (shippingCost <= 0) {
       Swal.fire(
         "Lỗi!",
@@ -277,17 +277,17 @@ export default function Checkout() {
 
     return true;
   };
-  // ✅ Tạo vận đơn GHN theo đơn hàng vừa tạo (orderId)
+  // Tạo vận đơn GHN theo đơn hàng vừa tạo (orderId)
   const createGhnShipping = async ({ orderId, payloadOrder }) => {
     // payloadOrder là payload em đã gửi qua /api/donhang/them (để lấy thông tin người nhận + cart)
     // build items GHN từ cart
     const items = cart.map((it) => {
-      const price = Number(it.giakhuyenmai ?? it.giagoc ?? 0); // ✅ lấy giá bán
+      const price = Number(it.giakhuyenmai ?? it.giagoc ?? 0); //  lấy giá bán
       return {
         name: it.tensanpham || "Sản phẩm",
         quantity: Number(it.soluong || 1),
         weight: Number(it.weight || 300),
-        price: Math.max(0, Math.round(price)), // ✅ GHN cần số nguyên VND
+        price: Math.max(0, Math.round(price)), //  GHN cần số nguyên VND
       };
     });
 
@@ -296,15 +296,15 @@ export default function Checkout() {
       0
     );
 
-    // ✅ payload gửi BE /api/ghn/create-order
+    // payload gửi BE /api/ghn/create-order
     const ghnPayload = {
-      madonhang: orderId, // 🔥 bắt buộc để BE update DB
+      madonhang: orderId, //  bắt buộc để BE update DB
 
       to_name: payloadOrder.tennguoinhan,
       to_phone: payloadOrder.sodienthoai,
       to_address: payloadOrder.diachigiao,
 
-      // ✅ ĐÚNG KEY GHN
+      //  ĐÚNG KEY GHN
       to_district_id: Number(payloadOrder.district_id),
       to_ward_code: String(payloadOrder.ward_code),
 
@@ -334,7 +334,7 @@ export default function Checkout() {
     e.preventDefault();
 
     try {
-      const user = JSON.parse(localStorage.getItem("user"));
+      const user = JSON.parse(localStorage.getItem("userinfo"));
       if (!user) {
         Swal.fire("Lỗi!", "Bạn chưa đăng nhập!", "error");
         return;
@@ -342,7 +342,7 @@ export default function Checkout() {
 
       if (!validateForm()) return;
 
-      // ✅ update diachigiao lần cuối (nếu user đổi số nhà/đường)
+      //  update diachigiao lần cuối (nếu user đổi số nhà/đường)
       const finalAddress = buildFullAddress(formData);
       const payload = {
         manguoidung: user.manguoidung,

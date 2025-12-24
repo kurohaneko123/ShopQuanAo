@@ -41,7 +41,7 @@ export default function ChiTietSanPham() {
   const handleAddToCart = () => {
     try {
       // Kiểm tra đăng nhập
-      const user = localStorage.getItem("user");
+      const user = localStorage.getItem("userinfo");
       if (!user) {
         Swal.fire({
           title: "Bạn chưa đăng nhập!",

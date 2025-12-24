@@ -7,14 +7,14 @@ export default function AdminLayout() {
 
   // Kiểm tra đăng nhập (GIỮ NGUYÊN LOGIC)
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
+    const user = JSON.parse(localStorage.getItem("userinfo"));
     if (!user || user.vaitro !== "admin") {
       navigate("/");
     }
   }, [navigate]);
 
   const logout = () => {
-    localStorage.removeItem("user");
+    localStorage.removeItem("userino");
     navigate("/");
   };
 

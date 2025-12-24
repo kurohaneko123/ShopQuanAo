@@ -24,10 +24,11 @@ export default function Navbar() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-
   const [categories, setCategories] = useState([]);
   const [maleCategories, setMaleCategories] = useState([]);
   const [femaleCategories, setFemaleCategories] = useState([]);
+  const [filteredResults, setFilteredResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
 
   /* ===== GỌI API DANH MỤC ===== */
   useEffect(() => {
@@ -55,34 +56,6 @@ export default function Navbar() {
     if (storedUser) setUser(JSON.parse(storedUser));
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-
-    // giữ activeUserId lại cũng được (để sau login khôi phục),
-    // nhưng để chắc chắn “không lộ dữ liệu” khi chưa login thì xoá:
-    localStorage.removeItem("activeUserId");
-    localStorage.removeItem("checkoutPayload");
-
-    setUser(null);
-    Swal.fire({
-      title: "Đăng xuất thành công!",
-      icon: "success",
-      confirmButtonText: "OK",
-      background: "#f2f2f2",
-      color: "#4caf50",
-      willClose: () => {
-        setTimeout(() => {
-          onClose(); // Đảm bảo modal đóng lại sau khi thông báo đã hiển thị
-        }, 300); // Đảm bảo thời gian đủ để thông báo đóng trước khi modal đóng
-      },
-      customClass: {
-        popup: "z-[1000]", // Tăng z-index của thông báo để nó luôn ở trên
-      },
-    });
-    window.location.href = "/"; // về home
-  };
-
   const handleAvatarClick = () => {
     if (user?.vaitro === "admin") {
       navigate("/admin"); // nếu admin thì nhảy thẳng vào dashboard admin
@@ -93,29 +66,82 @@ export default function Navbar() {
 
   /* ===== THANH TÌM KIẾM ===== */
   const [searchTerm, setSearchTerm] = useState("");
-  const [filteredResults, setFilteredResults] = useState([]);
-  const products = [
-    { id: 1, name: "Áo thun", price: 199000 },
-    { id: 2, name: "Quần jean", price: 359000 },
-    { id: 3, name: "Quần Short", price: 299000 },
-  ];
+  useEffect(() => {
+    const q = searchTerm.trim();
+
+    if (!q) {
+      setFilteredResults([]);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        setSearchLoading(true);
+
+        // ✅ gọi API lọc biến thể (đổi đúng URL API của em)
+        const res = await axios.get("http://localhost:5000/api/bienthe/loc", {
+          params: {
+            search: q, //keyword gõ ở header
+            // giữ các bộ lọc nếu em muốn (optional):
+            // kichthuoc,
+            // mausac,
+            // giaTu,
+            // giaDen,
+            // gioitinh,
+          },
+        });
+
+        // tuỳ backend trả về: res.data.dulieu
+        const list = res.data?.dulieu || [];
+
+        // giới hạn 8 gợi ý cho mượt
+        setFilteredResults(list.slice(0, 8));
+      } catch (err) {
+        console.error("Lỗi search biến thể:", err);
+        setFilteredResults([]);
+      } finally {
+        setSearchLoading(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   const handleSearch = () => {
-    if (searchTerm.trim()) {
-      navigate(`/all?search=${encodeURIComponent(searchTerm.trim())}`);
+    const keyword = searchTerm.trim();
+    if (!keyword) return;
+
+    navigate(`/all?search=${encodeURIComponent(keyword)}`);
+    setSearchTerm("");
+  };
+  const clearLocalWhenLogout = () => {
+    try {
+      const uid = localStorage.getItem("activeUserId");
+
+      // xoá giỏ hàng theo user
+      if (uid) {
+        localStorage.removeItem(`cart_${uid}`);
+      }
+
+      //  xoá giỏ guest
+      localStorage.removeItem("cart_guest");
+
+      //  xoá dữ liệu checkout
+      localStorage.removeItem("checkoutPayload");
+
+      // xoá auth
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      localStorage.removeItem("activeUserId");
+
+      //  xoá mấy key phụ nếu có
+      localStorage.removeItem("lastOrderId");
+      localStorage.removeItem("lastPaymentMethod");
+      localStorage.removeItem("lastZaloOrderId");
+    } catch (e) {
+      console.error("Logout clear local error:", e);
     }
   };
-
-  useEffect(() => {
-    if (searchTerm.trim() === "") {
-      setFilteredResults([]);
-    } else {
-      const results = products.filter((p) =>
-        p.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setFilteredResults(results);
-    }
-  }, [searchTerm]);
 
   //================ GIỎ HÀNG ================
   const [cartCount, setCartCount] = useState(0);
@@ -283,7 +309,7 @@ export default function Navbar() {
             </li>
 
             {/* KHUYẾN MÃI */}
-            <li className="group relative h-full flex items-center">
+            {/* <li className="group relative h-full flex items-center">
               <a
                 href="/sale"
                 className="relative px-4 py-5 font-semibold text-red-500
@@ -293,7 +319,7 @@ export default function Navbar() {
               >
                 Khuyến mãi
               </a>
-            </li>
+            </li> */}
 
             {/* LIÊN HỆ */}
             <li className="group h-full flex items-center">
@@ -329,26 +355,60 @@ export default function Navbar() {
               onClick={handleSearch}
             />
 
-            {searchTerm && filteredResults.length > 0 && (
+            {searchTerm && (
               <div className="absolute top-12 left-0 w-full bg-white shadow-xl border rounded-xl z-[60] max-h-60 overflow-y-auto">
-                {filteredResults.map((p) => (
-                  <button
-                    key={p.id}
-                    onClick={() => {
-                      navigate(`/all?search=${encodeURIComponent(p.name)}`);
+                {searchLoading && (
+                  <div className="px-4 py-3 text-sm text-gray-500">
+                    Đang tìm…
+                  </div>
+                )}
+
+                {!searchLoading && filteredResults.length === 0 && (
+                  <div className="px-4 py-3 text-sm text-gray-500">
+                    Không tìm thấy kết quả
+                  </div>
+                )}
+
+                {!searchLoading &&
+                  filteredResults.map((item, idx) => {
+                    const ten =
+                      item.tensanpham ||
+                      item.ten ||
+                      item.name ||
+                      item.tensp ||
+                      "Sản phẩm";
+                    const gia =
+                      item.giakhuyenmai ??
+                      item.giaban ??
+                      item.giasanpham ??
+                      item.gia ??
+                      0;
+
+                    // nếu có masp / mabienthe thì điều hướng chi tiết, còn không thì search
+                    const go = () => {
+                      // ✅ Option 1: nhảy qua trang all với keyword
+                      navigate(`/all?search=${encodeURIComponent(ten)}`);
                       setSearchTerm("");
                       setFilteredResults([]);
-                    }}
-                    className="w-full text-left px-4 py-2 hover:bg-gray-100 flex flex-col transition"
-                  >
-                    <span className="text-gray-800 font-semibold">
-                      {p.name}
-                    </span>
-                    <span className="text-xs text-gray-500">
-                      {p.price.toLocaleString()}₫
-                    </span>
-                  </button>
-                ))}
+                    };
+
+                    return (
+                      <button
+                        key={item.mabienthe || item.id || idx}
+                        onClick={go}
+                        className="w-full text-left px-4 py-2 hover:bg-gray-100 flex flex-col transition"
+                      >
+                        <span className="text-gray-800 font-semibold">
+                          {ten}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {gia > 0
+                            ? Number(gia).toLocaleString("vi-VN") + "₫"
+                            : "Liên hệ"}
+                        </span>
+                      </button>
+                    );
+                  })}
               </div>
             )}
           </div>
@@ -423,16 +483,26 @@ export default function Navbar() {
                 </div>
                 <div className="h-px bg-gray-100" />
                 <button
-                  onClick={handleLogout}
+                  onClick={() => {
+                    clearLocalWhenLogout();
+
+                    Swal.fire({
+                      icon: "success",
+                      title: "Đã đăng xuất",
+                      timer: 1200,
+                      showConfirmButton: false,
+                    }).then(() => {
+                      window.location.href = "/";
+                    });
+                  }}
                   className="
-      w-full flex items-center gap-3
-      px-4 py-3 text-sm font-medium
-      text-gray-700
-      hover:bg-red-50 hover:text-red-600
-      transition
-    "
+    w-full flex items-center gap-3
+    px-4 py-3 text-sm font-medium
+    text-gray-700
+    hover:bg-red-50 hover:text-red-600
+    transition
+  "
                 >
-                  <LogOut size={16} />
                   Đăng xuất
                 </button>
               </div>

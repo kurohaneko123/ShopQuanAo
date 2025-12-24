@@ -15,6 +15,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import Swal from "sweetalert2";
 
 export default function DonHang() {
   const [orders, setOrders] = useState([]);
@@ -60,18 +61,14 @@ export default function DonHang() {
           return;
         }
 
-        const res = await axios.get(
-          `${BASE_URL}/lsdonhang`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`, // ✅ ĐÚNG
-            },
-          }
-        );
+        const res = await axios.get(`${BASE_URL}/lsdonhang`, {
+          headers: {
+            Authorization: `Bearer ${token}`, // ✅ ĐÚNG
+          },
+        });
 
         const orders = res.data.data || [];
         setOrders(orders);
-
       } catch (err) {
         console.error("Lỗi lấy đơn hàng:", err);
       } finally {
@@ -88,14 +85,16 @@ export default function DonHang() {
      - ZALOPAY → hoàn tiền
   ================================ */
   const cancelOrder = async (order) => {
-    if (!window.confirm("Bạn có chắc muốn hủy / hoàn tiền đơn hàng này?")) return;
+    if (!window.confirm("Bạn có chắc muốn hủy / hoàn tiền đơn hàng này?"))
+      return;
 
     const token = localStorage.getItem("token");
 
     try {
       // COD → hủy đơn
       if (order.hinhthucthanhtoan === "COD") {
-        await axios.put(`${BASE_URL}/huy/${order.madonhang}`,
+        await axios.put(
+          `${BASE_URL}/huy/${order.madonhang}`,
           {},
           {
             headers: { Authorization: `Bearer ${token}` },
@@ -104,9 +103,7 @@ export default function DonHang() {
 
         setOrders((prev) =>
           prev.map((o) =>
-            o.madonhang === order.madonhang
-              ? { ...o, trangthai: "Đã hủy" }
-              : o
+            o.madonhang === order.madonhang ? { ...o, trangthai: "Đã hủy" } : o
           )
         );
         return;
@@ -159,14 +156,13 @@ export default function DonHang() {
       }
     } catch (err) {
       console.error("Lỗi hủy / hoàn tiền:", err);
-      alert(
-        err.response?.data?.message ||
-        err.message ||
-        "Không thể hủy / hoàn tiền đơn hàng này"
+      Swal.fire(
+        "Lỗi!",
+        "Đã có lỗi xảy ra khi hủy / hoàn tiền đơn hàng.",
+        "error"
       );
     }
   };
-
 
   const getStatusColor = (tt) => {
     tt = tt.toLowerCase();
@@ -426,10 +422,11 @@ export default function DonHang() {
                   key={p}
                   onClick={() => goToPage(p)}
                   className={`h-10 w-10 rounded-full text-sm font-semibold transition
-          ${active
-                      ? "bg-slate-900 text-white"
-                      : "text-slate-700 hover:bg-slate-50 border"
-                    }
+          ${
+            active
+              ? "bg-slate-900 text-white"
+              : "text-slate-700 hover:bg-slate-50 border"
+          }
         `}
                   aria-label={`Trang ${p}`}
                 >
@@ -442,10 +439,11 @@ export default function DonHang() {
             onClick={() => goToPage(safePage + 1)}
             disabled={safePage === totalPages}
             className={`h-10 w-10 rounded-full border flex items-center justify-center transition
-      ${safePage === totalPages
-                ? "opacity-40 cursor-not-allowed"
-                : "hover:bg-slate-50"
-              }
+      ${
+        safePage === totalPages
+          ? "opacity-40 cursor-not-allowed"
+          : "hover:bg-slate-50"
+      }
     `}
             aria-label="Trang sau"
           >

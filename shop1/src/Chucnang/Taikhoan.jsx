@@ -19,54 +19,103 @@ export default function AccountModal({ isOpen, onClose }) {
 
   if (!isOpen) return null;
 
-  // ✅ Đăng nhập bằng Google
-  const handleGoogleLogin = async () => {
-    try {
-      setLoading(true);
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      const vaitro = user.email === "admin@gmail.com" ? "admin" : "user";
+  // //  Đăng nhập bằng Google
+  // const handleGoogleLogin = async () => {
+  //   try {
+  //     setLoading(true);
 
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          email: user.email,
-          name: user.displayName,
-          photo: user.photoURL,
-          vaitro,
-        })
-      );
-      const userId =
-        data.nguoidung?.manguoidung ||
-        data.nguoidung?.id ||
-        data.nguoidung?.email ||
-        email;
+  //     const result = await signInWithPopup(auth, provider);
+  //     const user = result.user;
 
-      localStorage.setItem("activeUserId", String(userId));
+  //     const vaitro = user.email === "admin@gmail.com" ? "admin" : "user";
 
-      // ✅ tránh dính dữ liệu checkout / form của user cũ
-      localStorage.removeItem("checkoutPayload");
+  //     // lưu user
+  //     localStorage.setItem(
+  //       "user",
+  //       JSON.stringify({
+  //         email: user.email,
+  //         name: user.displayName,
+  //         photo: user.photoURL,
+  //         vaitro,
+  //       })
+  //     );
 
-      alert("Đăng nhập Google thành công!");
-      onClose?.();
-      if (vaitro === "admin") window.location.href = "/admin";
-      else window.location.reload();
-    } catch (error) {
-      console.error("Lỗi đăng nhập Google:", error);
-      alert("Đăng nhập Google thất bại!");
-    } finally {
-      setLoading(false);
-    }
-  };
+  //     // userId cho Google login (dùng uid Firebase)
+  //     const userId = user.uid;
+  //     localStorage.setItem("activeUserId", userId);
 
-  // ✅ Gửi request lên API backend
+  //     // ✅ tránh dính checkout cũ
+  //     localStorage.removeItem("checkoutPayload");
+
+  //     Swal.fire({
+  //       icon: "success",
+  //       title: "Đăng nhập Google thành công!",
+  //       timer: 1500,
+  //       showConfirmButton: false,
+  //     });
+
+  //     onClose?.();
+
+  //     if (vaitro === "admin") {
+  //       window.location.href = "/admin";
+  //     } else {
+  //       window.location.reload();
+  //     }
+  //   } catch (error) {
+  //     console.error("Lỗi đăng nhập Google:", error);
+  //     Swal.fire("Lỗi!", "Đăng nhập Google thất bại!", "error");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  // Gửi request lên API backend
   const handleSubmit = async (e) => {
     e.preventDefault();
     const email = e.target.email?.value.trim();
     const password = e.target.password?.value?.trim();
     const name = e.target.hoten?.value?.trim();
     const phone = e.target.sodienthoai?.value?.trim();
+    // rằng buộc nhập & validate
+    if (mode === "register") {
+      const nameRegex = /^[A-Za-zÀ-ỹ\s]+$/;
+      if (!name || name.trim().length < 2) {
+        Swal.fire("Lỗi!", "Họ tên phải có ít nhất 2 ký tự", "error");
+        return;
+      }
+      if (!nameRegex.test(name.trim())) {
+        Swal.fire(
+          "Lỗi!",
+          "Họ tên chỉ được chứa chữ cái, không được có số hoặc ký tự đặc biệt",
+          "error"
+        );
+        return;
+      }
 
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+      if (!emailRegex.test(email)) {
+        Swal.fire("Lỗi!", "Chỉ cho phép đăng ký bằng gmail.com", "error");
+        return;
+      }
+
+      const phoneRegex = /^(03|05|07|08|09)[0-9]{8}$/;
+      if (!phoneRegex.test(phone)) {
+        Swal.fire("Lỗi!", "Số điện thoại không hợp lệ ", "error");
+        return;
+      }
+
+      if (!password || password.length < 8) {
+        Swal.fire("Lỗi!", "Mật khẩu phải có ít nhất 8 ký tự", "error");
+        return;
+      }
+
+      const hasLetter = /[a-zA-Z]/.test(password);
+      const hasNumber = /[0-9]/.test(password);
+      if (!hasLetter || !hasNumber) {
+        Swal.fire("Lỗi!", "Mật khẩu phải chứa cả chữ và số", "error");
+        return;
+      }
+    }
     try {
       setLoading(true);
 
@@ -118,7 +167,7 @@ export default function AccountModal({ isOpen, onClose }) {
 
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || "Đăng ký thất bại");
-        window.location.href = "/login";
+
         // Thông báo thành công
         Swal.fire({
           title: "Đăng ký thành công!",
@@ -268,7 +317,7 @@ export default function AccountModal({ isOpen, onClose }) {
           </p>
         </div>
 
-        {/* MXH */}
+        {/* MXH
         {mode !== "forgot" && (
           <>
             <p className="text-center text-sm font-medium text-gray-500 mb-3">
@@ -310,7 +359,7 @@ export default function AccountModal({ isOpen, onClose }) {
               </button>
             </div>
           </>
-        )}
+        )} */}
 
         {/* Gạch chia */}
         <div className="relative mb-6">

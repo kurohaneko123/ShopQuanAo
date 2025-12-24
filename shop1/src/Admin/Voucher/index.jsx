@@ -46,6 +46,9 @@ export default function QuanLyVoucher() {
     const e = {};
 
     if (!d.magiamgia?.trim()) e.magiamgia = "Vui lòng nhập mã giảm giá";
+    if (!NO_SPECIAL_CHAR_REGEX.test(d.magiamgia)) {
+      e.magiamgia = "Mã giảm giá không được chứa ký tự đặc biệt";
+    }
 
     if (!d.giatrigiam || Number(d.giatrigiam) <= 0)
       e.giatrigiam = "Giá trị giảm phải > 0";
@@ -67,6 +70,7 @@ export default function QuanLyVoucher() {
     setAddErrors(e);
     return Object.keys(e).length === 0;
   };
+  const NO_SPECIAL_CHAR_REGEX = /^[a-zA-Z0-9À-ỹ\s]+$/;
 
   const validateEdit = () => {
     const d = editData;
@@ -75,7 +79,12 @@ export default function QuanLyVoucher() {
     // edit không bắt nhập lại mã, chỉ check phần có thể sai
     if (!d.giatrigiam || Number(d.giatrigiam) <= 0)
       e.giatrigiam = "Giá trị giảm phải > 0";
-
+    if (!NO_SPECIAL_CHAR_REGEX.test(d.magiamgia)) {
+      e.magiamgia = "Mã giảm giá không được chứa ký tự đặc biệt";
+    }
+    if (d.mota && !NO_SPECIAL_CHAR_REGEX.test(d.mota)) {
+      e.mota = "Mô tả không được chứa ký tự đặc biệt";
+    }
     if (d.loaikhuyenmai === "%" && Number(d.giatrigiam) > 100)
       e.giatrigiam = "Giảm theo % không được > 100";
 

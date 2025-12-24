@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { User, Mail, Phone, MapPin, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 
 export default function ThongTinKhachHang() {
   const [user, setUser] = useState(null);
@@ -35,11 +36,15 @@ export default function ThongTinKhachHang() {
       setUser(updatedUser);
       localStorage.setItem("userinfo", JSON.stringify(updatedUser));
 
-      alert("Cập nhật thành công!");
+ Swal.fire("Thành công!", "Cập nhật thông tin thành công!", "success");
       setShowEdit(false);
     } catch (err) {
       console.error(err);
-      alert("Cập nhật thất bại!");
+      Swal.fire(
+        "Lỗi!",
+        "Đã có lỗi xảy ra khi cập nhật thông tin.",
+        "error"
+      );
     }
   };
 

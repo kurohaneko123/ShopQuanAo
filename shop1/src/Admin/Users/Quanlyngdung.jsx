@@ -48,15 +48,29 @@ export default function QuanLyNguoiDungAdmin() {
       alert("Không đổi được trạng thái!");
     }
   };
+  const NO_SPECIAL_CHAR_REGEX = /^[a-zA-Z0-9À-ỹ\s]+$/;
+
   const validateEdit = () => {
     const e = {};
 
     if (!form.hoten?.trim()) e.hoten = "Vui lòng nhập họ tên";
-
+    if (!NO_SPECIAL_CHAR_REGEX.test(form.hoten)) {
+      e.hoten = "Họ tên không được chứa ký tự đặc biệt";
+    }
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
     if (!form.email?.trim()) e.email = "Vui lòng nhập email";
+    if (form.email && !emailRegex.test(form.email)) {
+      e.email = "Email không hợp lệ";
+    }
 
+    const phoneRegex = /^(03|05|07|08|09)[0-9]{8}$/;
     if (!form.sodienthoai?.trim())
       e.sodienthoai = "Vui lòng nhập số điện thoại";
+    else if (!phoneRegex.test(form.sodienthoai))
+      e.sodienthoai = "Số điện thoại không hợp lệ";
+    if (!NO_SPECIAL_CHAR_REGEX.test(form.sodienthoai)) {
+      e.sodienthoai = "Số điện thoại không được chứa ký tự đặc biệt";
+    }
 
     if (!form.diachi?.trim()) e.diachi = "Vui lòng nhập địa chỉ";
 

@@ -21,7 +21,7 @@ export default function EditProductModal({
   }, [product]);
 
   if (!open || !product) return null;
-
+  const NO_SPECIAL_CHAR_REGEX = /^[a-zA-Z0-9À-ỹ\s]+$/;
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -35,8 +35,21 @@ export default function EditProductModal({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!form.tensanpham?.trim()) {
+      e.tensanpham = "Tên sản phẩm không được trống";
+    } else if (!NO_SPECIAL_CHAR_REGEX.test(form.tensanpham)) {
+      e.tensanpham = "Tên sản phẩm không được chứa ký tự đặc biệt";
+    }
+    if (!form.madanhmuc) e.madanhmuc = "Danh mục không được trống";
 
-    if (!editForm.giaban) e.giaban = "Giá không được trống";
+    if (!form.thuonghieu?.trim()) {
+      e.thuonghieu = "Thương hiệu không được trống";
+    } else if (!NO_SPECIAL_CHAR_REGEX.test(form.thuonghieu)) {
+      e.thuonghieu = "Thương hiệu không được chứa ký tự đặc biệt";
+    }
+
+    if (!form.giaban) e.giaban = "Giá không được trống";
+
     if (!editForm.soluongton) e.soluongton = "Số lượng không được trống";
     setEditErrors(e);
     if (Object.keys(e).length > 0) return;

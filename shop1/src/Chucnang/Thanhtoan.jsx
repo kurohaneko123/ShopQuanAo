@@ -95,7 +95,7 @@ export default function Checkout() {
     }
 
     // Kiểm tra số điện thoại (chỉ cho phép nhập số)
-    const phoneRegex = /^[0-9]{10,11}$/;
+    const phoneRegex = /^(03|05|07|08|09)[0-9]{8}$/;
     if (!formData.sodienthoai.trim()) {
       Swal.fire({
         title: "Lỗi!",

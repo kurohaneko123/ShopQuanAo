@@ -21,6 +21,7 @@ import QuanjoogerTrang from "../assets/quanjoogertrang.png";
 import Quanshort from "../assets/quan-short.jpg";
 import Bannermacthuongngay from "../assets/banner_mac.jpg";
 import Bannergoiy from "../assets/banner_goiy2.webp";
+import Swal from "sweetalert2";
 
 //
 // Vì đây chỉ là CSS + vị trí tuyệt đối (absolute), đổi className là xong.
@@ -128,10 +129,18 @@ export default function HomePage() {
     navigator.clipboard
       .writeText(code)
       .then(() => {
-        alert(`Đã copy mã: ${code} ✔`);
+        Swal.fire({
+          icon: "success",
+          title: "Đã copy mã!",
+          text: `Đã copy mã: ${code} vào clipboard.`,
+        });
       })
       .catch(() => {
-        alert("Copy thất bại!");
+        Swal.fire({
+          icon: "error",
+          title: "Lỗi",
+          text: "Không thể copy mã voucher.",
+        });
       });
   };
 
@@ -296,7 +305,12 @@ export default function HomePage() {
       const variants = res.data.bienthe || [];
 
       if (variants.length === 0) {
-        alert("Sản phẩm chưa có biến thể!");
+        Swal.fire({
+          icon: "error",
+          title: "Lỗi",
+          text: "Sản phẩm hiện không có biến thể để thêm vào giỏ hàng.",
+        });
+
         return;
       }
 
@@ -490,7 +504,7 @@ export default function HomePage() {
                     <img
                       src={p.img}
                       alt={p.name}
-                      className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
+                      className="w-full h-full object-cover rounded-xl transition-transform duration-300 group-hover:scale-105"
                     />
                   </div>
                   <div className="p-4 text-center">
@@ -505,16 +519,31 @@ export default function HomePage() {
                       <p className="text-slate-400 text-sm">Đang tải giá…</p>
                     )}
                   </div>
-                  <div className="absolute bottom-4 left-0 w-full flex justify-center opacity-0 group-hover:opacity-100 transition">
+                  <div
+                    className="
+  absolute top-3 right-3
+  opacity-0 group-hover:opacity-100
+  transition-all duration-300
+"
+                  >
                     <button
                       onClick={(e) => {
-                        e.stopPropagation(); // ⛔ chặn click lan sang card
+                        e.stopPropagation();
                         handleAddToCart(p);
                       }}
-                      className="bg-black text-white px-5 py-2 rounded-full 
-             text-sm font-medium hover:bg-gray-800"
+                      className="
+  w-11 h-11 rounded-full
+  bg-white text-[rgb(96,148,216)]
+  border border-slate-200
+  flex items-center justify-center
+  shadow-md
+  hover:bg-[rgb(96,148,216)] hover:text-white hover:[rgb(60,110,190)]
+ hover:scale-105
+    transition-all duration-300
+"
+                      aria-label="Thêm vào giỏ hàng"
                     >
-                      Thêm vào giỏ hàng +
+                      <ShoppingBag size={22} />
                     </button>
                   </div>
                 </div>

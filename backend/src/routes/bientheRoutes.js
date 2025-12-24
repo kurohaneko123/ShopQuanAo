@@ -1,5 +1,9 @@
 import express from "express";
-import { xoaBienTheController, suaBienThe, locBienThe } from "../controllers/bientheController.js";
+import {
+  xoaBienTheController,
+  suaBienThe,
+  locBienThe,
+} from "../controllers/bientheController.js";
 
 const router = express.Router();
 

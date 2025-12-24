@@ -4,6 +4,7 @@ import axios from "axios";
 import { User, Mail, Phone, MapPin, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
+
 export default function ThongTinKhachHang() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -35,20 +36,11 @@ export default function ThongTinKhachHang() {
       setUser(updatedUser);
       localStorage.setItem("userinfo", JSON.stringify(updatedUser));
 
-      Swal.fire({
-        icon: "success",
-        title: "Cập nhật thành công!",
-        showConfirmButton: false,
-        timer: 1500,
-      });
+      Swal.fire("Thành công!", "Cập nhật thông tin thành công!", "success");
       setShowEdit(false);
     } catch (err) {
       console.error(err);
-      Swal.fire({
-        icon: "error",
-        title: "Cập nhật thất bại!",
-        text: "Đã có lỗi xảy ra, vui lòng thử lại sau.",
-      });
+      Swal.fire("Lỗi!", "Đã có lỗi xảy ra khi cập nhật thông tin.", "error");
     }
   };
 

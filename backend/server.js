@@ -13,7 +13,10 @@ import mausacRoutes from "./src/routes/mausacRoutes.js"; //Route màu sắc
 import bientheRoutes from "./src/routes/bientheRoutes.js"; //Route biến thể
 import donhangRoutes from "./src/routes/donhangRoutes.js"; //Route đơn hàng
 import chitietdonhangRoutes from "./src/routes/chitietdonhangRoutes.js"; //Route chi tiết đơn hàng
+
 import ghnRoutes from "./src/routes/ghnRoutes.js"; //Routes GHN
+
+import hoantienRoutes from "./src/routes/hoantienRoutes.js"; //Route hoàn tiền
 
 import paymentRoutes from "./src/routes/paymentRoutes.js"; //Routes thanh toán
 import danhgiaRoute from "./src/routes/danhgiaRoutes.js"; //Routes đánh giá
@@ -57,7 +60,10 @@ app.use("/api/donhang", donhangRoutes);
 app.use("/api/chitietdonhang", chitietdonhangRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/danhgia", danhgiaRoute);
+
 app.use("/api/ghn", ghnRoutes); //router giao hàng nhanh
+
+app.use("/api/hoantien", hoantienRoutes);
 app.use("/images", express.static("public/images"));
 
 // ⚙️ Lắng nghe server

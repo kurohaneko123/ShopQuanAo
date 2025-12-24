@@ -75,15 +75,15 @@ export default function Footer() {
 
         {/* 4️⃣ ĐĂNG KÝ NHẬN TIN */}
         <div>
-          <h3 className="text-lg font-semibold text-white mb-4 tracking-wide">
+          {/* <h3 className="text-lg font-semibold text-white mb-4 tracking-wide">
             Đăng ký nhận tin
           </h3>
           <p className="text-sm mb-4 opacity-80">
             Nhận thông tin ưu đãi, bộ sưu tập mới và tin tức độc quyền từ
             HORIZON.
-          </p>
+          </p> */}
 
-          <div className="flex">
+          {/* <div className="flex">
             <input
               type="email"
               placeholder="Nhập email của bạn"
@@ -92,7 +92,7 @@ export default function Footer() {
             <button className="bg-indigo-600 text-white px-4 py-2 rounded-r-lg hover:bg-indigo-700 transition">
               Gửi
             </button>
-          </div>
+          </div> */}
         </div>
       </div>
 

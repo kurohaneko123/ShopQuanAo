@@ -61,8 +61,8 @@ export default function LienHe() {
         </div>
 
         {/* Form liên hệ */}
-        <div className="mt-16 bg-white p-8 rounded-xl shadow-md">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-6">
+        {/* <div className="mt-16 bg-white p-8 rounded-xl shadow-md"> */}
+        {/* <h2 className="text-2xl font-semibold text-gray-800 mb-6">
             Gửi tin nhắn cho chúng tôi
           </h2>
 
@@ -99,8 +99,8 @@ export default function LienHe() {
             >
               GỬI LIÊN HỆ
             </button>
-          </form>
-        </div>
+          </form> */}
+        {/* </div> */}
       </div>
     </section>
   );

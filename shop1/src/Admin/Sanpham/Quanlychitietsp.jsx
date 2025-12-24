@@ -23,14 +23,6 @@ export default function Quanlychitietsp() {
   const [addErrors, setAddErrors] = useState({});
   const [editErrors, setEditErrors] = useState({});
 
-  // ADD form
-  const [addForm, setAddForm] = useState({
-    mamausac: "",
-    makichthuoc: "",
-    giaban: "",
-    soluongton: "",
-  });
-
   // EDIT form
   const [editForm, setEditForm] = useState({
     mamausac: "",
@@ -38,7 +30,8 @@ export default function Quanlychitietsp() {
     giaban: "",
     soluongton: "",
   });
-
+  // Chỉ cho số (giá, số lượng)
+  const NUMBER_ONLY_REGEX = /^[0-9]+$/;
   const API = `http://localhost:5000/api/sanpham/${id}`;
 
   // LOAD DATA
@@ -102,46 +95,6 @@ export default function Quanlychitietsp() {
       )
     );
   };
-
-  // ============================================================
-  // ADD VARIANT
-  const handleAddVariant = async () => {
-    const e = {};
-
-    if (!addForm.mamausac) e.mamausac = "Chọn màu";
-    if (!addForm.makichthuoc) e.makichthuoc = "Chọn size";
-    if (!addForm.giaban) e.giaban = "Nhập giá";
-    if (!addForm.soluongton) e.soluongton = "Nhập số lượng";
-
-    setAddErrors(e);
-    if (Object.keys(e).length > 0) return;
-
-    try {
-      const res = await axios.post("http://localhost:5000/api/bienthe/them", {
-        ...addForm,
-        masanpham: id,
-      });
-
-      setVariants((prev) => [...prev, res.data.newVariant]);
-      setShowAddPopup(false);
-      setAddForm({ mamausac: "", makichthuoc: "", giaban: "", soluongton: "" });
-      setAddErrors({});
-      Swal.fire({
-        title: "Thành công!",
-        text: "Thêm biến thể thành công!",
-        icon: "success",
-        confirmButtonText: "OK",
-      });
-    } catch (err) {
-      Swal.fire({
-        title: "Lỗi!",
-        text: "Lỗi khi thêm biến thể!",
-        icon: "error",
-        confirmButtonText: "OK",
-      });
-    }
-  };
-
   // ============================================================
   // EDIT VARIANT
   const handleSubmitEdit = async () => {
@@ -294,18 +247,7 @@ export default function Quanlychitietsp() {
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-lg font-semibold text-gray-100">
             Biến thể sản phẩm
-          </h3>
-
-          <button
-            onClick={() => setShowAddPopup(true)}
-            className="flex items-center gap-2
-    px-4 py-2 rounded-lg
-    bg-indigo-600 hover:bg-indigo-500
-    text-white text-sm shadow"
-          >
-            <PlusCircle size={18} />
-            Thêm biến thể
-          </button>
+          </h3>     
         </div>
 
         <table className="w-full border-collapse text-sm">
@@ -322,9 +264,13 @@ export default function Quanlychitietsp() {
           <tbody>
             {paginatedVariants.map((v) => (
               <tr key={v.mabienthe} className="bg-white/5 text-gray-400">
-                <td className="px-4 py-3 text-gray-200">{v.tenmausac}</td>
-                <td className="px-4 py-3 text-gray-200">{v.tenkichthuoc}</td>
-                <td className="px-4 py-3 text-gray-200">
+                <td className="px-4 py-3 text-gray-200 text-center">
+                  {v.tenmausac}
+                </td>
+                <td className="px-4 py-3 text-gray-200 text-center">
+                  {v.tenkichthuoc}
+                </td>
+                <td className="px-4 py-3 text-gray-200 text-center">
                   {Number(v.giaban).toLocaleString()} đ
                 </td>
 
@@ -397,81 +343,6 @@ export default function Quanlychitietsp() {
         currentPage={page}
         onPageChange={setPage}
       />
-
-      {/* ===================================== POPUP ADD */}
-      {showAddPopup && (
-        <Popup title="Thêm biến thể" onClose={() => setShowAddPopup(false)}>
-          <label>Màu</label>
-          <select
-            className={`w-full px-3 py-2 rounded-lg
-  bg-black/40 text-gray-200
-  border ${addErrors.mamausac ? "border-red-500/60" : "border-white/10"}
-  focus:border-indigo-500 outline-none`}
-            value={addForm.mamausac}
-            onChange={(e) =>
-              setAddForm({ ...addForm, mamausac: e.target.value })
-            }
-          >
-            {colors.map((m) => (
-              <option key={m.mamausac} value={m.mamausac}>
-                {m.tenmausac}
-              </option>
-            ))}
-          </select>
-          {addErrors.mamausac && (
-            <p className="text-xs text-red-500">{addErrors.mamausac}</p>
-          )}
-
-          <label>Kích thước</label>
-          <select
-            className={`w-full px-3 py-2 rounded-lg
-  bg-black/40 text-gray-200
-  border ${addErrors.makichthuoc ? "border-red-500/60" : "border-white/10"}
-  focus:border-indigo-500 outline-none`}
-          >
-            {sizes.map((s) => (
-              <option key={s.makichthuoc} value={s.makichthuoc}>
-                {s.tenkichthuoc}
-              </option>
-            ))}
-          </select>
-          {addErrors.makichthuoc && (
-            <p className="text-xs text-red-500">{addErrors.makichthuoc}</p>
-          )}
-          <input
-            className={`w-full px-3 py-2 rounded-lg
-  bg-black/40 text-gray-200
-  border ${addErrors.giaban ? "border-red-500/60" : "border-white/10"}
-  focus:border-indigo-500 outline-none`}
-            placeholder="Giá bán"
-          />
-
-          {addErrors.giaban && (
-            <p className="text-xs text-red-500">{addErrors.giaban}</p>
-          )}
-          <input
-            placeholder="Số lượng"
-            className={`w-full px-3 py-2 rounded-lg
-  bg-black/40 text-gray-200
-  border ${addErrors.soluongton ? "border-red-500/60" : "border-white/10"}
-  focus:border-indigo-500 outline-none`}
-            onChange={(e) =>
-              setAddForm({ ...addForm, soluongton: e.target.value })
-            }
-          />
-
-          {addErrors.soluongton && (
-            <p className="text-xs text-red-500">{addErrors.soluongton}</p>
-          )}
-          <button
-            className="w-full bg-indigo-600 hover:bg-indigo-500
-  text-white py-2 rounded-lg transition"
-            onClick={handleAddVariant}
-          >
-            Thêm biến thể
-          </button>
-        </Popup>
-      )}
 
       {/* ===================================== POPUP EDIT */}
       {showEditPopup && (

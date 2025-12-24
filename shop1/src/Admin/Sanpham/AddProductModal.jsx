@@ -75,15 +75,25 @@ export default function AddProductModal({
     if (variants.length === 1) return;
     setVariants(variants.filter((_, i) => i !== index));
   };
+  // chỉ tiếng viiet và số
+  const NO_SPECIAL_CHAR_REGEX = /^[a-zA-Z0-9À-ỹ\s]+$/;
+  // ================================
   const validate = () => {
     const e = {};
 
-    if (!data.tensanpham?.trim()) e.tensanpham = "Vui lòng nhập tên sản phẩm";
+    if (!data.tensanpham?.trim()) {
+      e.tensanpham = "Vui lòng nhập tên sản phẩm";
+    } else if (!NO_SPECIAL_CHAR_REGEX.test(data.tensanpham)) {
+      e.tensanpham = "Tên sản phẩm không được chứa ký tự đặc biệt";
+    }
 
     if (!data.madanhmuc) e.madanhmuc = "Vui lòng chọn danh mục";
 
-    if (!data.thuonghieu?.trim()) e.thuonghieu = "Vui lòng nhập thương hiệu";
-
+    if (!data.thuonghieu?.trim()) {
+      e.thuonghieu = "Vui lòng nhập thương hiệu";
+    } else if (!NO_SPECIAL_CHAR_REGEX.test(data.thuonghieu)) {
+      e.thuonghieu = "Thương hiệu không được chứa ký tự đặc biệt";
+    }
     if (!avatarFile) e.anhdaidien = "Vui lòng chọn ảnh đại diện";
 
     variants.forEach((v, i) => {
@@ -151,7 +161,7 @@ export default function AddProductModal({
       }
 
       // ============================
-      // 2️⃣ UPLOAD ẢNH ĐẠI DIỆN
+      // 2️ UPLOAD ẢNH ĐẠI DIỆN
       // ============================
       const formAvatar = new FormData();
       formAvatar.append("masanpham", masanpham);
@@ -170,7 +180,7 @@ export default function AddProductModal({
 
       // ============================
       // ============================
-      // 3️⃣ UPLOAD ẢNH BIẾN THỂ (FIXED)
+      // 3️ UPLOAD ẢNH BIẾN THỂ (FIXED)
       // ============================
 
       // Lấy lại chi tiết sản phẩm để có đúng danh sách mabienthe
@@ -293,8 +303,11 @@ export default function AddProductModal({
   `}
               value={data.tensanpham}
               onChange={(e) => {
-                setData({ ...data, tensanpham: e.target.value });
-                setErrors((p) => ({ ...p, tensanpham: "" }));
+                const value = e.target.value;
+                if (NO_SPECIAL_CHAR_REGEX.test(value) || value === "") {
+                  setData({ ...data, tensanpham: value });
+                  setErrors((p) => ({ ...p, tensanpham: "" }));
+                }
               }}
             />
 

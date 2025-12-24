@@ -153,7 +153,7 @@ export default function QuanLySanPham() {
             });
             setAddOpen(true);
           }}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700"
+          className="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-lg flex items-center gap-2 shadow-lg transition text-white"
         >
           Thêm sản phẩm
         </button>

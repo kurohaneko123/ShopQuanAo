@@ -44,25 +44,40 @@ export const taoChiTietDonHang = async (idDon, chitiet, connection) => {
     return result;
 };
 
-//Lấy danh sách đơn hàng 
+// Lấy danh sách đơn hàng (có kèm thông tin hoàn tiền nếu có)
 export const layTatCaDonHang = async () => {
     const [rows] = await db.query(`
     SELECT 
-        dh.madonhang,
-        dh.manguoidung,
-        nd.hoten AS ten_nguoi_dung,
-        dh.tennguoinhan,
-        dh.sodienthoai,
-        dh.diachigiao,
-        dh.donvivanchuyen,
-        dh.hinhthucthanhtoan,
-        dh.tongtien,
-        dh.phivanchuyen,
-        dh.tongthanhtoan,
-        dh.trangthai,
-        dh.ngaytao
+      dh.madonhang,
+      dh.manguoidung,
+      nd.hoten AS ten_nguoi_dung,
+      dh.tennguoinhan,
+      dh.sodienthoai,
+      dh.diachigiao,
+      dh.donvivanchuyen,
+      dh.hinhthucthanhtoan,
+      dh.tongtien,
+      dh.phivanchuyen,
+      dh.tongthanhtoan,
+      dh.trangthai,
+      dh.ngaytao,
+
+      -- 🔥 HOÀN TIỀN
+      ht.mahoantien,
+      ht.trangthai AS trangthai_hoantien
+
     FROM donhang dh
-    LEFT JOIN nguoidung nd ON dh.manguoidung = nd.manguoidung
+    LEFT JOIN nguoidung nd 
+      ON dh.manguoidung = nd.manguoidung
+    LEFT JOIN hoantien ht 
+      ON dh.madonhang = ht.madonhang
+      AND ht.mahoantien = (
+        SELECT mahoantien 
+        FROM hoantien 
+        WHERE madonhang = dh.madonhang 
+        ORDER BY ngaytao DESC 
+        LIMIT 1
+      )
     ORDER BY dh.madonhang DESC
   `);
 
@@ -70,28 +85,41 @@ export const layTatCaDonHang = async () => {
 };
 
 //Code sửa đơn hàng (có ràng buộc)
-// Lấy đơn hàng theo ID
+// Lấy đơn hàng theo ID (KÈM TRẠNG THÁI HOÀN TIỀN)
 export const layDonHangTheoID = async (madonhang) => {
     const [rows] = await db.query(
         `
         SELECT 
-            madonhang,
-            trangthai,
-            dathanhtoan,
-            tennguoinhan,
-            sodienthoai,
-            diachigiao,
-            donvivanchuyen,
-            hinhthucthanhtoan,
-            phivanchuyen,
-            tongthanhtoan
-        FROM donhang
-        WHERE madonhang = ?
+            d.madonhang,
+            d.trangthai,
+            d.dathanhtoan,
+            d.tennguoinhan,
+            d.sodienthoai,
+            d.diachigiao,
+            d.donvivanchuyen,
+            d.hinhthucthanhtoan,
+            d.phivanchuyen,
+            d.tongthanhtoan,
+
+            -- 🔥 THÔNG TIN HOÀN TIỀN (NẾU CÓ)
+            h.mahoantien,
+            h.trangthai AS trangthai_hoantien,
+            h.sotienhoan,
+            h.ngaytao AS ngay_hoan_tien
+
+        FROM donhang d
+        LEFT JOIN hoantien h 
+            ON d.madonhang = h.madonhang
+        WHERE d.madonhang = ?
+        ORDER BY h.ngaytao DESC
+        LIMIT 1
         `,
         [madonhang]
     );
+
     return rows[0];
 };
+
 
 
 // Cập nhật đơn hàng ( dùng chung cho sửa và hủy)
@@ -150,4 +178,17 @@ export const layDonHangTheoNguoiDung = async (manguoidung) => {
     `, [manguoidung]);
 
     return rows;
+};
+//CẬP NHẬT TRẠNG THÁI ĐƠN HÀNG
+export const capNhatTrangThaiDonHang = async (madonhang, trangthai) => {
+    const [result] = await db.query(
+        `
+        UPDATE donhang
+        SET trangthai = ?, ngaycapnhat = NOW()
+        WHERE madonhang = ?
+        `,
+        [trangthai, madonhang]
+    );
+
+    return result;
 };

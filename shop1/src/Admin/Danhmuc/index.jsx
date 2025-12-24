@@ -30,17 +30,17 @@ export default function CategoriesPage() {
     // đang gõ lại thì xóa lỗi của field đó thôi
     setErrors((prev) => ({ ...prev, [name]: "" }));
   };
-
+  const NO_SPECIAL_CHAR_REGEX = /^[a-zA-Z0-9À-ỹ\s]+$/;
   const validate = () => {
     const e = {};
 
     if (!form.tendanhmuc?.trim())
       e.tendanhmuc = "Tên danh mục không được để trống";
 
-    // Nếu em muốn giới tính bắt buộc thì mở dòng này:
-    // if (!form.gioitinh) e.gioitinh = "Vui lòng chọn giới tính";
-
-    // Mô tả không bắt buộc nên không validate
+    if (!NO_SPECIAL_CHAR_REGEX.test(form.tendanhmuc)) {
+      e.tendanhmuc = "Tên danh mục không được chứa ký tự đặc biệt";
+    }
+    if (!form.gioitinh) e.gioitinh = "Vui lòng chọn giới tính";
 
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -159,7 +159,7 @@ export default function CategoriesPage() {
           onClick={openAdd}
           className="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-lg flex items-center gap-2 shadow-lg transition text-white"
         >
-          <PlusCircle size={18} /> Thêm danh mục
+          Thêm danh mục
         </button>
       </div>
 
@@ -172,15 +172,15 @@ export default function CategoriesPage() {
                 MÃ
               </th>
 
-              <th className="p-3 border-b border-white/10 w-[220px] text-left">
+              <th className="p-3 border-b border-white/10 w-[100px] text-left">
                 TÊN DANH MỤC
               </th>
 
-              <th className="p-3 border-b border-white/10 w-[120px] text-center">
+              <th className="p-3 border-b border-white/10 w-[150px] text-center">
                 GIỚI TÍNH
               </th>
 
-              <th className="p-3 border-b border-white/10 w-[250px] text-left">
+              <th className="p-3 border-b border-white/10 w-[170px] text-left">
                 SLUG
               </th>
 

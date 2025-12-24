@@ -31,7 +31,13 @@ export default function OrderSuccess() {
     );
   }, [location.state, location.search]);
 
-  const [checking, setChecking] = useState(paymentMethod === "ZALOPAY");
+  // ❌ KHÔNG quyết định checking bằng paymentMethod nữa
+  // ✅ checking sẽ được quyết định dựa trên DB
+  const [checking, setChecking] = useState(true);
+
+  // 🔥 Trạng thái hoàn tiền
+  // null | "dang_xu_ly" | "thanh_cong" | "that_bai"
+  const [refundStatus, setRefundStatus] = useState(null);
 
   // 2️⃣ Polling khi là ZaloPay
   useEffect(() => {
@@ -39,23 +45,57 @@ export default function OrderSuccess() {
 
     const timer = setInterval(async () => {
       try {
-        // ✅ SỬA ĐÚNG ENDPOINT BACKEND
-        const res = await fetch(`http://localhost:5000/api/donhang/${orderId}`);
+        const res = await fetch(
+          `http://localhost:5000/api/donhang/${orderId}`
+        );
         const data = await res.json();
 
-        // 👉 backend của anh dùng dathanhtoan
-        if (Number(data?.dathanhtoan) === 1) {
-          clearInterval(timer);
+        // 🔥 CASE 1: ĐÃ HOÀN TIỀN → KHÔNG CHECKING
+        if (
+          data?.trangthai === "đã hoàn tiền" ||
+          data?.trangthai === "Hoàn Trả"
+        ) {
           setChecking(false);
 
-          // ✅ XÓA GIỎ SAU KHI THANH TOÁN THÀNH CÔNG
+          // nếu có mã hoàn tiền → check trạng thái refund
+          if (data.mahoantien) {
+            const refundRes = await fetch(
+              `http://localhost:5000/api/payment/zalopay/refund-status?refund_id=${data.mahoantien}`
+            );
+            const refundData = await refundRes.json();
+
+            if (refundData.return_code === 1) {
+              setRefundStatus("thanh_cong");
+              clearInterval(timer);
+            } else if (refundData.return_code === 3) {
+              setRefundStatus("dang_xu_ly");
+            } else {
+              setRefundStatus("that_bai");
+              clearInterval(timer);
+            }
+          } else {
+            clearInterval(timer);
+          }
+
+          return;
+        }
+
+        // 🔥 CASE 2: THANH TOÁN THÀNH CÔNG (chưa hoàn tiền)
+        if (Number(data?.dathanhtoan) === 1) {
+          setChecking(false);
+          clearInterval(timer);
+
+          // ✅ XÓA GIỎ SAU KHI THANH TOÁN
           const uid = localStorage.getItem("activeUserId");
           const cartKey = uid ? `cart_${uid}` : "cart_guest";
           localStorage.removeItem(cartKey);
           localStorage.removeItem("checkoutPayload");
 
-          // (không xóa lastZaloOrderId để refresh vẫn xem được)
+          return;
         }
+
+        // 🔥 CASE 3: CHƯA CÓ KẾT QUẢ CUỐI → vẫn checking
+        setChecking(true);
       } catch (err) {
         console.error(err);
       }
@@ -64,7 +104,7 @@ export default function OrderSuccess() {
     return () => clearInterval(timer);
   }, [orderId, paymentMethod]);
 
-  // 3️⃣ Nếu không có orderId → đá về home
+  // 3️⃣ Nếu không có orderId → về home
   useEffect(() => {
     if (!orderId) {
       navigate("/", { replace: true });
@@ -81,19 +121,28 @@ export default function OrderSuccess() {
           <div className="flex justify-center mb-6">
             <div className="w-20 h-20 rounded-full bg-[rgb(220,235,250)] flex items-center justify-center">
               <span className="text-4xl text-[rgb(60,110,190)] font-bold">
-                ✓
+                {checking && "⏳"}
+                {!checking && !refundStatus && "✓"}
+                {refundStatus === "dang_xu_ly" && "🔄"}
+                {refundStatus === "thanh_cong" && "💸"}
               </span>
             </div>
           </div>
 
           <h1 className="text-center text-2xl font-extrabold text-slate-900">
-            {checking ? "Đang xác nhận thanh toán..." : "Đặt hàng thành công"}
+            {checking && "Đang xác nhận thanh toán..."}
+            {!checking && !refundStatus && "Đặt hàng thành công"}
+            {refundStatus === "dang_xu_ly" && "Đơn hàng đang hoàn tiền"}
+            {refundStatus === "thanh_cong" && "Hoàn tiền thành công"}
           </h1>
 
           <p className="mt-2 text-center text-slate-600">
-            {checking
-              ? "Vui lòng chờ trong giây lát"
-              : "Cảm ơn bạn đã mua sắm tại Horizon"}
+            {checking && "Vui lòng chờ trong giây lát"}
+            {!checking && !refundStatus && "Cảm ơn bạn đã mua sắm tại Horizon"}
+            {refundStatus === "dang_xu_ly" &&
+              "ZaloPay đang xử lý hoàn tiền, vui lòng đợi trong giây lát"}
+            {refundStatus === "thanh_cong" &&
+              "Số tiền đã được hoàn lại vào ví ZaloPay của bạn"}
           </p>
 
           <div className="mt-6 grid grid-cols-2 gap-4">
@@ -109,44 +158,30 @@ export default function OrderSuccess() {
               </p>
             </div>
           </div>
-          {checking ? (
-            <p className="mt-6 text-center text-slate-600">
-              Vui lòng chờ trong giây lát
-            </p>
-          ) : (
-            <>
-              <p className="mt-2 text-center text-slate-600">
-                Cảm ơn bạn đã mua sắm tại Horizon
-              </p>
 
-              <div className="mt-8 flex justify-center gap-3">
-                <Link
-                  to="/"
-                  className="
-          px-5 py-3 rounded-xl border
-          text-sm font-semibold
-          border-[rgb(190,215,245)]
-          text-[rgb(60,110,190)]
-          hover:bg-[rgb(220,235,250)]
-        "
-                >
-                  Tiếp tục mua sắm
-                </Link>
+          {/* Nút chỉ hiện khi KHÔNG đang refund */}
+          {!checking && refundStatus !== "dang_xu_ly" && (
+            <div className="mt-8 flex justify-center gap-3">
+              <Link
+                to="/"
+                className="px-5 py-3 rounded-xl border text-sm font-semibold
+                border-[rgb(190,215,245)]
+                text-[rgb(60,110,190)]
+                hover:bg-[rgb(220,235,250)]"
+              >
+                Tiếp tục mua sắm
+              </Link>
 
-                <Link
-                  to="/donhang"
-                  className="
-          px-5 py-3 rounded-xl
-          bg-[rgb(96,148,216)] text-white
-          text-sm font-semibold
-          hover:bg-[rgb(72,128,204)]
-          transition
-        "
-                >
-                  Xem đơn hàng
-                </Link>
-              </div>
-            </>
+              <Link
+                to="/donhang"
+                className="px-5 py-3 rounded-xl
+                bg-[rgb(96,148,216)] text-white
+                text-sm font-semibold
+                hover:bg-[rgb(72,128,204)] transition"
+              >
+                Xem đơn hàng
+              </Link>
+            </div>
           )}
         </div>
       </div>

@@ -131,13 +131,16 @@ export default function HomePage() {
       .then(() => {
         Swal.fire({
           icon: "success",
-          title: `Đã copy mã: ${code} ✔`,
+          title: "Đã copy mã!",
+          text: `Đã copy mã: ${code} vào clipboard.`,
         });
       })
       .catch(() => {
         Swal.fire({
           icon: "error",
           title: "Copy thất bại!",
+          title: "Lỗi",
+          text: "Không thể copy mã voucher.",
         });
       });
   };
@@ -305,7 +308,8 @@ export default function HomePage() {
       if (variants.length === 0) {
         Swal.fire({
           icon: "error",
-          title: "Sản phẩm hiện không có biến thể để thêm vào giỏ hàng!",
+          title: "Lỗi",
+          text: "Sản phẩm hiện không có biến thể để thêm vào giỏ hàng.",
         });
 
         return;

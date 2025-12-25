@@ -201,19 +201,17 @@ export default function CategoriesPage() {
                 className="hover:bg-white/5 transition-colors border-b border-white/5"
               >
                 {/* MÃ */}
-                <td className="p-3 text-center font-semibold text-gray-300">
+                <td className="p-3 text-center font-bold text-gray-300">
                   {c.madanhmuc}
                 </td>
 
                 {/* TÊN DANH MỤC */}
-                <td className="p-3 text-gray-200 font-medium">
-                  {c.tendanhmuc}
-                </td>
+                <td className="p-3 text-gray-200 font-bold">{c.tendanhmuc}</td>
 
                 {/* GIỚI TÍNH */}
                 <td className="p-3 text-center">
                   <span
-                    className={`px-3 py-1 rounded-full text-xs font-medium ${
+                    className={`px-3 py-1 rounded-full text-xs font-bold ${
                       c.gioitinh === "Nam"
                         ? "bg-blue-600/30 text-blue-300 border border-blue-500/40"
                         : c.gioitinh === "Nu"
@@ -281,7 +279,7 @@ export default function CategoriesPage() {
             </button>
 
             {/* Tiêu đề */}
-            <h3 className="text-lg font-semibold text-gray-100 mb-5">
+            <h3 className="text-lg font-bold text-gray-100 mb-5">
               {editMode ? "Chỉnh sửa danh mục" : "Thêm danh mục"}
             </h3>
 
@@ -363,13 +361,13 @@ export default function CategoriesPage() {
               <X size={18} />
             </button>
 
-            <h3 className="text-lg font-semibold text-gray-100 mb-2">
+            <h3 className="text-lg font-bold text-gray-100 mb-2">
               Xóa danh mục
             </h3>
 
             <p className="text-sm text-gray-400 mb-5 leading-relaxed">
               Danh mục{" "}
-              <span className="text-gray-200 font-semibold">
+              <span className="text-gray-200 font-bold">
                 {deleteTarget?.name || "này"}
               </span>{" "}
               sẽ bị xóa vĩnh viễn và không thể khôi phục.

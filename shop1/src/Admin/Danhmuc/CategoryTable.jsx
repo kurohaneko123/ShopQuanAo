@@ -24,7 +24,7 @@ export default function CategoryTable({ categories, onEdit, onDelete }) {
               className="hover:bg-white/5 transition-colors border-b border-white/5"
             >
               <td className="p-3">{c.madanhmuc}</td>
-              <td className="p-3 text-gray-200 font-medium">{c.tendanhmuc}</td>
+              <td className="p-3 text-gray-200 font-bold">{c.tendanhmuc}</td>
               <td className="p-3 text-gray-400">{c.mota}</td>
 
               <td className="p-3 text-center">

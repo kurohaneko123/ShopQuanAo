@@ -82,8 +82,8 @@ export default function QuanLyVoucher() {
     if (!NO_SPECIAL_CHAR_REGEX.test(d.magiamgia)) {
       e.magiamgia = "Mã giảm giá không được chứa ký tự đặc biệt";
     }
-    if (d.mota && !NO_SPECIAL_CHAR_REGEX.test(d.mota)) {
-      e.mota = "Mô tả không được chứa ký tự đặc biệt";
+    if (d.mota && !d.mota.trim()) {
+      e.mota = "Vui lòng nhập mô tả";
     }
     if (d.loaikhuyenmai === "%" && Number(d.giatrigiam) > 100)
       e.giatrigiam = "Giảm theo % không được > 100";
@@ -286,7 +286,7 @@ export default function QuanLyVoucher() {
           vouchers={paginatedVouchers}
           onEdit={(v) => {
             setEditData({
-              mavoucher: v.mavoucher, // ✅ QUAN TRỌNG
+              mavoucher: v.mavoucher,
               magiamgia: v.magiamgia,
               mota: v.mota || "",
               loaikhuyenmai: v.loaikhuyenmai || "%",

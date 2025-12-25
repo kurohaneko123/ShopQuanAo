@@ -142,7 +142,7 @@ export default function EditProductModal({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Tên */}
             <div>
-              <label className="text-sm text-gray-300 font-medium">
+              <label className="text-sm text-gray-300 font-bold">
                 Tên sản phẩm *
               </label>
               <input
@@ -160,7 +160,7 @@ export default function EditProductModal({
 
             {/* Danh mục */}
             <div>
-              <label className="text-sm text-gray-300 font-medium">
+              <label className="text-sm text-gray-300 font-bold">
                 Danh mục *
               </label>
               <select
@@ -191,7 +191,7 @@ export default function EditProductModal({
               ["Bảo quản", "baoquan"],
             ].map(([label, key]) => (
               <div key={key}>
-                <label className="text-sm text-gray-300 font-medium">
+                <label className="text-sm text-gray-300 font-bold">
                   {label}
                 </label>
                 <input
@@ -206,7 +206,7 @@ export default function EditProductModal({
 
           {/* Mô tả */}
           <div>
-            <label className="text-sm text-gray-300 font-medium">Mô tả</label>
+            <label className="text-sm text-gray-300 font-bold">Mô tả</label>
             <textarea
               name="mota"
               value={form.mota || ""}
@@ -217,7 +217,7 @@ export default function EditProductModal({
 
           {/* Ảnh đại diện */}
           <div>
-            <label className="text-sm text-gray-300 font-medium">
+            <label className="text-sm text-gray-300 font-bold">
               Ảnh đại diện
             </label>
 

@@ -18,9 +18,7 @@ export default function AddVoucherModal({
           ✕
         </button>
 
-        <h3 className="text-lg font-semibold text-gray-100 mb-5">
-          Thêm voucher
-        </h3>
+        <h3 className="text-lg font-bold text-gray-100 mb-5">Thêm voucher</h3>
 
         <div className="space-y-3">
           <input

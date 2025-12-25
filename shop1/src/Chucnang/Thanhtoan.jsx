@@ -570,16 +570,31 @@ export default function Checkout() {
             ))}
           </select>
 
-          {/* ✅ Số nhà/đường */}
+          {/*  Số nhà/đường */}
           <input
             type="text"
-            placeholder="Số nhà, tên đường (khuyến khích nhập)"
+            placeholder="Số nhà, tên đường"
             className="w-full border rounded-lg p-3 mb-3"
             value={formData.diachi_chitiet}
             onChange={(e) => {
-              const next = { ...formData, diachi_chitiet: e.target.value };
+              const value = e.target.value;
+
+              const ADDRESS_REGEX = /^[a-zA-Z0-9À-ỹ\s,./-]+$/;
+
+              // nếu có ký tự lạ → chặn
+              if (value && !ADDRESS_REGEX.test(value)) {
+                Swal.fire({
+                  icon: "warning",
+                  title: "Địa chỉ không hợp lệ",
+                  text: "Chỉ được nhập chữ, số và các ký tự , . / -",
+                });
+                return;
+              }
+
+              const next = { ...formData, diachi_chitiet: value };
               setFormData(next);
-              // update địa chỉ hiển thị (không tự tính ship lại, vì ship dựa quận/phường)
+
+              // cập nhật địa chỉ ghép
               setFormData((prev) => ({
                 ...prev,
                 diachigiao: buildFullAddress(next),

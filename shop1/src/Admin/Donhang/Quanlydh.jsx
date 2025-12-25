@@ -243,14 +243,14 @@ export default function Quanlydh() {
 
               return (
                 <tr key={x.madonhang} className="border-b border-white/5">
-                  <td className="p-3">{x.madonhang}</td>
-                  <td className="p-3">{x.tennguoinhan}</td>
-                  <td className="p-3">{x.sodienthoai}</td>
-                  <td className="p-3 text-teal-300 font-semibold">
+                  <td className="p-3 text-center">{x.madonhang}</td>
+                  <td className="p-3 text-center">{x.tennguoinhan}</td>
+                  <td className="p-3 text-center">{x.sodienthoai}</td>
+                  <td className="p-3 text-teal-300 text-center font-bold">
                     {Number(x.tongthanhtoan).toLocaleString()}đ
                   </td>
 
-                  <td className="p-3">
+                  <td className="p-3 text-center">
                     {x.trangthai_hoantien === "dang_xu_ly"
                       ? "Đang hoàn tiền (ZaloPay)"
                       : x.trangthai_hoantien === "thanh_cong"

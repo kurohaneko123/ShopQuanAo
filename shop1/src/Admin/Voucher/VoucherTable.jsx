@@ -37,7 +37,7 @@ export default function VoucherTable({ vouchers, onEdit, onDelete }) {
               key={v.magiamgia}
               className="hover:bg-white/5 border-b border-white/5 transition-colors"
             >
-              <td className="p-3 text-center font-medium text-gray-200">
+              <td className="p-3 text-center font-bold text-gray-200">
                 {v.magiamgia}
               </td>
               <td className="p-3 text-left text-gray-300">{v.mota}</td>
@@ -45,7 +45,7 @@ export default function VoucherTable({ vouchers, onEdit, onDelete }) {
               {/* Badge loại */}
               <td className="p-3 text-center">
                 <span
-                  className={`px-2 py-1 rounded-md text-xs font-semibold border ${
+                  className={`px-2 py-1 rounded-md text-xs font-bold border ${
                     v.loaikhuyenmai === "%"
                       ? "bg-purple-600/30 text-purple-300 border-purple-500/40"
                       : "bg-emerald-600/30 text-emerald-300 border-emerald-500/40"

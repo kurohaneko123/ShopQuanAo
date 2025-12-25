@@ -183,7 +183,7 @@ export default function QuanLyNguoiDungAdmin() {
                 key={u.manguoidung}
                 className="hover:bg-white/5 border-b border-white/5 transition"
               >
-                <td className="p-3 text-center text-gray-300 font-semibold">
+                <td className="p-3 text-center text-gray-300 font-bold">
                   {u.manguoidung}
                 </td>
 
@@ -195,7 +195,7 @@ export default function QuanLyNguoiDungAdmin() {
                 {/* Vai trò */}
                 <td className="p-3 text-center">
                   <span
-                    className={`px-2 py-1 rounded-md text-xs font-semibold border ${
+                    className={`px-2 py-1 rounded-md text-xs font-bold border ${
                       u.vaitro === "admin"
                         ? "bg-purple-600/30 text-purple-300 border-purple-500/40"
                         : "bg-blue-600/30 text-blue-300 border-blue-500/40"
@@ -208,7 +208,7 @@ export default function QuanLyNguoiDungAdmin() {
                 {/* Trạng thái */}
                 <td className="p-3 text-center">
                   <span
-                    className={`px-3 py-1 rounded-full text-xs font-semibold border ${
+                    className={`px-3 py-1 rounded-full text-xs font-bold border ${
                       u.trangthai === "hoạt động"
                         ? "bg-green-600/30 text-green-300 border-green-500/40"
                         : "bg-red-600/30 text-red-300 border-red-500/40"

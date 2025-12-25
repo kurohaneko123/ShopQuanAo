@@ -294,7 +294,7 @@ export default function AddProductModal({
         <div className="grid grid-cols-2 gap-4">
           {/* Tên */}
           <div>
-            <label className="text-gray-300 text-sm font-medium">
+            <label className="text-gray-300 text-sm font-bold">
               Tên sản phẩm *
             </label>
             <input
@@ -318,7 +318,7 @@ export default function AddProductModal({
 
           {/* Danh mục */}
           <div>
-            <label className="text-gray-300 text-sm font-medium">
+            <label className="text-gray-300 text-sm font-bold">
               Danh mục *
             </label>
             <select
@@ -348,7 +348,7 @@ export default function AddProductModal({
             ["Bảo quản", "baoquan"],
           ].map(([label, key]) => (
             <div key={key}>
-              <label className="text-gray-300 text-sm font-medium">
+              <label className="text-gray-300 text-sm font-bold">
                 {label}
               </label>
               <input
@@ -362,7 +362,7 @@ export default function AddProductModal({
 
         {/* Mô tả */}
         <div className="mt-4">
-          <label className="text-gray-300 text-sm font-medium">Mô tả</label>
+          <label className="text-gray-300 text-sm font-bold">Mô tả</label>
           <textarea
             className="bg-[#1a1a1a] border border-white/10 p-2 rounded-lg w-full text-gray-200"
             rows={3}
@@ -373,7 +373,7 @@ export default function AddProductModal({
 
         {/* Ảnh đại diện */}
         <div className="mt-4">
-          <label className="text-gray-300 text-sm font-medium">
+          <label className="text-gray-300 text-sm font-bold">
             Ảnh đại diện *
           </label>
 

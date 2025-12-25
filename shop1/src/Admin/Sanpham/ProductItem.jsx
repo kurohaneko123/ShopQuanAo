@@ -25,7 +25,7 @@ export default function ProductItem({
       </td>
 
       {/* TÊN */}
-      <td className="p-3 border border-white/10 text-gray-200 font-medium">
+      <td className="p-3 border border-white/10 text-gray-200 font-bold">
         {product.tensanpham}
       </td>
 

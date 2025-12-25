@@ -18,7 +18,7 @@ export default function EditVoucherModal({
           ✕
         </button>
 
-        <h3 className="text-lg font-semibold text-gray-100 mb-5">
+        <h3 className="text-lg font-bold text-gray-100 mb-5">
           Chỉnh sửa voucher
         </h3>
 
@@ -40,6 +40,9 @@ export default function EditVoucherModal({
             value={data.mota || ""}
             onChange={(e) => setField("mota", e.target.value)}
           />
+          {errors?.mota && (
+            <p className="text-xs text-red-400 mt-1">{errors.mota}</p>
+          )}
 
           <select
             className="w-full px-3 py-2 rounded-lg bg-black/40 text-gray-200 border border-white/10"

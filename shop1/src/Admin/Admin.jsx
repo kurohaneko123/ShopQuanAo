@@ -32,7 +32,7 @@ export default function AdminLayout() {
       <aside
         className={`
     fixed md:static z-40
-    w-64 h-full
+    w-64 h-screen
     bg-[#111111] border-r border-white/10
     shadow-[0_0_15px_rgba(0,0,0,0.5)]
     flex flex-col justify-between
@@ -40,25 +40,11 @@ export default function AdminLayout() {
     ${open ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
   `}
       >
-        {open && (
-          <div
-            onClick={() => setOpen(false)}
-            className="fixed inset-0 bg-black/50 z-30 md:hidden"
-          />
-        )}
-
         {/* LOGO / TITLE */}
         <div>
           <div className="text-2xl font-bold text-center py-6 border-b border-white/10 text-indigo-400 tracking-wide">
             ADMIN PANEL
           </div>
-          <button
-            onClick={() => setOpen(true)}
-            className="md:hidden fixed top-4 left-4 z-50
-             p-2 rounded-lg bg-white/10 text-white"
-          >
-            <Menu size={22} />
-          </button>
 
           {/* DASHBOARD */}
           <NavLink
@@ -167,9 +153,21 @@ export default function AdminLayout() {
           </button>
         </div>
       </aside>
-
+      {open && (
+        <div
+          onClick={() => setOpen(false)}
+          className="fixed inset-0 bg-black/50 z-30 md:hidden"
+        />
+      )}
       {/* ===== MAIN CONTENT ===== */}
       <main className="flex-1 p-4 sm:p-6 md:p-8 bg-[#0f0f0f]">
+        <button
+          onClick={() => setOpen(true)}
+          className="md:hidden fixed top-4 left-4 z-50
+             p-2 rounded-lg bg-white/10 text-white"
+        >
+          <Menu size={22} />
+        </button>
         <Outlet />
       </main>
     </div>

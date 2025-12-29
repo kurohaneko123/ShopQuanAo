@@ -40,9 +40,9 @@ export default function CategoryTable({ categories, onEdit, onDelete }) {
                   {/* Xóa */}
                   <button
                     onClick={() => onDelete(c.madanhmuc)}
-                    className="text-red-500 hover:text-red-400 transition"
+                    className="text-red-600 hover:text-red-500 transition"
                   >
-                    <Trash2 size={20} />
+                    <Trash2 size={20} className="text-red-500" />
                   </button>
                 </div>
               </td>

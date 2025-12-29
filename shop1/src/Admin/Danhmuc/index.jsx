@@ -256,7 +256,10 @@ export default function CategoriesPage() {
                         setOpenDelete(true);
                       }}
                     >
-                      <Trash2 size={20} />
+                      <Trash2
+                        size={20}
+                        className="text-red-500 hover:text-red-400 transition"
+                      />
                     </button>
                   </div>
                 </td>

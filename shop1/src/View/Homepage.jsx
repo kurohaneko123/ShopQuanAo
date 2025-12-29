@@ -139,8 +139,7 @@ export default function HomePage() {
         Swal.fire({
           icon: "error",
           title: "Copy thất bại!",
-          title: "Lỗi",
-          text: "Không thể copy mã voucher.",
+          text: "Lỗi,Không thể copy mã voucher.",
         });
       });
   };
@@ -350,22 +349,20 @@ export default function HomePage() {
           <nav className="flex justify-start gap-4">
             <button
               onClick={() => setSelectedGender("nam")}
-              className={`h-12 px-6 rounded-full font-semibold uppercase transition-all ${
-                selectedGender === "nam"
+              className={`h-12 px-6 rounded-full font-semibold uppercase transition-all ${selectedGender === "nam"
                   ? "bg-neutral-900 text-white"
                   : "bg-neutral-200 text-neutral-800 hover:bg-neutral-300"
-              }`}
+                }`}
             >
               Nam
             </button>
 
             <button
               onClick={() => setSelectedGender("nu")}
-              className={`h-12 px-6 rounded-full font-semibold uppercase transition-all ${
-                selectedGender === "nu"
+              className={`h-12 px-6 rounded-full font-semibold uppercase transition-all ${selectedGender === "nu"
                   ? "bg-neutral-900 text-white"
                   : "bg-neutral-200 text-neutral-800 hover:bg-neutral-300"
-              }`}
+                }`}
             >
               Nữ
             </button>

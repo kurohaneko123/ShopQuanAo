@@ -1,5 +1,6 @@
 import CryptoJS from "crypto-js";
 import db from "../../config/db.js";
+import axios from "axios";
 
 export const ZaloPayCallback = async (req, res) => {
     try {
@@ -68,10 +69,33 @@ export const ZaloPayCallback = async (req, res) => {
         );
 
         console.log(">>> UPDATE RESULT:", result);
+        // CHỈ TẠO GHN KHI UPDATE THÀNH CÔNG
+        if (result.affectedRows > 0) {
+            try {
+                await axios.post("http://localhost:5000/api/ghn/create-order", {
+                    madonhang,
+                    to_name: dataObj.customer_name,
+                    to_phone: dataObj.customer_phone,
+                    to_address: dataObj.customer_address,
+                    to_ward_code: dataObj.to_ward_code,
+                    to_district_id: dataObj.to_district_id,
+                    weight: dataObj.weight || 500,
+                    insurance_value: dataObj.amount,
+                    cod_amount: 0, //  ZALOPAY → COD = 0
+                    items: dataObj.items,
+                });
+
+                console.log(">>> GHN CREATED AFTER ZALOPAY");
+            } catch (e) {
+                console.error(">>> GHN CREATE FAILED AFTER ZALOPAY:", e.message);
+            }
+        }
+
 
         return res.json({ return_code: 1, return_message: "Xử lý thành công" });
     } catch (err) {
         console.log(">>> CALLBACK ERROR:", err);
         return res.json({ return_code: 0, return_message: "Lỗi backend" });
     }
+
 };

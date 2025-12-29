@@ -93,6 +93,7 @@ export const layDonHangTheoID = async (madonhang) => {
             d.madonhang,
             d.trangthai,
             d.dathanhtoan,
+            d.ghn_order_code,
             d.tennguoinhan,
             d.sodienthoai,
             d.diachigiao,

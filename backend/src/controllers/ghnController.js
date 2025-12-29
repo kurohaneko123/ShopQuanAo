@@ -158,7 +158,7 @@ export const createGhnOrder = async (req, res) => {
 
     // payload gửi GHN (giữ như em đang làm)
     const payload = {
-      payment_type_id: 2,
+      payment_type_id: Number(cod_amount) > 0 ? 2 : 1,
       note: "KhongchoXemHang",
       required_note: "KHONGCHOXEMHANG",
 
@@ -198,7 +198,7 @@ export const createGhnOrder = async (req, res) => {
       });
     }
 
-    // ✅ LƯU VÀO BẢNG donhang (đúng theo ảnh DB của em)
+    // LƯU VÀO BẢNG donhang (đúng theo ảnh DB của em)
     await db.query(
       `UPDATE donhang
        SET ghn_order_code = ?, ghn_fee = ?, donvivanchuyen = 'GHN', phivanchuyen = ?

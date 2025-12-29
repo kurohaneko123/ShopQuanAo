@@ -108,7 +108,7 @@ export default function Navbar() {
       try {
         setSearchLoading(true);
 
-        // ✅ gọi API lọc biến thể (đổi đúng URL API của em)
+        //  gọi API lọc biến thể (đổi đúng URL API của em)
         const res = await axios.get("http://localhost:5000/api/bienthe/loc", {
           params: {
             search: q, //keyword gõ ở header
@@ -375,7 +375,7 @@ export default function Navbar() {
 
                     // nếu có masp / mabienthe thì điều hướng chi tiết, còn không thì search
                     const go = () => {
-                      // ✅ Option 1: nhảy qua trang all với keyword
+                      //  Option 1: nhảy qua trang all với keyword
                       navigate(`/all?search=${encodeURIComponent(ten)}`);
                       setSearchTerm("");
                       setFilteredResults([]);

@@ -10,9 +10,28 @@ export default function Dashboard() {
   const API_USER = "http://localhost:5000/api/nguoidung/danhsach";
   const API_ORDER = "http://localhost:5000/api/donhang";
   const API_PRODUCT = "http://localhost:5000/api/sanpham";
+  const API_TOP_PRODUCT = "http://localhost:5000/api/donhang/sanphamnoibat";
   const [chartMode, setChartMode] = useState("column");
   const [metric, setMetric] = useState("revenue");
   const [tooltip, setTooltip] = useState(null);
+  const [topProducts, setTopProducts] = useState([]);
+  const [loadingTop, setLoadingTop] = useState(true);
+  useEffect(() => {
+    const fetchTop = async () => {
+      try {
+        const token = localStorage.getItem("token")?.trim();
+        const res = await axios.get(API_TOP_PRODUCT, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setTopProducts(res.data.data || []);
+      } catch (err) {
+        console.error("Top product error:", err);
+      } finally {
+        setLoadingTop(false);
+      }
+    };
+    fetchTop();
+  }, []);
   useEffect(() => {
     const fetchAll = async () => {
       try {
@@ -180,6 +199,48 @@ export default function Dashboard() {
             </div>
           </div>
         ))}
+      </div>
+      <div className="bg-[#111111] border border-white/10 rounded-xl p-6 shadow-xl">
+        <h2 className="text-xl font-bold text-white mb-4">Sản phẩm bán chạy</h2>
+
+        {loadingTop ? (
+          <p className="text-gray-400">Đang tải...</p>
+        ) : topProducts.length === 0 ? (
+          <p className="text-gray-500">Chưa có dữ liệu</p>
+        ) : (
+          <div className="space-y-4">
+            {topProducts.map((p, i) => (
+              <div
+                key={p.masanpham}
+                className="flex items-center gap-4 bg-white/5 rounded-lg p-4 hover:bg-white/10 transition"
+              >
+                <span className="text-lg font-bold text-indigo-400 w-6">
+                  {i + 1}
+                </span>
+
+                <img
+                  src={p.anhdaidien}
+                  alt={p.tensanpham}
+                  className="w-14 h-14 object-cover rounded-lg border border-white/10"
+                />
+
+                <div className="flex-1">
+                  <p className="text-white font-semibold">{p.tensanpham}</p>
+                  <p className="text-sm text-gray-400">
+                    Đã bán: {p.tong_daban} sản phẩm
+                  </p>
+                </div>
+
+                <div className="text-right">
+                  <p className="text-emerald-400 font-bold">
+                    {Number(p.doanhthu).toLocaleString()} đ
+                  </p>
+                  <p className="text-xs text-gray-500">Doanh thu</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* ===== BIỂU ĐỒ DOANH THU ===== */}

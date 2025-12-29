@@ -2,51 +2,51 @@ import db from "../config/db.js";
 
 // Tạo 1 đơn hàng mới
 export const taoDonHang = async (data, connection) => {
-    const sql = `
+  const sql = `
     INSERT INTO donhang 
     (manguoidung, tennguoinhan, sodienthoai, diachigiao, donvivanchuyen,
      hinhthucthanhtoan, tongtien, phivanchuyen, tongthanhtoan, ghichu, ngaytao)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
   `;
 
-    const [result] = await connection.query(sql, [
-        data.manguoidung,
-        data.tennguoinhan,
-        data.sodienthoai,
-        data.diachigiao,
-        data.donvivanchuyen,
-        data.hinhthucthanhtoan,
-        data.tongtien,
-        data.phivanchuyen,
-        data.tongthanhtoan,
-        data.ghichu || null,
-    ]);
+  const [result] = await connection.query(sql, [
+    data.manguoidung,
+    data.tennguoinhan,
+    data.sodienthoai,
+    data.diachigiao,
+    data.donvivanchuyen,
+    data.hinhthucthanhtoan,
+    data.tongtien,
+    data.phivanchuyen,
+    data.tongthanhtoan,
+    data.ghichu || null,
+  ]);
 
-    return result.insertId;
+  return result.insertId;
 };
 
 // Thêm chi tiết đơn hàng
 export const taoChiTietDonHang = async (idDon, chitiet, connection) => {
-    const sql = `
+  const sql = `
     INSERT INTO chitietdonhang 
     (madonhang, mabienthe, soluong, giagoc, giakhuyenmai, ngaytao)
     VALUES (?, ?, ?, ?, ?, NOW())
   `;
 
-    const [result] = await connection.query(sql, [
-        idDon,
-        chitiet.mabienthe,
-        chitiet.soluong,
-        chitiet.giagoc,
-        chitiet.giakhuyenmai,
-    ]);
+  const [result] = await connection.query(sql, [
+    idDon,
+    chitiet.mabienthe,
+    chitiet.soluong,
+    chitiet.giagoc,
+    chitiet.giakhuyenmai,
+  ]);
 
-    return result;
+  return result;
 };
 
 // Lấy danh sách đơn hàng (có kèm thông tin hoàn tiền nếu có)
 export const layTatCaDonHang = async () => {
-    const [rows] = await db.query(`
+  const [rows] = await db.query(`
     SELECT 
       dh.madonhang,
       dh.manguoidung,
@@ -81,14 +81,14 @@ export const layTatCaDonHang = async () => {
     ORDER BY dh.madonhang DESC
   `);
 
-    return rows;
+  return rows;
 };
 
 //Code sửa đơn hàng (có ràng buộc)
 // Lấy đơn hàng theo ID (KÈM TRẠNG THÁI HOÀN TIỀN)
 export const layDonHangTheoID = async (madonhang) => {
-    const [rows] = await db.query(
-        `
+  const [rows] = await db.query(
+    `
         SELECT 
             d.madonhang,
             d.trangthai,
@@ -114,17 +114,15 @@ export const layDonHangTheoID = async (madonhang) => {
         ORDER BY h.ngaytao DESC
         LIMIT 1
         `,
-        [madonhang]
-    );
+    [madonhang]
+  );
 
-    return rows[0];
+  return rows[0];
 };
-
-
 
 // Cập nhật đơn hàng ( dùng chung cho sửa và hủy)
 export const capNhatDonHang = async (id, data) => {
-    const sql = `
+  const sql = `
         UPDATE donhang
         SET 
             tennguoinhan = ?, 
@@ -140,21 +138,21 @@ export const capNhatDonHang = async (id, data) => {
         WHERE madonhang = ?
     `;
 
-    const params = [
-        data.tennguoinhan,
-        data.sodienthoai,
-        data.diachigiao,
-        data.donvivanchuyen,
-        data.hinhthucthanhtoan,
-        data.ghichu || null,
-        data.phivanchuyen,
-        data.tongthanhtoan,
-        data.trangthai,
-        id
-    ];
+  const params = [
+    data.tennguoinhan,
+    data.sodienthoai,
+    data.diachigiao,
+    data.donvivanchuyen,
+    data.hinhthucthanhtoan,
+    data.ghichu || null,
+    data.phivanchuyen,
+    data.tongthanhtoan,
+    data.trangthai,
+    id,
+  ];
 
-    const [result] = await db.query(sql, params);
-    return result;
+  const [result] = await db.query(sql, params);
+  return result;
 };
 
 //Lịch sử đơn hàng ( dựa theo mã người dùng)
@@ -162,7 +160,8 @@ export const capNhatDonHang = async (id, data) => {
 // LẤY LỊCH SỬ ĐƠN HÀNG THEO NGƯỜI DÙNG
 // ================================
 export const layDonHangTheoNguoiDung = async (manguoidung) => {
-    const [rows] = await db.query(`
+  const [rows] = await db.query(
+    `
         SELECT 
             dh.madonhang,
             dh.tennguoinhan,
@@ -175,20 +174,45 @@ export const layDonHangTheoNguoiDung = async (manguoidung) => {
         FROM donhang dh
         WHERE dh.manguoidung = ?
         ORDER BY dh.ngaytao DESC
-    `, [manguoidung]);
+    `,
+    [manguoidung]
+  );
 
-    return rows;
+  return rows;
 };
 //CẬP NHẬT TRẠNG THÁI ĐƠN HÀNG
 export const capNhatTrangThaiDonHang = async (madonhang, trangthai) => {
-    const [result] = await db.query(
-        `
+  const [result] = await db.query(
+    `
         UPDATE donhang
         SET trangthai = ?, ngaycapnhat = NOW()
         WHERE madonhang = ?
         `,
-        [trangthai, madonhang]
-    );
+    [trangthai, madonhang]
+  );
 
-    return result;
+  return result;
+};
+export const laySanPhamBanChay = async (limit = 5) => {
+  const [rows] = await db.query(
+    `
+    SELECT
+      sp.masanpham,
+      sp.tensanpham,
+      sp.anhdaidien,
+      SUM(ct.soluong) AS tong_daban,
+      SUM(ct.soluong * bt.giaban) AS doanhthu
+    FROM chitietdonhang ct
+    JOIN donhang dh ON ct.madonhang = dh.madonhang
+    JOIN bienthesanpham bt ON ct.mabienthe = bt.mabienthe
+    JOIN sanpham sp ON bt.masanpham = sp.masanpham
+    WHERE dh.trangthai IN ('chờ xác nhận', 'đã xác nhận', 'đã giao')
+    GROUP BY sp.masanpham
+    ORDER BY tong_daban DESC
+    LIMIT ?
+  `,
+    [limit]
+  );
+
+  return rows;
 };

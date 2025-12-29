@@ -1,9 +1,17 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, Outlet, NavLink } from "react-router-dom";
-import { BarChart2, Users, Package, DollarSign, LogOut } from "lucide-react";
+import {
+  BarChart2,
+  Users,
+  Package,
+  DollarSign,
+  LogOut,
+  Menu,
+} from "lucide-react";
 
 export default function AdminLayout() {
   const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
 
   // Kiểm tra đăng nhập (GIỮ NGUYÊN LOGIC)
   useEffect(() => {
@@ -14,19 +22,43 @@ export default function AdminLayout() {
   }, [navigate]);
 
   const logout = () => {
-    localStorage.removeItem("userino");
+    localStorage.removeItem("userinfo");
     navigate("/");
   };
 
   return (
-    <div className="min-h-screen flex bg-[#0d0d0d] text-gray-200">
+    <div className="min-h-screen flex bg-[#0d0d0d] text-gray-200 relative">
       {/* ===== SIDEBAR ===== */}
-      <aside className="w-64 bg-[#111111] border-r border-white/10 shadow-[0_0_15px_rgba(0,0,0,0.5)] flex flex-col justify-between">
+      <aside
+        className={`
+    fixed md:static z-40
+    w-64 h-full
+    bg-[#111111] border-r border-white/10
+    shadow-[0_0_15px_rgba(0,0,0,0.5)]
+    flex flex-col justify-between
+    transition-transform duration-300
+    ${open ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
+  `}
+      >
+        {open && (
+          <div
+            onClick={() => setOpen(false)}
+            className="fixed inset-0 bg-black/50 z-30 md:hidden"
+          />
+        )}
+
         {/* LOGO / TITLE */}
         <div>
           <div className="text-2xl font-bold text-center py-6 border-b border-white/10 text-indigo-400 tracking-wide">
             ADMIN PANEL
           </div>
+          <button
+            onClick={() => setOpen(true)}
+            className="md:hidden fixed top-4 left-4 z-50
+             p-2 rounded-lg bg-white/10 text-white"
+          >
+            <Menu size={22} />
+          </button>
 
           {/* DASHBOARD */}
           <NavLink
@@ -40,6 +72,7 @@ export default function AdminLayout() {
                   : "text-gray-300 hover:bg-white/5 hover:text-indigo-300"
               }`
             }
+            onClick={() => setOpen(false)}
           >
             <BarChart2 size={18} />
             Dashboard
@@ -57,6 +90,7 @@ export default function AdminLayout() {
                   : "text-gray-300 hover:bg-white/5 hover:text-indigo-300"
               }`
               }
+              onClick={() => setOpen(false)}
             >
               <Package size={18} /> Sản phẩm
             </NavLink>
@@ -71,6 +105,7 @@ export default function AdminLayout() {
                   : "text-gray-300 hover:bg-white/5 hover:text-indigo-300"
               }`
               }
+              onClick={() => setOpen(false)}
             >
               <Package size={18} /> Danh mục
             </NavLink>
@@ -85,6 +120,7 @@ export default function AdminLayout() {
                   : "text-gray-300 hover:bg-white/5 hover:text-indigo-300"
               }`
               }
+              onClick={() => setOpen(false)}
             >
               <Package size={18} /> Khuyến mãi
             </NavLink>
@@ -99,6 +135,7 @@ export default function AdminLayout() {
                   : "text-gray-300 hover:bg-white/5 hover:text-indigo-300"
               }`
               }
+              onClick={() => setOpen(false)}
             >
               <Users size={18} /> Người dùng
             </NavLink>
@@ -113,6 +150,7 @@ export default function AdminLayout() {
                   : "text-gray-300 hover:bg-white/5 hover:text-indigo-300"
               }`
               }
+              onClick={() => setOpen(false)}
             >
               <DollarSign size={18} /> Đơn hàng
             </NavLink>
@@ -131,7 +169,7 @@ export default function AdminLayout() {
       </aside>
 
       {/* ===== MAIN CONTENT ===== */}
-      <main className="flex-1 p-8 bg-[#0f0f0f]">
+      <main className="flex-1 p-4 sm:p-6 md:p-8 bg-[#0f0f0f]">
         <Outlet />
       </main>
     </div>

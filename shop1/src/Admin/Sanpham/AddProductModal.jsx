@@ -278,7 +278,12 @@ export default function AddProductModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-[#111] border border-white/10 rounded-xl shadow-2xl p-6 w-[900px] max-h-[90vh] overflow-y-auto text-gray-200">
+      <div
+        className="bg-[#111] border border-white/10 rounded-xl shadow-2xl
+                p-4 sm:p-6
+                w-[95vw] max-w-[900px]
+                max-h-[90vh] overflow-y-auto text-gray-200"
+      >
         {/* HEADER */}
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-white">Thêm sản phẩm</h2>
@@ -289,9 +294,8 @@ export default function AddProductModal({
             ✖
           </button>
         </div>
-
         {/* FORM */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Tên */}
           <div>
             <label className="text-gray-300 text-sm font-bold">
@@ -348,9 +352,7 @@ export default function AddProductModal({
             ["Bảo quản", "baoquan"],
           ].map(([label, key]) => (
             <div key={key}>
-              <label className="text-gray-300 text-sm font-bold">
-                {label}
-              </label>
+              <label className="text-gray-300 text-sm font-bold">{label}</label>
               <input
                 className="bg-[#1a1a1a] border border-white/10 p-2 rounded-lg w-full"
                 value={data[key]}

@@ -10,6 +10,7 @@ import {
   adminXacNhanDonHang,
   adminHuyDonHangZaloPay,
   sanPhamNoiBat,
+  demDonHang,
 } from "../controllers/donhangController.js";
 import { xacthucToken } from "../middleware/xacthuctoken.js";
 const router = express.Router();
@@ -21,6 +22,9 @@ router.get("/", layDanhSachDonHang);
 router.put("/sua/:id", suaDonHang);
 //Sản phẩm nổi bật
 router.get("/sanphamnoibat", sanPhamNoiBat);
+//Đếm đơn hàng
+// ĐẾM ĐƠN HÀNG (admin polling)
+router.get("/count", demDonHang);
 //Khách hủy đơn
 router.put("/huy/:id", khachHuyDonHang);
 //Admin hủy đơn

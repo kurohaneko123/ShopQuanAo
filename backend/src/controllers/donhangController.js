@@ -598,3 +598,18 @@ export const sanPhamNoiBat = async (req, res) => {
     });
   }
 };
+export const demDonHang = async (req, res) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT COUNT(*) AS total 
+      FROM donhang
+    `);
+
+    res.json({
+      total: rows[0].total,
+    });
+  } catch (err) {
+    console.error("demDonHang error:", err);
+    res.status(500).json({ message: "Lỗi server" });
+  }
+};

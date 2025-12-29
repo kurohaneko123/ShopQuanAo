@@ -8,10 +8,42 @@ import {
   LogOut,
   Menu,
 } from "lucide-react";
+import Swal from "sweetalert2";
+import axios from "axios";
 
 export default function AdminLayout() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const [lastOrderCount, setLastOrderCount] = useState(null);
+  useEffect(() => {
+    const checkNewOrder = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/donhang/count");
+        const currentTotal = res.data.total;
+
+        if (lastOrderCount !== null && currentTotal > lastOrderCount) {
+          Swal.fire({
+            title: "Bạn có đơn hàng mới!",
+            text: "Khách hàng vừa đặt một đơn mới",
+            icon: "success",
+            toast: true,
+            position: "top-end",
+            timer: 4000,
+            showConfirmButton: false,
+          });
+        }
+
+        setLastOrderCount(currentTotal);
+      } catch (err) {
+        console.error("Check order error:", err);
+      }
+    };
+
+    checkNewOrder(); // chạy lần đầu
+    const interval = setInterval(checkNewOrder, 5000); // 5 giây
+
+    return () => clearInterval(interval);
+  }, [lastOrderCount]);
 
   // Kiểm tra đăng nhập (GIỮ NGUYÊN LOGIC)
   useEffect(() => {

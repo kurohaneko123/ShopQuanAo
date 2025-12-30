@@ -60,10 +60,11 @@ export default function Quanlydh() {
   /* ================= HELPER UI ================= */
   const actionBtn = (disabled = false) =>
     `w-9 h-9 rounded-lg flex items-center justify-center transition
-     ${disabled
-      ? "bg-gray-700 text-gray-400 cursor-not-allowed opacity-60"
-      : "text-white hover:brightness-110"
-    }`;
+     ${
+       disabled
+         ? "bg-gray-700 text-gray-400 cursor-not-allowed opacity-60"
+         : "text-white hover:brightness-110"
+     }`;
 
   /* ================= ACTION LOGIC ================= */
   const submitEditInfo = async () => {
@@ -155,6 +156,7 @@ export default function Quanlydh() {
   };
 
   const checkHoanTien = async (mahoantien) => {
+    console.log("▶️ CHECK HOÀN TIỀN - mahoantien:", mahoantien);
     if (!mahoantien) {
       return Swal.fire("Lỗi", "Không có mã hoàn tiền", "error");
     }
@@ -171,19 +173,35 @@ export default function Quanlydh() {
       );
 
       const { result, message } = res.data;
+      console.log("ZALOPAY RESULT:", result);
 
-      // ✅ ZaloPay xác nhận hoàn tiền thành công
-      if (result?.return_code === 1) {
+      //  ZaloPay xác nhận hoàn tiền thành công
+      const subCode = result?.sub_return_code;
+
+      if (subCode === 1) {
         Swal.fire(
           "Hoàn tiền thành công",
-          result.return_message || "Giao dịch đã hoàn tiền",
+          "ZaloPay đã hoàn tiền xong",
           "success"
+        );
+      } else if (subCode === 2) {
+        Swal.fire(
+          "Đang hoàn tiền",
+          "ZaloPay đang xử lý hoàn tiền, vui lòng kiểm tra lại sau",
+          "info"
+        );
+      } else if (subCode === -14) {
+        //  FIX QUAN TRỌNG: -14 không phải lỗi CHECK
+        Swal.fire(
+          "Đang hoàn tiền",
+          "Giao dịch hoàn tiền đang được xử lý, vui lòng kiểm tra lại sau",
+          "info"
         );
       } else {
         Swal.fire(
-          "Chưa hoàn tiền",
-          result?.return_message || "Giao dịch đang xử lý",
-          "info"
+          "Hoàn tiền thất bại",
+          result?.sub_return_message || "Không xác định",
+          "error"
         );
       }
 
@@ -253,8 +271,8 @@ export default function Quanlydh() {
                     {x.trangthai_hoantien === "dang_xu_ly"
                       ? "Đang hoàn tiền (ZaloPay)"
                       : x.trangthai_hoantien === "thanh_cong"
-                        ? "Đã hoàn tiền"
-                        : x.trangthai}
+                      ? "Đã hoàn tiền"
+                      : x.trangthai}
                   </td>
 
                   <td className="p-3">

@@ -150,7 +150,7 @@ export default function CategoriesPage() {
   const paginatedCategories = categories.slice(start, start + ITEMS_PER_PAGE);
 
   return (
-    <div className="text-gray-200">
+    <div className="p-4 sm:p-6 text-gray-200">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-3xl font-extrabold text-white">Quản lý danh mục</h2>
@@ -256,7 +256,10 @@ export default function CategoriesPage() {
                         setOpenDelete(true);
                       }}
                     >
-                      <Trash2 size={20} />
+                      <Trash2
+                        size={20}
+                        className="text-red-500 hover:text-red-400 transition"
+                      />
                     </button>
                   </div>
                 </td>

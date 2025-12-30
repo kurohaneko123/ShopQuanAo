@@ -393,6 +393,18 @@ export default function DonHang() {
                         </button>
                       )}
                     </div>
+                    <button
+                      onClick={() => {
+                        o.danhsachsanpham?.forEach((sp) => {
+                          localStorage.setItem(
+                            `madonhang_${sp.masanpham}`,
+                            String(o.madonhang)
+                          );
+                        });
+                      }}
+                    >
+                      Xem chi tiết
+                    </button>
                   </div>
                 </div>
               ))}

@@ -1,9 +1,49 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, Outlet, NavLink } from "react-router-dom";
-import { BarChart2, Users, Package, DollarSign, LogOut } from "lucide-react";
+import {
+  BarChart2,
+  Users,
+  Package,
+  DollarSign,
+  LogOut,
+  Menu,
+} from "lucide-react";
+import Swal from "sweetalert2";
+import axios from "axios";
 
 export default function AdminLayout() {
   const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+  const [lastOrderCount, setLastOrderCount] = useState(null);
+  useEffect(() => {
+    const checkNewOrder = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/donhang/count");
+        const currentTotal = res.data.total;
+
+        if (lastOrderCount !== null && currentTotal > lastOrderCount) {
+          Swal.fire({
+            title: "Bạn có đơn hàng mới!",
+            text: "Khách hàng vừa đặt một đơn mới",
+            icon: "success",
+            toast: true,
+            position: "top-end",
+            timer: 4000,
+            showConfirmButton: false,
+          });
+        }
+
+        setLastOrderCount(currentTotal);
+      } catch (err) {
+        console.error("Check order error:", err);
+      }
+    };
+
+    checkNewOrder(); // chạy lần đầu
+    const interval = setInterval(checkNewOrder, 5000); // 5 giây
+
+    return () => clearInterval(interval);
+  }, [lastOrderCount]);
 
   // Kiểm tra đăng nhập (GIỮ NGUYÊN LOGIC)
   useEffect(() => {
@@ -14,14 +54,24 @@ export default function AdminLayout() {
   }, [navigate]);
 
   const logout = () => {
-    localStorage.removeItem("userino");
+    localStorage.removeItem("userinfo");
     navigate("/");
   };
 
   return (
-    <div className="min-h-screen flex bg-[#0d0d0d] text-gray-200">
+    <div className="min-h-screen flex bg-[#0d0d0d] text-gray-200 relative">
       {/* ===== SIDEBAR ===== */}
-      <aside className="w-64 bg-[#111111] border-r border-white/10 shadow-[0_0_15px_rgba(0,0,0,0.5)] flex flex-col justify-between">
+      <aside
+        className={`
+    fixed top-0 left-0 z-40
+    w-64 h-screen
+    bg-[#111111] border-r border-white/10
+    shadow-[0_0_15px_rgba(0,0,0,0.5)]
+    flex flex-col
+    transition-transform duration-300
+    ${open ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
+  `}
+      >
         {/* LOGO / TITLE */}
         <div>
           <div className="text-2xl font-bold text-center py-6 border-b border-white/10 text-indigo-400 tracking-wide">
@@ -40,6 +90,7 @@ export default function AdminLayout() {
                   : "text-gray-300 hover:bg-white/5 hover:text-indigo-300"
               }`
             }
+            onClick={() => setOpen(false)}
           >
             <BarChart2 size={18} />
             Dashboard
@@ -57,6 +108,7 @@ export default function AdminLayout() {
                   : "text-gray-300 hover:bg-white/5 hover:text-indigo-300"
               }`
               }
+              onClick={() => setOpen(false)}
             >
               <Package size={18} /> Sản phẩm
             </NavLink>
@@ -71,6 +123,7 @@ export default function AdminLayout() {
                   : "text-gray-300 hover:bg-white/5 hover:text-indigo-300"
               }`
               }
+              onClick={() => setOpen(false)}
             >
               <Package size={18} /> Danh mục
             </NavLink>
@@ -85,6 +138,7 @@ export default function AdminLayout() {
                   : "text-gray-300 hover:bg-white/5 hover:text-indigo-300"
               }`
               }
+              onClick={() => setOpen(false)}
             >
               <Package size={18} /> Khuyến mãi
             </NavLink>
@@ -99,6 +153,7 @@ export default function AdminLayout() {
                   : "text-gray-300 hover:bg-white/5 hover:text-indigo-300"
               }`
               }
+              onClick={() => setOpen(false)}
             >
               <Users size={18} /> Người dùng
             </NavLink>
@@ -113,6 +168,7 @@ export default function AdminLayout() {
                   : "text-gray-300 hover:bg-white/5 hover:text-indigo-300"
               }`
               }
+              onClick={() => setOpen(false)}
             >
               <DollarSign size={18} /> Đơn hàng
             </NavLink>
@@ -121,17 +177,33 @@ export default function AdminLayout() {
 
         {/* Logout */}
         <div className="p-4 border-t border-white/10">
-          <button
-            onClick={logout}
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-red-600/80 text-white font-semibold hover:bg-red-500 transition-all duration-200 shadow-lg"
-          >
-            <LogOut size={18} /> Đăng xuất
-          </button>
+          <div className="mt-auto p-4 border-t border-white/10">
+            <button
+              onClick={logout}
+              className="w-full flex items-center justify-center font-bold gap-2 py-3 rounded-xl
+bg-gradient-to-r from-red-600/90 to-rose-600/90
+hover:from-red-500 hover:to-rose-500 transition shadow-lg"
+            >
+              <LogOut size={18} /> Đăng xuất
+            </button>
+          </div>
         </div>
       </aside>
-
+      {open && (
+        <div
+          onClick={() => setOpen(false)}
+          className="fixed inset-0 bg-black/50 z-30 md:hidden"
+        />
+      )}
       {/* ===== MAIN CONTENT ===== */}
-      <main className="flex-1 p-8 bg-[#0f0f0f]">
+      <main className="flex-1 p-4 sm:p-6 md:p-8 bg-[#0f0f0f] md:ml-64">
+        <button
+          onClick={() => setOpen(true)}
+          className="md:hidden fixed top-4 left-4 z-50
+             p-2 rounded-lg bg-white/10 text-white"
+        >
+          <Menu size={22} />
+        </button>
         <Outlet />
       </main>
     </div>

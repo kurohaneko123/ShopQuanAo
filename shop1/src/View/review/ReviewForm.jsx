@@ -1,13 +1,19 @@
 import { useState } from "react";
 import axios from "axios";
+import Swal from "sweetalert2";
 
-export default function ReviewForm({ productId, onSuccess, reviewCount = 0 }) {
+export default function ReviewForm({
+  productId,
+  productName,
+  onSuccess,
+  reviewCount = 0,
+}) {
   const [rating, setRating] = useState(5);
   const [noidung, setNoidung] = useState("");
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // 🔒 FE anti-spam
+  // FE anti-spam
   if (reviewCount >= 10) {
     return (
       <div className="rounded-2xl border p-4 bg-slate-50 text-slate-600">
@@ -17,13 +23,12 @@ export default function ReviewForm({ productId, onSuccess, reviewCount = 0 }) {
   }
 
   const handleSubmit = async () => {
-    if (reviewCount >= 10) {
-      alert("Bạn đã đạt giới hạn 10 đánh giá cho sản phẩm này");
+    if (noidung.trim().split(/\s+/).length < 5) {
+      Swal.fire("Nội dung đánh giá phải dài hơn 5 từ");
       return;
     }
-
-    if (!noidung.trim()) {
-      alert("Vui lòng nhập nội dung đánh giá");
+    if (reviewCount >= 10) {
+      Swal.fire("Bạn đã đạt giới hạn 10 đánh giá cho sản phẩm này");
       return;
     }
 
@@ -32,22 +37,23 @@ export default function ReviewForm({ productId, onSuccess, reviewCount = 0 }) {
 
       const token = localStorage.getItem("token");
       if (!token) {
-        alert("Bạn cần đăng nhập để đánh giá");
+        Swal.fire("Bạn cần đăng nhập để đánh giá");
         return;
       }
 
       const madonhang = localStorage.getItem("lastOrderId");
+
       if (!madonhang) {
-        alert("Không tìm thấy đơn hàng để đánh giá");
+        Swal.fire("Không tìm thấy đơn hàng để đánh giá");
         return;
       }
 
-      await axios.post(
+      const res = await axios.post(
         "http://localhost:5000/api/danhgia",
         {
           masanpham: productId,
           madonhang: Number(madonhang),
-          sosao: rating,
+          sosao: Number(rating),
           noidung,
         },
         {
@@ -55,18 +61,38 @@ export default function ReviewForm({ productId, onSuccess, reviewCount = 0 }) {
         }
       );
 
-      alert("Đánh giá thành công 🎉");
+      const madanhgia = res.data.madanhgia;
+      if (images.length > 0) {
+        const imgData = new FormData();
+        images.forEach((img) => imgData.append("images", img));
+
+        await axios.post(
+          `http://localhost:5000/api/danhgia/${madanhgia}/hinhanh`,
+          imgData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+      }
+
+      Swal.fire("Đánh giá thành công ");
       setNoidung("");
       setImages([]);
       onSuccess?.();
     } catch (err) {
-      console.error(err);
+      console.error("Đánh giá lỗi:", err);
+
       if (err.response?.status === 403) {
-        alert(err.response.data?.message);
+        Swal.fire(err.response.data?.message);
       } else if (err.response?.status === 409) {
-        alert("Bạn đã đánh giá sản phẩm này rồi");
+        Swal.fire("Bạn đã đánh giá sản phẩm này rồi");
+        return;
       } else {
-        alert("Lỗi server");
+        Swal.fire("Đã có lỗi xảy ra. Vui lòng thử lại sau.");
+        return;
       }
     } finally {
       setLoading(false);
@@ -75,7 +101,11 @@ export default function ReviewForm({ productId, onSuccess, reviewCount = 0 }) {
 
   return (
     <div className="rounded-2xl border p-4 bg-white space-y-3">
-      <h3 className="font-semibold">Viết đánh giá ({reviewCount}/10)</h3>
+      <h3 className="font-semibold">
+        Viết đánh giá cho sản phẩm:
+        <span className="ml-1 text-blue-600 font-bold">{productName}</span>(
+        {reviewCount}/10)
+      </h3>
 
       <select
         value={rating}

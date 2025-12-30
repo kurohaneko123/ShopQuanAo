@@ -250,7 +250,7 @@ export default function QuanLyVoucher() {
   };
 
   return (
-    <div className="p-6 text-gray-200">
+    <div className="p-4 sm:p-6 text-gray-200">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-3xl font-bold text-white">Quản lý voucher</h2>
 

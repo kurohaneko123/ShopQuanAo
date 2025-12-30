@@ -33,12 +33,14 @@ export default function ProductItem({
       <td className="p-3 border border-white/10 text-gray-400">
         {product.thuonghieu || "—"}
       </td>
-      <td className="p-3 border border-white/10 text-gray-400">
+      <td className="hidden md:table-cell p-3 border border-white/10 text-gray-400">
         {product.chatlieu || "—"}
       </td>
-      <td className="p-3 border border-white/10 text-gray-400">
+
+      <td className="hidden lg:table-cell p-3 border border-white/10 text-gray-400">
         {product.kieudang || "—"}
       </td>
+
       <td className="p-3 border border-white/10 text-gray-400">
         {getCategoryName(product.madanhmuc)}
       </td>

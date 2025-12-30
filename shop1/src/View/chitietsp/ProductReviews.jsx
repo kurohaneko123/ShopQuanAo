@@ -22,7 +22,7 @@ export default function ProductReviews({ BASE_URL, productId }) {
   const [page, setPage] = useState(1);
   const pageSize = 5;
 
-  // ✅ 1) LOAD API
+  //  1) LOAD API
   const fetchReviews = async () => {
     setLoading(true);
     try {
@@ -47,7 +47,7 @@ export default function ProductReviews({ BASE_URL, productId }) {
     if (productId) fetchReviews();
   }, [BASE_URL, productId]);
 
-  // ✅ 2) FILTER + SORT (chạy ở FE cho chắc)
+  // 2) FILTER + SORT (chạy ở FE cho chắc)
   const filtered = useMemo(() => {
     let list = [...raw];
 
@@ -84,7 +84,7 @@ export default function ProductReviews({ BASE_URL, productId }) {
     return list;
   }, [raw, q, selectedRatings, sort, onlyHasImages, onlyReplied]);
 
-  // ✅ 3) PAGINATION
+  //  3) PAGINATION
   const total = filtered.length;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
@@ -99,7 +99,7 @@ export default function ProductReviews({ BASE_URL, productId }) {
     [q, selectedRatings, sort, onlyHasImages, onlyReplied]
   );
 
-  // ✅ thống kê
+  //  thống kê
   const stats = useMemo(() => buildStats(raw), [raw]);
 
   function getUserIdFromToken() {

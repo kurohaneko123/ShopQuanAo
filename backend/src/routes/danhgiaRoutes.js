@@ -8,8 +8,7 @@ const router = express.Router();
 
 // TẠO ĐÁNH GIÁ
 router.post("/", xacthucToken, taoDanhGia);
-
-// LẤY ĐÁNH GIÁ THEO SẢN PHẨM (AI CŨNG XEM ĐƯỢC)
+//  LẤY ĐÁNH GIÁ THEO SẢN PHẨM (AI CŨNG XEM ĐƯỢC)
 router.get("/sanpham/:masanpham", layDanhGia);
 
 // upload ảnh đánh giá

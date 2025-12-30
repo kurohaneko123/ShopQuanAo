@@ -33,11 +33,11 @@ export default function ChiTietSanPham() {
   // UI-only: lỗi theo field
   const [errors, setErrors] = useState({ color: "", size: "" });
 
-  // ✅ NEW: gợi ý sản phẩm + sản phẩm đã xem
+  //  NEW: gợi ý sản phẩm + sản phẩm đã xem
 
   const BASE_URL = "http://localhost:5000";
 
-  /* ====== 🛒 Hàm thêm sản phẩm vào giỏ hàng (giữ logic) ====== */
+  /* ======  Hàm thêm sản phẩm vào giỏ hàng ====== */
   const handleAddToCart = () => {
     try {
       // Kiểm tra đăng nhập
@@ -84,6 +84,7 @@ export default function ChiTietSanPham() {
       const stored = JSON.parse(localStorage.getItem(cartKey)) || [];
 
       const newItem = {
+        masanpham: product.masanpham,
         mabienthe: variant.mabienthe,
         tensanpham: product.tensanpham,
         giagoc: Number(variant.giaban),
@@ -124,7 +125,7 @@ export default function ChiTietSanPham() {
     }
   };
 
-  // 🧠 Lấy chi tiết sản phẩm + biến thể
+  //Lấy chi tiết sản phẩm + biến thể
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -137,7 +138,7 @@ export default function ChiTietSanPham() {
           setSelectedSize(res.data.bienthe[0].tenkichthuoc);
         }
       } catch (err) {
-        console.error("❌ Lỗi khi tải chi tiết sản phẩm:", err);
+        console.error(" Lỗi khi tải chi tiết sản phẩm:", err);
       } finally {
         setLoading(false);
       }
@@ -191,7 +192,7 @@ export default function ChiTietSanPham() {
     else setMainImage(product?.anhdaidien || "");
   }, [selectedColor, variants]); // eslint-disable-line
 
-  // ✅ NEW: gợi ý sản phẩm (fallback an toàn: thử gọi list, fail thì bỏ trống)
+  //  NEW: gợi ý sản phẩm (fallback an toàn: thử gọi list, fail thì bỏ trống)
 
   if (loading)
     return (
@@ -513,9 +514,11 @@ export default function ChiTietSanPham() {
           product={product}
           currentId={id}
         />
-
-        <ProductReviews BASE_URL={BASE_URL} productId={id} />
-
+        <ProductReviews
+          BASE_URL={BASE_URL}
+          productId={id}
+          productName={product.tensanpham}
+        />
         <RecentViewed
           currentId={id}
           currentProduct={product}

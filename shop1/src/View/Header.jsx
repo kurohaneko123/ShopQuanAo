@@ -8,13 +8,15 @@ import {
   User,
   LogOut,
   UserCircle,
-  ClipboardList, // thêm icon đơn hàng
+  ClipboardList,
+  Menu,
+  X,
 } from "lucide-react";
 import Swal from "sweetalert2";
 import AccountModal from "../Chucnang/Taikhoan.jsx";
 import bannerNam from "../assets/bannerdafix.jpg";
 import bannerNu from "../assets/aonu.jpg";
-import bannerSale from "../assets/khuyenmai.png";
+
 import CartSidebar from "../Chucnang/Giohang.jsx";
 import Logo from "../assets/logo_header/logo.png";
 
@@ -23,7 +25,7 @@ export default function Navbar() {
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [user, setUser] = useState(null);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [categories, setCategories] = useState([]);
   const [maleCategories, setMaleCategories] = useState([]);
   const [femaleCategories, setFemaleCategories] = useState([]);
@@ -127,7 +129,7 @@ export default function Navbar() {
       try {
         setSearchLoading(true);
 
-        // ✅ gọi API lọc biến thể (đổi đúng URL API của em)
+        //  gọi API lọc biến thể (đổi đúng URL API của em)
         const res = await axios.get("http://localhost:5000/api/bienthe/loc", {
           params: {
             search: q, //keyword gõ ở header
@@ -201,8 +203,8 @@ export default function Navbar() {
           to="/"
           className="flex items-center pl-6 gap-x-2 hover:opacity-80 transition"
         >
-          <img src={Logo} className="h-16 w-auto object-contain" />
-          <span className="text-2xl font-semibold tracking-wide text-gray-900">
+          <img src={Logo} className="h-10 md:h-16 w-auto object-contain" />
+          <span className="text-lg md:text-2xl font-semibold tracking-wide text-gray-900">
             Horizon
           </span>
         </Link>
@@ -345,7 +347,7 @@ export default function Navbar() {
         </nav>
 
         {/* SEARCH */}
-        <div className="flex-shrink-0 max-w-[320px] w-full relative mr-2">
+        <div className="hidden md:block flex-shrink-0 max-w-[320px] w-full relative mr-2">
           <div className="relative w-full">
             <input
               type="text"
@@ -394,7 +396,7 @@ export default function Navbar() {
 
                     // nếu có masp / mabienthe thì điều hướng chi tiết, còn không thì search
                     const go = () => {
-                      // ✅ Option 1: nhảy qua trang all với keyword
+                      //  Option 1: nhảy qua trang all với keyword
                       navigate(`/all?search=${encodeURIComponent(ten)}`);
                       setSearchTerm("");
                       setFilteredResults([]);
@@ -431,6 +433,14 @@ export default function Navbar() {
             )}
           </div>
         </div>
+        {/* MOBILE SEARCH BUTTON */}
+        <button
+          onClick={() => setIsMobileSearchOpen((v) => !v)}
+          className="md:hidden p-2 rounded-full hover:bg-gray-200 transition"
+          title="Tìm kiếm"
+        >
+          <Search className="w-5 h-5 text-gray-800" />
+        </button>
 
         {/* ICONS */}
         <div className="flex items-center gap-4 pr-6">
@@ -454,7 +464,7 @@ export default function Navbar() {
 
           {isCartOpen && <CartSidebar onClose={() => setIsCartOpen(false)} />}
 
-          {/* ✅ ICON ĐƠN HÀNG – CHỈ KHI CÓ USER */}
+          {/*  ICON ĐƠN HÀNG – CHỈ KHI CÓ USER */}
           {user && (
             <button
               onClick={() => navigate("/donhang")}
@@ -535,6 +545,82 @@ export default function Navbar() {
           )}
         </div>
       </div>
+      {/* MOBILE SEARCH BAR */}
+      {isMobileSearchOpen && (
+        <div className="md:hidden px-4 pb-4">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Tìm sản phẩm…"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+              className="w-full pl-10 pr-4 py-2.5 bg-white/90 backdrop-blur-xl rounded-full
+        border border-gray-300 text-sm text-gray-800 placeholder-gray-500
+        focus:ring-2 focus:ring-gray-400 transition"
+            />
+            <Search
+              className="absolute left-3 top-2.5 w-5 h-5 text-gray-600 cursor-pointer"
+              onClick={handleSearch}
+            />
+
+            {/* Gợi ý search (tái dùng y chang desktop) */}
+            {searchTerm && (
+              <div className="absolute top-12 left-0 w-full bg-white shadow-xl border rounded-xl z-[60] max-h-60 overflow-y-auto">
+                {searchLoading && (
+                  <div className="px-4 py-3 text-sm text-gray-500">
+                    Đang tìm…
+                  </div>
+                )}
+                {!searchLoading && filteredResults.length === 0 && (
+                  <div className="px-4 py-3 text-sm text-gray-500">
+                    Không tìm thấy kết quả
+                  </div>
+                )}
+                {!searchLoading &&
+                  filteredResults.map((item, idx) => {
+                    const ten =
+                      item.tensanpham ||
+                      item.ten ||
+                      item.name ||
+                      item.tensp ||
+                      "Sản phẩm";
+                    const gia =
+                      item.giakhuyenmai ??
+                      item.giaban ??
+                      item.giasanpham ??
+                      item.gia ??
+                      0;
+
+                    const go = () => {
+                      navigate(`/all?search=${encodeURIComponent(ten)}`);
+                      setSearchTerm("");
+                      setFilteredResults([]);
+                      setIsMobileSearchOpen(false);
+                    };
+
+                    return (
+                      <button
+                        key={item.mabienthe || item.id || idx}
+                        onClick={go}
+                        className="w-full text-left px-4 py-2 hover:bg-gray-100 flex flex-col transition"
+                      >
+                        <span className="text-gray-800 font-semibold">
+                          {ten}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {gia > 0
+                            ? Number(gia).toLocaleString("vi-VN") + "₫"
+                            : "Liên hệ"}
+                        </span>
+                      </button>
+                    );
+                  })}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </header>
   );
 }

@@ -14,6 +14,8 @@ import ProductTable from "./ProductTable";
 import AddProductModal from "./AddProductModal";
 import EditProductModal from "./EditProductModal";
 import Pagination from "../Pagination";
+import ProductCard from "./ProductCard";
+
 export default function QuanLySanPham() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -132,12 +134,14 @@ export default function QuanLySanPham() {
   const paginatedProducts = products.slice(start, start + ITEMS_PER_PAGE);
 
   return (
-    <div className="p-6">
+    <div className="p-4 sm:p-6 text-gray-200">
       {/* =============================
            HEADER
       ============================= */}
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Quản lý sản phẩm</h2>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
+        <h2 className="text-2xl sm:text-3xl font-bold text-white">
+          Quản lý sản phẩm
+        </h2>
 
         <button
           onClick={() => {
@@ -153,7 +157,7 @@ export default function QuanLySanPham() {
             });
             setAddOpen(true);
           }}
-          className="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-lg flex items-center gap-2 shadow-lg transition text-white"
+          className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-lg flex items-center justify-center gap-2 shadow-lg transition text-white"
         >
           Thêm sản phẩm
         </button>
@@ -176,6 +180,26 @@ export default function QuanLySanPham() {
           onView={(id) => (window.location.href = `/admin/products/${id}`)}
         />
       )}
+      {/* MOBILE VIEW */}
+      <div className="md:hidden space-y-4">
+        {paginatedProducts.map((p) => (
+          <ProductCard
+            key={p.masanpham}
+            product={p}
+            categoryName={
+              categories.find((c) => c.madanhmuc === p.madanhmuc)?.tendanhmuc ||
+              "—"
+            }
+            onView={(id) => (window.location.href = `/admin/products/${id}`)}
+            onEdit={(p) => {
+              setEditData(p);
+              setEditOpen(true);
+            }}
+            onDelete={handleDelete}
+          />
+        ))}
+      </div>
+
       <Pagination
         totalItems={products.length}
         itemsPerPage={ITEMS_PER_PAGE}

@@ -86,7 +86,8 @@ export default function AddProductModal({
     } else if (!NO_SPECIAL_CHAR_REGEX.test(data.tensanpham)) {
       e.tensanpham = "Tên sản phẩm không được chứa ký tự đặc biệt";
     }
-
+    if (data.tensanpham == data.tensanpham)
+      e.tensanpham = "Tên sản phẩm đã tồn tại";
     if (!data.madanhmuc) e.madanhmuc = "Vui lòng chọn danh mục";
 
     if (!data.thuonghieu?.trim()) {
@@ -122,163 +123,168 @@ export default function AddProductModal({
         Swal.showLoading();
       },
     });
-    try {
-      // ============================
-      // 1️⃣ TẠO PRODUCT TRƯỚC
-      // ============================
-      const slug = data.tensanpham
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "");
+    // try {
+    // ============================
+    // 1️⃣ TẠO PRODUCT TRƯỚC
+    // ============================
+    const slug = data.tensanpham
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
 
-      const bodyVariants = variants.map((v) => ({
-        makichthuoc: v.size,
-        mamausac: v.color,
-        giaban: v.giaban,
-        soluongton: v.ton,
-      }));
+    const bodyVariants = variants.map((v) => ({
+      makichthuoc: v.size,
+      mamausac: v.color,
+      giaban: v.giaban,
+      soluongton: v.ton,
+    }));
 
-      const newProduct = {
-        ...data,
-        slug,
-        anhdaidien: "", // tạm thời rỗng – lát cập nhật lại
-      };
+    const newProduct = {
+      ...data,
+      slug,
+      anhdaidien: "", // tạm thời rỗng – lát cập nhật lại
+    };
 
-      const res = await createProductWithVariants(newProduct, bodyVariants);
+    const res = await createProductWithVariants(newProduct, bodyVariants);
 
-      const masanpham = res.productId; // ⬅ backend trả field này
-      if (!masanpham) {
-        Swal.fire({
-          title: "Lỗi!",
-          text: "Thêm sản phẩm thất bại!",
-          icon: "error",
-          confirmButtonText: "OK",
-        });
-
-        return;
-      }
-
-      // ============================
-      // 2️ UPLOAD ẢNH ĐẠI DIỆN
-      // ============================
-      const formAvatar = new FormData();
-      formAvatar.append("masanpham", masanpham);
-      formAvatar.append("image", avatarFile);
-
-      const avatarRes = await uploadProductAvatar(masanpham, avatarFile);
-      if (!avatarRes.url) {
-        Swal.fire({
-          title: "Lỗi!",
-          text: "Vui lòng chọn ảnh đại diện!",
-          icon: "error",
-          confirmButtonText: "OK",
-        });
-        return;
-      }
-
-      // ============================
-      // ============================
-      // 3️ UPLOAD ẢNH BIẾN THỂ (FIXED)
-      // ============================
-
-      // Lấy lại chi tiết sản phẩm để có đúng danh sách mabienthe
-      const detail = await getProductDetail(masanpham);
-      const dsBienThe = detail.bienthe;
-
-      // Tạo map { "size-color": mabienthe }
-      const mapBienThe = {};
-      dsBienThe.forEach((bt) => {
-        const key = `${bt.makichthuoc}-${bt.mamausac}`;
-        mapBienThe[key] = bt.mabienthe;
-      });
-
-      // Upload ảnh tương ứng từng biến thể
-      for (let i = 0; i < variants.length; i++) {
-        const key = `${variants[i].size}-${variants[i].color}`;
-        const mabienthe = mapBienThe[key];
-
-        if (!mabienthe) {
-          console.warn("Không tìm thấy mabienthe cho:", key);
-          continue;
-        }
-
-        if (variants[i].image1) {
-          await uploadVariantImage(mabienthe, variants[i].image1, 1);
-        }
-        if (variants[i].image2) {
-          await uploadVariantImage(mabienthe, variants[i].image2, 2);
-        }
-      }
-      setVariants((prev) => [...prev, res.data.newVariant]);
-      setShowAddPopup(false);
-      setAddForm({
-        mamausac: "",
-        makichthuoc: "",
-        tendanhmuc: "",
-        giaban: "",
-        soluongton: "",
-        mota: "",
-        thuonghieu: "",
-        chatlieu: "",
-        kieudang: "",
-        baoquan: "",
-        anhdaidien: "",
-      });
-      Swal.fire({
-        title: "Thành công!",
-        text: "Thêm sản phẩm thành công!",
-        icon: "success",
-        confirmButtonText: "OK",
-      });
-
-      // Gọi load() để cập nhật bảng ngoài
-      onSuccess();
-
-      // RESET FORM để lần sau mở modal không bị dính data cũ
-      setData({
-        tensanpham: "",
-        madanhmuc: "",
-        thuonghieu: "",
-        mota: "",
-        chatlieu: "",
-        kieudang: "",
-        baoquan: "",
-      });
-
-      // RESET biến thể
-      setVariants([
-        {
-          size: "",
-          color: "",
-          giaban: "",
-          ton: "",
-          image1: null,
-          image2: null,
-        },
-      ]);
-
-      // RESET ảnh
-      setAvatarFile(null);
-
-      // Đóng modal
-      onClose();
-    } catch (err) {
-      console.error("Lỗi thêm sản phẩm:", err);
-      Swal.close();
+    const masanpham = res.productId; // ⬅ backend trả field này
+    if (!masanpham) {
       Swal.fire({
         title: "Lỗi!",
         text: "Thêm sản phẩm thất bại!",
         icon: "error",
         confirmButtonText: "OK",
       });
+
+      return;
     }
+
+    // ============================
+    // 2️ UPLOAD ẢNH ĐẠI DIỆN
+    // ============================
+    const formAvatar = new FormData();
+    formAvatar.append("masanpham", masanpham);
+    formAvatar.append("image", avatarFile);
+
+    const avatarRes = await uploadProductAvatar(masanpham, avatarFile);
+    if (!avatarRes.url) {
+      Swal.fire({
+        title: "Lỗi!",
+        text: "Vui lòng chọn ảnh đại diện!",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+      return;
+    }
+
+    // ============================
+    // ============================
+    // 3️ UPLOAD ẢNH BIẾN THỂ (FIXED)
+    // ============================
+
+    // Lấy lại chi tiết sản phẩm để có đúng danh sách mabienthe
+    const detail = await getProductDetail(masanpham);
+    const dsBienThe = detail.bienthe;
+
+    // Tạo map { "size-color": mabienthe }
+    const mapBienThe = {};
+    dsBienThe.forEach((bt) => {
+      const key = `${bt.makichthuoc}-${bt.mamausac}`;
+      mapBienThe[key] = bt.mabienthe;
+    });
+
+    // Upload ảnh tương ứng từng biến thể
+    for (let i = 0; i < variants.length; i++) {
+      const key = `${variants[i].size}-${variants[i].color}`;
+      const mabienthe = mapBienThe[key];
+
+      if (!mabienthe) {
+        console.warn("Không tìm thấy mabienthe cho:", key);
+        continue;
+      }
+
+      if (variants[i].image1) {
+        await uploadVariantImage(mabienthe, variants[i].image1, 1);
+      }
+      if (variants[i].image2) {
+        await uploadVariantImage(mabienthe, variants[i].image2, 2);
+      }
+    }
+    setVariants((prev) => [...prev, res.data.newVariant]);
+    setShowAddPopup(false);
+    setAddForm({
+      mamausac: "",
+      makichthuoc: "",
+      tendanhmuc: "",
+      giaban: "",
+      soluongton: "",
+      mota: "",
+      thuonghieu: "",
+      chatlieu: "",
+      kieudang: "",
+      baoquan: "",
+      anhdaidien: "",
+    });
+    Swal.fire({
+      title: "Thành công!",
+      text: "Thêm sản phẩm thành công!",
+      icon: "success",
+      confirmButtonText: "OK",
+    });
+
+    // Gọi load() để cập nhật bảng ngoài
+    onSuccess();
+
+    // RESET FORM để lần sau mở modal không bị dính data cũ
+    setData({
+      tensanpham: "",
+      madanhmuc: "",
+      thuonghieu: "",
+      mota: "",
+      chatlieu: "",
+      kieudang: "",
+      baoquan: "",
+    });
+
+    // RESET biến thể
+    setVariants([
+      {
+        size: "",
+        color: "",
+        giaban: "",
+        ton: "",
+        image1: null,
+        image2: null,
+      },
+    ]);
+
+    // RESET ảnh
+    setAvatarFile(null);
+
+    // Đóng modal
+    onClose();
+    // } catch (err) {
+    //   console.error("Lỗi thêm sản phẩm:", err);
+    //   Swal.close();
+    //   Swal.fire({
+    //     title: "Lỗi!",
+    //     text: "Thêm sản phẩm thất bại!",
+    //     icon: "error",
+    //     confirmButtonText: "OK",
+    //   });
+    // }
   };
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-[#111] border border-white/10 rounded-xl shadow-2xl p-6 w-[900px] max-h-[90vh] overflow-y-auto text-gray-200">
+      <div
+        className="bg-[#111] border border-white/10 rounded-xl shadow-2xl
+                p-4 sm:p-6
+                w-[95vw] max-w-[900px]
+                max-h-[90vh] overflow-y-auto text-gray-200"
+      >
         {/* HEADER */}
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-white">Thêm sản phẩm</h2>
@@ -289,9 +295,8 @@ export default function AddProductModal({
             ✖
           </button>
         </div>
-
         {/* FORM */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Tên */}
           <div>
             <label className="text-gray-300 text-sm font-bold">
@@ -348,9 +353,7 @@ export default function AddProductModal({
             ["Bảo quản", "baoquan"],
           ].map(([label, key]) => (
             <div key={key}>
-              <label className="text-gray-300 text-sm font-bold">
-                {label}
-              </label>
+              <label className="text-gray-300 text-sm font-bold">{label}</label>
               <input
                 className="bg-[#1a1a1a] border border-white/10 p-2 rounded-lg w-full"
                 value={data[key]}

@@ -380,11 +380,12 @@ export default function Checkout() {
       );
 
       const orderId = res.data?.madonhang;
+      localStorage.setItem("lastOrderId", String(orderId));
       if (!orderId) {
         Swal.fire("Lỗi!", "Không lấy được mã đơn hàng!", "error");
         return;
       }
-      // ✅ Sau khi tạo đơn nội bộ thành công -> tạo vận đơn GHN và lưu DB
+      // Sau khi tạo đơn nội bộ thành công -> tạo vận đơn GHN và lưu DB
       let ghnSaved = null;
 
       try {
@@ -421,7 +422,7 @@ export default function Checkout() {
       } catch (err) {
         console.error("GHN create-order FE error:", err?.response?.data || err);
 
-        // ⚠️ Quan trọng: GHN fail thì vẫn cho đặt hàng (vì đơn nội bộ đã tạo)
+        //  Quan trọng: GHN fail thì vẫn cho đặt hàng (vì đơn nội bộ đã tạo)
         Swal.fire({
           icon: "warning",
           title: "Đơn đã tạo nhưng GHN lỗi",
@@ -436,6 +437,7 @@ export default function Checkout() {
         const cartKey = uid ? `cart_${uid}` : "cart_guest";
         localStorage.removeItem(cartKey);
         localStorage.setItem("lastOrderId", String(orderId));
+
         localStorage.setItem("lastPaymentMethod", "COD");
         navigate("/ordersuccess", { state: { orderId, paymentMethod: "COD" } });
         return;

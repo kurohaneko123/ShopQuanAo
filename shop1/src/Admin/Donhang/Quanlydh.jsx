@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Eye, CheckCircle, XCircle, Pencil, RotateCcw } from "lucide-react";
+import { Eye, CheckCircle, XCircle, Pencil } from "lucide-react";
 import Swal from "sweetalert2";
 import Pagination from "../Pagination";
 
@@ -60,11 +60,10 @@ export default function Quanlydh() {
   /* ================= HELPER UI ================= */
   const actionBtn = (disabled = false) =>
     `w-9 h-9 rounded-lg flex items-center justify-center transition
-     ${
-       disabled
-         ? "bg-gray-700 text-gray-400 cursor-not-allowed opacity-60"
-         : "text-white hover:brightness-110"
-     }`;
+     ${disabled
+      ? "bg-gray-700 text-gray-400 cursor-not-allowed opacity-60"
+      : "text-white hover:brightness-110"
+    }`;
 
   /* ================= ACTION LOGIC ================= */
   const submitEditInfo = async () => {
@@ -155,39 +154,15 @@ export default function Quanlydh() {
     }
   };
 
-  const adminXacNhanHoanTien = async (order) => {
-    const mahoantien = order?.mahoantien;
-
+  const checkHoanTien = async (mahoantien) => {
+    console.log("▶️ CHECK HOÀN TIỀN - mahoantien:", mahoantien);
     if (!mahoantien) {
       return Swal.fire("Lỗi", "Không có mã hoàn tiền", "error");
     }
 
-    const confirm = await Swal.fire({
-      title: "Xác nhận hoàn tiền ZaloPay?",
-      html: `
-      <div style="text-align:left">
-        <p><b>Mã đơn:</b> ${order?.madonhang}</p>
-        <p><b>Mã hoàn tiền:</b> ${mahoantien}</p>
-        <p><b>Trạng thái hiện tại:</b> ${order?.trangthai_hoantien || "N/A"}</p>
-      </div>
-    `,
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonText: "Xác nhận",
-      cancelButtonText: "Hủy",
-    });
-
-    if (!confirm.isConfirmed) return;
-
     try {
-      Swal.fire({
-        title: "Đang kiểm tra ZaloPay...",
-        allowOutsideClick: false,
-        didOpen: () => Swal.showLoading(),
-      });
-
       const res = await axios.post(
-        `${API_HOANTIEN}/admin/check/${mahoantien}`,
+        `http://localhost:5000/api/hoantien/admin/check/${mahoantien}`,
         {},
         {
           headers: {
@@ -196,34 +171,45 @@ export default function Quanlydh() {
         }
       );
 
-      const { result } = res.data;
+      const { result, message } = res.data;
+      console.log("ZALOPAY RESULT:", result);
+
+      //  ZaloPay xác nhận hoàn tiền thành công
       const subCode = result?.sub_return_code;
 
       if (subCode === 1) {
-        await Swal.fire(
+        Swal.fire(
           "Hoàn tiền thành công",
-          "ZaloPay đã hoàn tiền xong. Hệ thống đã cập nhật trạng thái.",
+          "ZaloPay đã hoàn tiền xong",
           "success"
         );
-      } else if (subCode === 2 || subCode === -14) {
-        await Swal.fire(
+      } else if (subCode === 2) {
+        Swal.fire(
           "Đang hoàn tiền",
-          "ZaloPay đang xử lý hoàn tiền, vui lòng kiểm tra lại sau.",
+          "ZaloPay đang xử lý hoàn tiền, vui lòng kiểm tra lại sau",
+          "info"
+        );
+      } else if (subCode === -14) {
+        //  FIX QUAN TRỌNG: -14 không phải lỗi CHECK
+        Swal.fire(
+          "Đang hoàn tiền",
+          "Giao dịch hoàn tiền đang được xử lý, vui lòng kiểm tra lại sau",
           "info"
         );
       } else {
-        await Swal.fire(
+        Swal.fire(
           "Hoàn tiền thất bại",
           result?.sub_return_message || "Không xác định",
           "error"
         );
       }
 
-      fetchOrders(); // reload lại danh sách
+      // reload lại danh sách đơn
+      fetchOrders();
     } catch (err) {
       Swal.fire(
         "Lỗi",
-        err?.response?.data?.message || "Không thể xác nhận hoàn tiền",
+        err?.response?.data?.message || "Không thể kiểm tra hoàn tiền",
         "error"
       );
     }
@@ -268,14 +254,8 @@ export default function Quanlydh() {
               const isHoanTien = x.trangthai_hoantien === "thanh_cong";
               const disableEdit = isDaHuy || isHoanTien;
               const disableCancel = isDaHuy || isHoanTien;
-
-              const daThanhToanZaloPay =
-                x.hinhthucthanhtoan === "ZALOPAY" && !!x.zalopay_trans_id;
-
-              const dangHoanTien = x.trangthai_hoantien === "dang_xu_ly";
-
-              const showXacNhanHoanTienBtn =
-                daThanhToanZaloPay && dangHoanTien && !!x.mahoantien;
+              const disableRefundCheck =
+                !x.mahoantien || x.trangthai_hoantien !== "dang_xu_ly";
 
               return (
                 <tr key={x.madonhang} className="border-b border-white/5">
@@ -290,12 +270,12 @@ export default function Quanlydh() {
                     {x.trangthai_hoantien === "dang_xu_ly"
                       ? "Đang hoàn tiền (ZaloPay)"
                       : x.trangthai_hoantien === "thanh_cong"
-                      ? "Đã hoàn tiền"
-                      : x.trangthai}
+                        ? "Đã hoàn tiền"
+                        : x.trangthai}
                   </td>
 
                   <td className="p-3">
-                    <div className="grid grid-cols-6 gap-2 place-items-center">
+                    <div className="grid grid-cols-5 gap-2 place-items-center">
                       {/* XEM */}
                       <button
                         className={`${actionBtn(false)} bg-indigo-600`}
@@ -368,23 +348,23 @@ export default function Quanlydh() {
                         <XCircle size={16} />
                       </button>
 
-                      {/* XÁC NHẬN HOÀN TIỀN (ZALOPAY) */}
+                      {/* CHECK HOÀN TIỀN */}
                       <button
                         className={`${actionBtn(
-                          !showXacNhanHoanTienBtn
-                        )} bg-emerald-600`}
-                        disabled={!showXacNhanHoanTienBtn}
+                          disableRefundCheck
+                        )} bg-sky-600`}
+                        disabled={disableRefundCheck}
                         onClick={() => {
-                          if (!showXacNhanHoanTienBtn) return;
-                          adminXacNhanHoanTien(x);
+                          if (disableRefundCheck) return;
+                          checkHoanTien(x.mahoantien);
                         }}
                         title={
-                          showXacNhanHoanTienBtn
-                            ? "Xác nhận hoàn tiền ZaloPay"
-                            : "Chỉ hiện khi đơn ZaloPay đang hoàn tiền"
+                          disableRefundCheck
+                            ? "Không có giao dịch hoàn tiền"
+                            : "Kiểm tra hoàn tiền"
                         }
                       >
-                        <RotateCcw size={16} />
+                        🔄
                       </button>
                     </div>
                   </td>
@@ -428,18 +408,6 @@ export default function Quanlydh() {
                 <p>
                   <b>Ghi chú:</b> {selectedOrder.ghichu || "Không có"}
                 </p>
-                {selectedOrder?.hinhthucthanhtoan === "ZALOPAY" &&
-                  selectedOrder?.trangthai_hoantien === "dang_xu_ly" &&
-                  selectedOrder?.mahoantien && (
-                    <div className="mt-4 flex justify-end">
-                      <button
-                        onClick={() => adminXacNhanHoanTien(selectedOrder)}
-                        className="px-4 py-2 bg-emerald-600 rounded-lg text-white hover:brightness-110"
-                      >
-                        ✅ Xác nhận hoàn tiền ZaloPay
-                      </button>
-                    </div>
-                  )}
 
                 <div className="text-right mt-4">
                   <button

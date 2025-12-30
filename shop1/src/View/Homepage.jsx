@@ -140,6 +140,7 @@ export default function HomePage() {
           icon: "error",
           title: "Copy thất bại!",
           text: "Lỗi,Không thể copy mã voucher.",
+
         });
       });
   };
@@ -350,8 +351,8 @@ export default function HomePage() {
             <button
               onClick={() => setSelectedGender("nam")}
               className={`h-12 px-6 rounded-full font-semibold uppercase transition-all ${selectedGender === "nam"
-                  ? "bg-neutral-900 text-white"
-                  : "bg-neutral-200 text-neutral-800 hover:bg-neutral-300"
+                ? "bg-neutral-900 text-white"
+                : "bg-neutral-200 text-neutral-800 hover:bg-neutral-300"
                 }`}
             >
               Nam
@@ -360,8 +361,8 @@ export default function HomePage() {
             <button
               onClick={() => setSelectedGender("nu")}
               className={`h-12 px-6 rounded-full font-semibold uppercase transition-all ${selectedGender === "nu"
-                  ? "bg-neutral-900 text-white"
-                  : "bg-neutral-200 text-neutral-800 hover:bg-neutral-300"
+                ? "bg-neutral-900 text-white"
+                : "bg-neutral-200 text-neutral-800 hover:bg-neutral-300"
                 }`}
             >
               Nữ

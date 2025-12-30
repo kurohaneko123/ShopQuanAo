@@ -60,11 +60,10 @@ export default function Quanlydh() {
   /* ================= HELPER UI ================= */
   const actionBtn = (disabled = false) =>
     `w-9 h-9 rounded-lg flex items-center justify-center transition
-     ${
-       disabled
-         ? "bg-gray-700 text-gray-400 cursor-not-allowed opacity-60"
-         : "text-white hover:brightness-110"
-     }`;
+     ${disabled
+      ? "bg-gray-700 text-gray-400 cursor-not-allowed opacity-60"
+      : "text-white hover:brightness-110"
+    }`;
 
   /* ================= ACTION LOGIC ================= */
   const submitEditInfo = async () => {
@@ -271,8 +270,8 @@ export default function Quanlydh() {
                     {x.trangthai_hoantien === "dang_xu_ly"
                       ? "Đang hoàn tiền (ZaloPay)"
                       : x.trangthai_hoantien === "thanh_cong"
-                      ? "Đã hoàn tiền"
-                      : x.trangthai}
+                        ? "Đã hoàn tiền"
+                        : x.trangthai}
                   </td>
 
                   <td className="p-3">

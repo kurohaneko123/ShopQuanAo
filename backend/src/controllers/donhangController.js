@@ -1,4 +1,5 @@
 import db from "../config/db.js";
+import axios from "axios";
 import {
   taoDonHang,
   taoChiTietDonHang,
@@ -9,6 +10,8 @@ import {
   capNhatTrangThaiDonHang,
   laySanPhamBanChay,
 } from "../models/donhangModel.js";
+
+
 
 // Tạo 1 đơn hàng + TRỪ KHO BIẾN THỂ
 export const themDonHang = async (req, res) => {
@@ -276,6 +279,44 @@ export const adminHuyDonHang = async (req, res) => {
       ? donhang.trangthai.trim().toLowerCase()
       : "chờ xác nhận";
 
+
+    if (!TRANG_THAI_ADMIN_DUOC_HUY.includes(tt)) {
+      await connection.rollback();
+      return res.status(400).json({
+        message: `Admin không thể hủy đơn ở trạng thái: ${donhang.trangthai}`
+      });
+    }
+    const ghnOrderCode = donhang.ghn_order_code;
+    if (ghnOrderCode) {
+      try {
+        console.log("HUY GHN ORDER CODE:", donhang.ghn_order_code);
+        await axios.post(
+          "https://dev-online-gateway.ghn.vn/shiip/public-api/v2/switch-status/cancel",
+          { order_codes: [ghnOrderCode] },
+          {
+            headers: {
+              "Content-Type": "application/json",
+              ShopId: process.env.GHN_SHOP_ID,
+              Token: process.env.GHN_TOKEN,
+            },
+          }
+        );
+      } catch (ghnErr) {
+        console.log("GHN CANCEL ERROR:", ghnErr?.response?.data || ghnErr.message);
+
+        await connection.rollback();
+        return res.status(400).json({
+          message: "Huỷ GHN thất bại, không thể huỷ đơn",
+          ghn: ghnErr?.response?.data || null, // để anh debug
+        });
+      }
+    }
+    // Lấy chi tiết đơn hàng
+    const [chitiet] = await connection.query(
+      `SELECT mabienthe, soluong FROM chitietdonhang WHERE madonhang = ?`,
+      [madonhang]
+    );
+
     if (!TRANG_THAI_ADMIN_DUOC_HUY.includes(tt)) {
       await connection.rollback();
       return res.status(400).json({
@@ -283,11 +324,7 @@ export const adminHuyDonHang = async (req, res) => {
       });
     }
 
-    // Lấy chi tiết đơn hàng
-    const [chitiet] = await connection.query(
-      `SELECT mabienthe, soluong FROM chitietdonhang WHERE madonhang = ?`,
-      [madonhang]
-    );
+
 
     // Hoàn kho
     for (const item of chitiet) {
@@ -307,8 +344,40 @@ export const adminHuyDonHang = async (req, res) => {
           ngaycapnhat = NOW()
       WHERE madonhang = ?
       `,
+
       [madonhang]
     );
+    // SAU UPDATE donhang = 'đã hủy'
+
+    // ================== AUTO REFUND ZALOPAY ==================
+    if (
+      donhang.hinhthucthanhtoan === "ZALOPAY" &&
+      Number(donhang.dathanhtoan) === 1
+    ) {
+      try {
+        console.log("AUTO REFUND ZALOPAY FOR ORDER:", madonhang);
+
+        await axios.post(
+          "http://localhost:5000/api/payment/zalopay/refund",
+          { madonhang },
+          {
+            headers: {
+              Authorization: req.headers.authorization,
+            },
+          }
+        );
+
+        console.log("AUTO REFUND REQUEST SENT");
+      } catch (refundErr) {
+        console.error(
+          "AUTO REFUND FAILED:",
+          refundErr?.response?.data || refundErr.message
+        );
+        // KHÔNG rollback – vì đơn & kho đã hủy OK
+      }
+    }
+
+
 
     await connection.commit();
 

@@ -95,6 +95,25 @@ export default function Navbar() {
       navigate("/thongtincanhan"); // user thường vẫn vào trang cá nhân
     }
   };
+  //Xử lý giá
+  // format tiền VNĐ
+  const formatMoney = (value) =>
+    Number(value).toLocaleString("vi-VN") + "₫";
+
+  // render giá (1 giá hoặc khoảng giá)
+  const renderPrice = (item) => {
+    const min = Number(item.giaban_min);
+    const max = Number(item.giaban_max);
+
+    if (!min && !max) return "";
+
+    if (min === max) {
+      return formatMoney(min);
+    }
+
+    return `${formatMoney(min)} - ${formatMoney(max)}`;
+  };
+
 
   /* ===== THANH TÌM KIẾM ===== */
   const [searchTerm, setSearchTerm] = useState("");
@@ -368,12 +387,12 @@ export default function Navbar() {
                       item.name ||
                       item.tensp ||
                       "Sản phẩm";
-                    const gia =
-                      item.giakhuyenmai ??
-                      item.giaban ??
-                      item.giasanpham ??
-                      item.gia ??
-                      0;
+                    const giaText = renderPrice(item);
+                    const image =
+                      item.anhdaidien ||
+                      item.image ||
+                      "/no-image.png";
+
 
                     // nếu có masp / mabienthe thì điều hướng chi tiết, còn không thì search
                     const go = () => {
@@ -389,14 +408,24 @@ export default function Navbar() {
                         onClick={go}
                         className="w-full text-left px-4 py-2 hover:bg-gray-100 flex flex-col transition"
                       >
-                        <span className="text-gray-800 font-semibold">
-                          {ten}
-                        </span>
-                        <span className="text-xs text-gray-500">
-                          {gia > 0
-                            ? Number(gia).toLocaleString("vi-VN") + "₫"
-                            : "Liên hệ"}
-                        </span>
+                        <div className="grid grid-cols-[40px_1fr_auto] items-center gap-3 w-full">
+                          {/* CỘT 1: ẢNH */}
+                          <img
+                            src={image}
+                            alt={ten}
+                            className="w-10 h-10 object-cover rounded-md border"
+                          />
+
+                          {/* CỘT 2: TÊN */}
+                          <span className="text-gray-800 font-semibold truncate">
+                            {ten}
+                          </span>
+
+                          {/* CỘT 3: GIÁ */}
+                          <span className="text-xs text-gray-500 whitespace-nowrap">
+                            {giaText}
+                          </span>
+                        </div>
                       </button>
                     );
                   })}

@@ -32,9 +32,10 @@ export const ZaloPayCreateOrder = async (req, res) => {
       item: JSON.stringify(items),
       embed_data: JSON.stringify(embed_data),
       callback_url:
-        "https://8c51fef0bd09.ngrok-free.app/api/payment/zalopay/callback",
-      redirect_url:
-        "http://localhost:5000/ordersuccess?method=zalopay",
+        "https://a0430f2c5e3c.ngrok-free.app/api/payment/zalopay/callback",
+
+      redirect_url: "http://localhost:5000/ordersuccess?method=zalopay",
+
       // CHỈ SỬA TIỀN
       amount: tongthanhtoan || 50000,
 

@@ -13,13 +13,10 @@ import Aothunbasic from "../assets/aothunbasic.jpg";
 
 /* =========================
    MAPPING THEO API /bienthe/loc
-   - Anh đang test: kichthuoc=2,3 (Size M,L)
-   - mausac=4,5 (Xanh Navy, Xám Tro)
    ========================= */
 const sizeOptions = [
   { id: 2, label: "M" },
   { id: 3, label: "L" },
-  // Nếu BE anh có thêm: {id: 1,label:"S"}, {id:4,label:"XL"}... anh add tiếp ở đây
 ];
 
 const colorOptions = [
@@ -58,8 +55,6 @@ export default function TatCaSanPham() {
 
   const [page, setPage] = useState(1);
   const pageSize = 6;
-
-  // giá hiển thị: vẫn lấy từ /api/sanpham/:id giống code cũ của anh
   const [priceMap, setPriceMap] = useState({});
 
   // reset page khi đổi filter/search
@@ -98,17 +93,16 @@ export default function TatCaSanPham() {
 
   // =========================
   // 1) FETCH PRODUCTS:
-  // - Nếu có filter => gọi /api/bienthe/loc (lọc thật theo BE)
+  // - Nếu có filter => gọi /api/bienthe/loc
   // - Nếu không => gọi /api/sanpham (danh sách thường)
   // =========================
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
       setError(null);
-
+      //
       try {
         if (hasAnyFilter) {
-          // build query đúng như Postman của anh
           const params = {};
           if (selectedSizeIds.length)
             params.kichthuoc = selectedSizeIds.join(",");
@@ -125,12 +119,9 @@ export default function TatCaSanPham() {
             params,
           });
 
-          // cố gắng “đỡ” mọi kiểu response
           const raw = Array.isArray(res.data?.dulieu) ? res.data.dulieu : [];
 
           // Normalize về format card (id, name, brand, img...)
-          // Tùy BE anh trả gì: có thể trả list biến thể kèm sản phẩm.
-          // Chị gom về theo sản phẩm nếu tìm thấy masanpham/tensanpham.
           const mapById = new Map();
 
           raw.forEach((item) => {
@@ -151,7 +142,6 @@ export default function TatCaSanPham() {
           setProducts(Array.from(mapById.values()));
           const normalized = Array.from(mapById.values());
 
-          // searchTerm vẫn lọc thêm ở FE (nếu anh muốn BE lọc luôn thì nâng cấp sau)
           const finalList = searchTerm
             ? normalized.filter((p) =>
                 p.name.toLowerCase().includes(searchTerm)
@@ -196,7 +186,7 @@ export default function TatCaSanPham() {
   ]);
 
   // =========================
-  // 2) FETCH PRICE MAP (giữ logic cũ của anh)
+  // 2) FETCH PRICE MAP
   // =========================
   useEffect(() => {
     if (products.length === 0) return;

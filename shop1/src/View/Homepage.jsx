@@ -139,7 +139,6 @@ export default function HomePage() {
         Swal.fire({
           icon: "error",
           title: "Copy thất bại!",
-          title: "Lỗi",
           text: "Không thể copy mã voucher.",
         });
       });

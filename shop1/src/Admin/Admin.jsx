@@ -63,11 +63,11 @@ export default function AdminLayout() {
       {/* ===== SIDEBAR ===== */}
       <aside
         className={`
-    fixed md:static z-40
+    fixed top-0 left-0 z-40
     w-64 h-screen
     bg-[#111111] border-r border-white/10
     shadow-[0_0_15px_rgba(0,0,0,0.5)]
-    flex flex-col justify-between
+    flex flex-col
     transition-transform duration-300
     ${open ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
   `}
@@ -177,12 +177,16 @@ export default function AdminLayout() {
 
         {/* Logout */}
         <div className="p-4 border-t border-white/10">
-          <button
-            onClick={logout}
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-red-600/80 text-white font-semibold hover:bg-red-500 transition-all duration-200 shadow-lg"
-          >
-            <LogOut size={18} /> Đăng xuất
-          </button>
+          <div className="mt-auto p-4 border-t border-white/10">
+            <button
+              onClick={logout}
+              className="w-full flex items-center justify-center font-bold gap-2 py-3 rounded-xl
+bg-gradient-to-r from-red-600/90 to-rose-600/90
+hover:from-red-500 hover:to-rose-500 transition shadow-lg"
+            >
+              <LogOut size={18} /> Đăng xuất
+            </button>
+          </div>
         </div>
       </aside>
       {open && (
@@ -192,7 +196,7 @@ export default function AdminLayout() {
         />
       )}
       {/* ===== MAIN CONTENT ===== */}
-      <main className="flex-1 p-4 sm:p-6 md:p-8 bg-[#0f0f0f]">
+      <main className="flex-1 p-4 sm:p-6 md:p-8 bg-[#0f0f0f] md:ml-64">
         <button
           onClick={() => setOpen(true)}
           className="md:hidden fixed top-4 left-4 z-50

@@ -6,7 +6,7 @@ const API_BASE = "http://localhost:5000/api/payment";
 const CREATE_URL = `${API_BASE}/zalopay/create`;
 
 export default function ZaloPayPage() {
-  // 1️⃣ LẤY DATA TỪ CHECKOUT
+  // 1️LẤY DATA TỪ CHECKOUT
   const location = useLocation();
   const { orderId, totalAmount } = location.state || {};
 
@@ -15,7 +15,7 @@ export default function ZaloPayPage() {
     return <Navigate to="/" />;
   }
 
-  // ✅ UI-SAFE: Chuẩn hóa tiền để HIỂN THỊ đúng (không đụng logic create)
+  //  UI-SAFE: Chuẩn hóa tiền để HIỂN THỊ đúng (không đụng logic create)
   const amountNumber = useMemo(() => {
     const n = Number(totalAmount);
     return Number.isFinite(n) ? Math.round(n) : 0;
@@ -25,11 +25,11 @@ export default function ZaloPayPage() {
     return new Intl.NumberFormat("vi-VN");
   }, []);
 
-  // 2️⃣ STATE
+  // 2️ STATE
   const [createLoading, setCreateLoading] = useState(false);
   const [createError, setCreateError] = useState("");
 
-  // 3️⃣ TẠO THANH TOÁN (GIỮ NGUYÊN LOGIC)
+  // 3️TẠO THANH TOÁN (GIỮ NGUYÊN LOGIC)
   const handleCreateOrder = async (e) => {
     e.preventDefault();
     setCreateLoading(true);

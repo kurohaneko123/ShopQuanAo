@@ -176,10 +176,10 @@ export const createGhnOrder = async (req, res) => {
 
       weight: Number(weight),
       insurance_value: Number(insurance_value || 0),
-      cod_amount: Number(cod_amount || 0), // ✅ thêm
+      cod_amount: Number(cod_amount || 0), //  thêm
 
       service_type_id: 2,
-      items: safeItems, // ✅ đổi
+      items: safeItems, //  đổi
 
       order_code: order_code || String(madonhang),
     };
@@ -197,8 +197,7 @@ export const createGhnOrder = async (req, res) => {
         raw: data,
       });
     }
-
-    // ✅ LƯU VÀO BẢNG donhang (đúng theo ảnh DB của em)
+    //  LƯU VÀO BẢNG donhang (đúng theo ảnh DB của em)
     await db.query(
       `UPDATE donhang
        SET ghn_order_code = ?, ghn_fee = ?, donvivanchuyen = 'GHN', phivanchuyen = ?

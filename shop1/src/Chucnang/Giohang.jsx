@@ -2,6 +2,8 @@
 import React, { useEffect, useState } from "react";
 import { X, Trash2, Plus, Minus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
+import axios from "axios";
 function removeVietnameseTones(str) {
   return str
     .normalize("NFD")
@@ -30,17 +32,31 @@ export default function CartSlidebar({ onClose }) {
     window.dispatchEvent(new Event("cartUpdated"));
   };
 
-  const updateQty = (variantId, delta) => {
+  const updateQty = async (variantId, delta) => {
     const item = cart.find((it) => it.mabienthe === variantId);
     if (!item) return;
 
+    //  Nếu số lượng = 1 và bấm "-"
     if (item.soluong === 1 && delta === -1) {
-      if (window.confirm("Xóa sản phẩm này khỏi giỏ hàng?")) {
+      const result = await Swal.fire({
+        title: "Xóa sản phẩm?",
+        text: "Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng không?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Xóa",
+        cancelButtonText: "Hủy",
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+      });
+
+      if (result.isConfirmed) {
         removeItem(variantId);
       }
+
       return;
     }
 
+    //  Tăng / giảm bình thường
     const nextCart = cart.map((it) =>
       it.mabienthe === variantId ? { ...it, soluong: it.soluong + delta } : it
     );
@@ -205,7 +221,7 @@ export default function CartSlidebar({ onClose }) {
       }
     };
 
-    syncCart(); // ⭐ CỰC QUAN TRỌNG: gọi ngay khi mở giỏ
+    syncCart(); //  CỰC QUAN TRỌNG: gọi ngay khi mở giỏ
     window.addEventListener("cartUpdated", syncCart);
 
     return () => window.removeEventListener("cartUpdated", syncCart);

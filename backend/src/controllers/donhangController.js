@@ -11,8 +11,6 @@ import {
   laySanPhamBanChay,
 } from "../models/donhangModel.js";
 
-
-
 // Tạo 1 đơn hàng + TRỪ KHO BIẾN THỂ
 export const themDonHang = async (req, res) => {
   const connection = await db.getConnection(); // dùng transaction
@@ -279,11 +277,10 @@ export const adminHuyDonHang = async (req, res) => {
       ? donhang.trangthai.trim().toLowerCase()
       : "chờ xác nhận";
 
-
     if (!TRANG_THAI_ADMIN_DUOC_HUY.includes(tt)) {
       await connection.rollback();
       return res.status(400).json({
-        message: `Admin không thể hủy đơn ở trạng thái: ${donhang.trangthai}`
+        message: `Admin không thể hủy đơn ở trạng thái: ${donhang.trangthai}`,
       });
     }
     const ghnOrderCode = donhang.ghn_order_code;
@@ -302,7 +299,10 @@ export const adminHuyDonHang = async (req, res) => {
           }
         );
       } catch (ghnErr) {
-        console.log("GHN CANCEL ERROR:", ghnErr?.response?.data || ghnErr.message);
+        console.log(
+          "GHN CANCEL ERROR:",
+          ghnErr?.response?.data || ghnErr.message
+        );
 
         await connection.rollback();
         return res.status(400).json({
@@ -323,8 +323,6 @@ export const adminHuyDonHang = async (req, res) => {
         message: `Admin không thể hủy đơn ở trạng thái: ${donhang.trangthai}`,
       });
     }
-
-
 
     // Hoàn kho
     for (const item of chitiet) {
@@ -376,8 +374,6 @@ export const adminHuyDonHang = async (req, res) => {
         // KHÔNG rollback – vì đơn & kho đã hủy OK
       }
     }
-
-
 
     await connection.commit();
 
@@ -679,6 +675,67 @@ export const demDonHang = async (req, res) => {
     });
   } catch (err) {
     console.error("demDonHang error:", err);
+    res.status(500).json({ message: "Lỗi server" });
+  }
+};
+export const layChiTietHoaDon = async (req, res) => {
+  try {
+    const { madonhang } = req.params;
+
+    // LẤY ĐẦY ĐỦ THÔNG TIN ĐƠN HÀNG (CÓ NGÀY TẠO)
+    const [[donhang]] = await db.query(
+      `
+  SELECT
+    dh.madonhang,
+    dh.ngaytao,
+    dh.trangthai,
+    dh.hinhthucthanhtoan,
+    dh.donvivanchuyen,
+    dh.tennguoinhan,
+    dh.sodienthoai,
+    dh.diachigiao,
+    dh.ghichu,
+
+    -- map đúng tên cột DB của em
+    dh.tongtien       AS tonghang,
+    dh.phivanchuyen   AS phiship,
+    0                 AS giamgia,
+    dh.tongthanhtoan  AS tongthanhtoan
+
+  FROM donhang dh
+  WHERE dh.madonhang = ?
+  `,
+      [madonhang]
+    );
+
+    if (!donhang) {
+      return res.status(404).json({ message: "Không tìm thấy đơn hàng" });
+    }
+
+    // 🔹 LẤY DANH SÁCH SẢN PHẨM (GIỮ NGUYÊN CODE CŨ)
+    const [items] = await db.query(
+      `
+      SELECT
+        sp.tensanpham,
+        ct.soluong,
+        COALESCE(ct.giasaukhuyenmai, ct.giagoc, bt.giaban) AS gia,
+        ms.tenmausac AS mau,
+        kt.tenkichthuoc AS size
+      FROM chitietdonhang ct
+      JOIN bienthesanpham bt ON ct.mabienthe = bt.mabienthe
+      JOIN sanpham sp ON bt.masanpham = sp.masanpham
+      LEFT JOIN mausac ms ON bt.mamausac = ms.mamausac
+      LEFT JOIN kichthuoc kt ON bt.makichthuoc = kt.makichthuoc
+      WHERE ct.madonhang = ?
+      `,
+      [madonhang]
+    );
+
+    donhang.danhsachsanpham = items;
+
+    return res.json(donhang);
+  } catch (err) {
+    console.error("Lỗi chi tiết hóa đơn:", err);
     res.status(500).json({ message: "Lỗi server" });
   }
 };

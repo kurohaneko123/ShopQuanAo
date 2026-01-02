@@ -578,29 +578,24 @@ export default function Checkout() {
             placeholder="Số nhà, tên đường"
             className="w-full border rounded-lg p-3 mb-3"
             value={formData.diachi_chitiet}
+            // 1. Chỉ set state khi gõ
             onChange={(e) => {
-              const value = e.target.value;
+              const value = e.target.value.normalize("NFC");
+              setFormData({ ...formData, diachi_chitiet: value });
+            }}
+            // 2. Validate khi user gõ XONG (blur)
+            onBlur={() => {
+              const value = formData.diachi_chitiet;
 
-              const ADDRESS_REGEX = /^[a-zA-Z0-9À-ỹ\s,./-]+$/;
+              const ADDRESS_REGEX = /^[\p{L}\p{M}0-9\s,./\-()#:+'’–]+$/u;
 
-              // nếu có ký tự lạ → chặn
               if (value && !ADDRESS_REGEX.test(value)) {
                 Swal.fire({
                   icon: "warning",
                   title: "Địa chỉ không hợp lệ",
-                  text: "Chỉ được nhập chữ, số và các ký tự , . / -",
+                  text: "Chỉ được nhập chữ (kể cả tiếng Việt), số và các ký tự , . / - ( )",
                 });
-                return;
               }
-
-              const next = { ...formData, diachi_chitiet: value };
-              setFormData(next);
-
-              // cập nhật địa chỉ ghép
-              setFormData((prev) => ({
-                ...prev,
-                diachigiao: buildFullAddress(next),
-              }));
             }}
           />
 
@@ -682,6 +677,7 @@ export default function Checkout() {
           <textarea
             placeholder="Ghi chú đơn hàng..."
             className="w-full border rounded-lg p-3"
+            maxLength={150}
             value={formData.ghichu}
             onChange={(e) =>
               setFormData({ ...formData, ghichu: e.target.value })

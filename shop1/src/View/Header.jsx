@@ -97,8 +97,7 @@ export default function Navbar() {
   };
   //Xử lý giá
   // format tiền VNĐ
-  const formatMoney = (value) =>
-    Number(value).toLocaleString("vi-VN") + "₫";
+  const formatMoney = (value) => Number(value).toLocaleString("vi-VN") + "₫";
 
   // render giá (1 giá hoặc khoảng giá)
   const renderPrice = (item) => {
@@ -113,7 +112,6 @@ export default function Navbar() {
 
     return `${formatMoney(min)} - ${formatMoney(max)}`;
   };
-
 
   /* ===== THANH TÌM KIẾM ===== */
   const [searchTerm, setSearchTerm] = useState("");
@@ -244,12 +242,14 @@ export default function Navbar() {
                     {maleCategories.length > 0 ? (
                       maleCategories.map((cat) => (
                         <li key={cat.madanhmuc}>
-                          <a
-                            href={`/all/nam/${cat.slug.replace("-nam", "")}`}
-                            className="hover:text-black transition"
+                          <Link
+                            to={`/all?gender=Nam&category=${cat.slug.replace(
+                              "-nam",
+                              ""
+                            )}`}
                           >
                             {cat.tendanhmuc}
-                          </a>
+                          </Link>
                         </li>
                       ))
                     ) : (
@@ -260,7 +260,7 @@ export default function Navbar() {
                   </ul>
 
                   <Link
-                    to="/all/nam"
+                    to="/all?gender=Nam"
                     className="inline-block mt-4 font-semibold hover:text-black"
                   >
                     Tất cả sản phẩm →
@@ -304,12 +304,14 @@ export default function Navbar() {
                     {femaleCategories.length > 0 ? (
                       femaleCategories.map((cat) => (
                         <li key={cat.madanhmuc}>
-                          <a
-                            href={`/all/nu/${cat.slug.replace("-nu", "")}`}
-                            className="hover:text-black transition"
+                          <Link
+                            to={`/all?gender=Nữ&category=${cat.slug.replace(
+                              "-nu",
+                              ""
+                            )}`}
                           >
                             {cat.tendanhmuc}
-                          </a>
+                          </Link>
                         </li>
                       ))
                     ) : (
@@ -320,7 +322,7 @@ export default function Navbar() {
                   </ul>
 
                   <Link
-                    to="/all/nu"
+                    to="/all?gender=Nữ"
                     className="inline-block mt-4 font-semibold hover:text-black"
                   >
                     Tất cả sản phẩm →
@@ -389,10 +391,7 @@ export default function Navbar() {
                       "Sản phẩm";
                     const giaText = renderPrice(item);
                     const image =
-                      item.anhdaidien ||
-                      item.image ||
-                      "/no-image.png";
-
+                      item.anhdaidien || item.image || "/no-image.png";
 
                     // nếu có masp / mabienthe thì điều hướng chi tiết, còn không thì search
                     const go = () => {

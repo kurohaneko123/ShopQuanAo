@@ -11,7 +11,7 @@ export default function AccountModal({ isOpen, onClose }) {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // 🔁 Biến dành cho quên mật khẩu
+  // Biến dành cho quên mật khẩu
   const [resetStep, setResetStep] = useState(1); // 1: nhập email, 2: nhập mã & mật khẩu mới
   const [resetEmail, setResetEmail] = useState("");
 

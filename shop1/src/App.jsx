@@ -16,6 +16,7 @@ import ThongTinKhachHang from "./Chucnang/Thongtinkh.jsx";
 import DonHang from "./Chucnang/DonHang.jsx";
 import ZaloPayPage from "./Chucnang/Zalopay.jsx";
 import OrderSuccess from "./View/OrderSuccess.jsx";
+import HoaDonChiTiet from "./View/HoaDonChiTiet.jsx";
 //Admin
 import AdminLayout from "./Admin/Admin.jsx";
 import ProductManagement from "./Admin/Sanpham/index.jsx";
@@ -83,6 +84,7 @@ export default function App() {
         <Route path="/all/:gender" element={<TatCaSanPham />} />
         <Route path="/product/:id" element={<ChiTietSanPham />} />
         <Route path="/lienhe" element={<LienHe />} />
+        <Route path="/hoadon/:madonhang" element={<HoaDonChiTiet />} />
         <Route
           path="/checkout"
           element={

@@ -37,16 +37,14 @@ const genders = ["Nam", "Nữ"];
 export default function TatCaSanPham() {
   const [searchParams] = useSearchParams();
   const { gender: genderParam, category } = useParams();
-
+  const genderFromUrl = searchParams.get("gender"); // "Nam" | "Nữ" | null
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const searchTerm = queryParams.get("search")?.toLowerCase() || "";
-
   /* ===== STATE ===== */
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
   // chọn filter theo ID để match API
   const [selectedSizeIds, setSelectedSizeIds] = useState([]);
   const [selectedColorIds, setSelectedColorIds] = useState([]);
@@ -102,7 +100,8 @@ export default function TatCaSanPham() {
       setError(null);
       //
       try {
-        if (hasAnyFilter) {
+        if (hasAnyFilter || genderFromUrl) {
+          // Có filter: gọi /bienthe/loc
           const params = {};
           if (selectedSizeIds.length)
             params.kichthuoc = selectedSizeIds.join(",");
@@ -184,6 +183,13 @@ export default function TatCaSanPham() {
     selectedPrice,
     searchTerm,
   ]);
+  useEffect(() => {
+    if (genderFromUrl === "Nam" || genderFromUrl === "Nữ") {
+      setSelectedGender(genderFromUrl);
+    } else {
+      setSelectedGender(null);
+    }
+  }, [genderFromUrl]);
 
   // =========================
   // 2) FETCH PRICE MAP

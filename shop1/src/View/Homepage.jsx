@@ -140,7 +140,6 @@ export default function HomePage() {
           icon: "error",
           title: "Copy thất bại!",
           text: "Lỗi,Không thể copy mã voucher.",
-
         });
       });
   };
@@ -165,7 +164,6 @@ export default function HomePage() {
         }));
 
         setDailyProducts(mapped.slice(0, 6));
-        setHighlightProducts(mapped.slice(0, 6));
         setVouchers(voucherRes.data.data || []);
       } catch (err) {
         console.error("Lỗi khi tải dữ liệu:", err);
@@ -297,6 +295,32 @@ export default function HomePage() {
 
     fetchCategories();
   }, []);
+  /* ====== SẢN PHẨM NỔI BẬT (BÁN CHẠY) ====== */
+  useEffect(() => {
+    const fetchHighlightProducts = async () => {
+      try {
+        const res = await axios.get(
+          "http://localhost:5000/api/donhang/sanphamnoibat?limit=6"
+        );
+
+        const data = res.data.data || [];
+
+        const mapped = data.map((item) => ({
+          id: item.masanpham,
+          name: item.tensanpham,
+          img: item.anhdaidien || "",
+          brand: item.thuonghieu,
+          mota: item.mota,
+        }));
+
+        setHighlightProducts(mapped);
+      } catch (err) {
+        console.error("Lỗi tải sản phẩm nổi bật:", err);
+      }
+    };
+
+    fetchHighlightProducts();
+  }, []);
 
   /* ====== thêm nhanh vào giỏ hàng từ Homepage — ====== */
   const handleAddToCart = async (p) => {
@@ -350,20 +374,22 @@ export default function HomePage() {
           <nav className="flex justify-start gap-4">
             <button
               onClick={() => setSelectedGender("nam")}
-              className={`h-12 px-6 rounded-full font-semibold uppercase transition-all ${selectedGender === "nam"
-                ? "bg-neutral-900 text-white"
-                : "bg-neutral-200 text-neutral-800 hover:bg-neutral-300"
-                }`}
+              className={`h-12 px-6 rounded-full font-semibold uppercase transition-all ${
+                selectedGender === "nam"
+                  ? "bg-neutral-900 text-white"
+                  : "bg-neutral-200 text-neutral-800 hover:bg-neutral-300"
+              }`}
             >
               Nam
             </button>
 
             <button
               onClick={() => setSelectedGender("nu")}
-              className={`h-12 px-6 rounded-full font-semibold uppercase transition-all ${selectedGender === "nu"
-                ? "bg-neutral-900 text-white"
-                : "bg-neutral-200 text-neutral-800 hover:bg-neutral-300"
-                }`}
+              className={`h-12 px-6 rounded-full font-semibold uppercase transition-all ${
+                selectedGender === "nu"
+                  ? "bg-neutral-900 text-white"
+                  : "bg-neutral-200 text-neutral-800 hover:bg-neutral-300"
+              }`}
             >
               Nữ
             </button>

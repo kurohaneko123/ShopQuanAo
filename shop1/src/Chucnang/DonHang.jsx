@@ -14,7 +14,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 
 export default function DonHang() {
@@ -22,6 +22,7 @@ export default function DonHang() {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const pageSize = 5; // anh muốn 2-3-4 tuỳ, để 3 nhìn đẹp
+  const navigate = useNavigate();
 
   const BASE_URL = "http://localhost:5000/api/donhang";
   const totalPages = Math.max(1, Math.ceil(orders.length / pageSize));
@@ -394,14 +395,8 @@ export default function DonHang() {
                       )}
                     </div>
                     <button
-                      onClick={() => {
-                        o.danhsachsanpham?.forEach((sp) => {
-                          localStorage.setItem(
-                            `madonhang_${sp.masanpham}`,
-                            String(o.madonhang)
-                          );
-                        });
-                      }}
+                      onClick={() => navigate(`/hoadon/${o.madonhang}`)}
+                      className="px-4 py-2 rounded-lg bg-slate-900 text-white"
                     >
                       Xem chi tiết
                     </button>

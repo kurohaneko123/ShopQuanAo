@@ -11,6 +11,7 @@ import {
   adminHuyDonHangZaloPay,
   sanPhamNoiBat,
   demDonHang,
+  layChiTietHoaDon,
 } from "../controllers/donhangController.js";
 import { xacthucToken } from "../middleware/xacthuctoken.js";
 const router = express.Router();
@@ -38,5 +39,7 @@ router.put("/admin/huy-zalopay/:id", adminHuyDonHangZaloPay);
 router.put("/xacnhan/:id", adminXacNhanDonHang);
 // API để OrderSuccess polling
 router.get("/:madonhang", layDonHangById);
+
+router.get("/:madonhang/chitiet", layChiTietHoaDon);
 
 export default router;

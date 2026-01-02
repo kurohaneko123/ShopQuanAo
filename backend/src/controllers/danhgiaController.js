@@ -92,7 +92,7 @@ export const taoDanhGia = async (req, res) => {
     return res.status(201).json({
       success: true,
       message: "Đánh giá thành công",
-      madanhgia, // ✅ FE lấy để upload ảnh
+      madanhgia, //  FE lấy để upload ảnh
     });
   } catch (err) {
     console.error("Lỗi tạo đánh giá:", err);

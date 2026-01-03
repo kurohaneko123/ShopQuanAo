@@ -143,8 +143,17 @@ export default function Navbar() {
         // tuỳ backend trả về: res.data.dulieu
         const list = res.data?.dulieu || [];
 
-        // giới hạn 8 gợi ý cho mượt
-        setFilteredResults(list.slice(0, 8));
+        const keyword = q.toLowerCase();
+
+        //  lọc lại theo tên sản phẩm
+        const filtered = list.filter((item) => {
+          const name =
+            item.tensanpham || item.ten || item.name || item.tensp || "";
+
+          return name.toLowerCase().includes(keyword);
+        });
+
+        setFilteredResults(filtered.slice(0, 6));
       } catch (err) {
         console.error("Lỗi search biến thể:", err);
         setFilteredResults([]);
@@ -368,7 +377,16 @@ export default function Navbar() {
             />
 
             {searchTerm && (
-              <div className="absolute top-12 left-0 w-full bg-white shadow-xl border rounded-xl z-[60] max-h-60 overflow-y-auto">
+              <div
+                className="
+  absolute top-12 left-0 w-full
+  bg-white/95 backdrop-blur-xl
+  shadow-2xl border border-gray-200
+  rounded-2xl
+  z-[60]
+  overflow-hidden
+"
+              >
                 {searchLoading && (
                   <div className="px-4 py-3 text-sm text-gray-500">
                     Đang tìm…
@@ -405,26 +423,30 @@ export default function Navbar() {
                       <button
                         key={item.mabienthe || item.id || idx}
                         onClick={go}
-                        className="w-full text-left px-4 py-2 hover:bg-gray-100 flex flex-col transition"
+                        className="
+    w-full px-4 py-2
+    hover:bg-gray-50
+    flex items-center gap-3
+    transition
+  "
                       >
-                        <div className="grid grid-cols-[40px_1fr_auto] items-center gap-3 w-full">
-                          {/* CỘT 1: ẢNH */}
-                          <img
-                            src={image}
-                            alt={ten}
-                            className="w-10 h-10 object-cover rounded-md border"
-                          />
+                        {/* ẢNH */}
+                        <img
+                          src={image}
+                          alt={ten}
+                          className="w-10 h-10 rounded-md object-cover border"
+                        />
 
-                          {/* CỘT 2: TÊN */}
-                          <span className="text-gray-800 font-semibold truncate">
+                        {/* TEXT */}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">
                             {ten}
-                          </span>
-
-                          {/* CỘT 3: GIÁ */}
-                          <span className="text-xs text-gray-500 whitespace-nowrap">
-                            {giaText}
-                          </span>
+                          </p>
+                          <p className="text-xs text-gray-500">{giaText}</p>
                         </div>
+
+                        {/* ICON */}
+                        <span className="text-gray-400 text-xs">↵</span>
                       </button>
                     );
                   })}

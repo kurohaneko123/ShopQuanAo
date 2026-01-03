@@ -101,7 +101,7 @@ export const taoSanPhamMoi = async (data) => {
       data.kieudang,
       data.baoquan,
       data.madanhmuc,
-      data.anhdaidien
+      data.anhdaidien,
     ]);
 
     const masanpham = resultSP.insertId;
@@ -121,7 +121,7 @@ export const taoSanPhamMoi = async (data) => {
         bt.makichthuoc,
         bt.mamausac,
         bt.soluongton,
-        bt.giaban
+        bt.giaban,
       ]);
     }
 
@@ -153,7 +153,7 @@ export const xoaSanPham = async (masanpham) => {
 export const capNhatSanPham = async (id, data) => {
   const slug = taoSlug(data.tensanpham);
 
-  //  Kiểm tra slug trùng của sản phẩm khác
+  // Check trùng slug (trừ chính nó)
   const [check] = await db.query(
     "SELECT masanpham FROM sanpham WHERE slug = ? AND masanpham != ?",
     [slug, id]
@@ -163,20 +163,20 @@ export const capNhatSanPham = async (id, data) => {
     throw new Error("Slug đã tồn tại! Tên sản phẩm bị trùng.");
   }
 
+  // KHÔNG UPDATE anhdaidien Ở ĐÂY
   const sql = `
-      UPDATE sanpham 
-      SET 
-        tensanpham = ?, 
-        slug = ?, 
-        thuonghieu = ?, 
-        mota = ?, 
-        chatlieu = ?, 
-        kieudang = ?, 
-        baoquan = ?, 
-        madanhmuc = ?, 
-        anhdaidien = ?, 
-        ngaycapnhat = NOW()
-      WHERE masanpham = ?
+    UPDATE sanpham 
+    SET 
+      tensanpham = ?, 
+      slug = ?, 
+      thuonghieu = ?, 
+      mota = ?, 
+      chatlieu = ?, 
+      kieudang = ?, 
+      baoquan = ?, 
+      madanhmuc = ?, 
+      ngaycapnhat = NOW()
+    WHERE masanpham = ?
   `;
 
   const [result] = await db.query(sql, [
@@ -188,8 +188,7 @@ export const capNhatSanPham = async (id, data) => {
     data.kieudang,
     data.baoquan,
     data.madanhmuc,
-    data.anhdaidien,
-    id
+    id,
   ]);
 
   return result;

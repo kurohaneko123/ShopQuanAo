@@ -22,7 +22,8 @@ export default function EditProductModal({
   useEffect(() => {
     if (product) {
       setForm(product);
-      setPreview(product?.anhdaidien || "");
+      setPreview(product?.anhdaidien ?? null);
+
       setNewAvatar(null);
 
       setEditForm({
@@ -54,37 +55,28 @@ export default function EditProductModal({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.tensanpham?.trim()) {
-      e.tensanpham = "Tên sản phẩm không được trống";
-    } else if (!NO_SPECIAL_CHAR_REGEX.test(form.tensanpham)) {
-      e.tensanpham = "Tên sản phẩm không được chứa ký tự đặc biệt";
-    }
-    if (!form.madanhmuc) e.madanhmuc = "Danh mục không được trống";
-
-    if (!form.thuonghieu?.trim()) {
-      e.thuonghieu = "Thương hiệu không được trống";
-    } else if (!NO_SPECIAL_CHAR_REGEX.test(form.thuonghieu)) {
-      e.thuonghieu = "Thương hiệu không được chứa ký tự đặc biệt";
-    }
-
-    if (!form.giaban) e.giaban = "Giá không được trống";
 
     const errors = {};
 
-    if (!editForm.tensanpham.trim()) {
+    if (!form.tensanpham?.trim()) {
       errors.tensanpham = "Tên sản phẩm không được để trống";
+    } else if (!NO_SPECIAL_CHAR_REGEX.test(form.tensanpham)) {
+      errors.tensanpham = "Tên sản phẩm không được chứa ký tự đặc biệt";
     }
 
-    if (!editForm.madanhmuc) {
+    if (!form.madanhmuc) {
       errors.madanhmuc = "Vui lòng chọn danh mục";
+    }
+
+    if (!form.thuonghieu?.trim()) {
+      errors.thuonghieu = "Thương hiệu không được để trống";
+    } else if (!NO_SPECIAL_CHAR_REGEX.test(form.thuonghieu)) {
+      errors.thuonghieu = "Thương hiệu không được chứa ký tự đặc biệt";
     }
 
     setEditErrors(errors);
 
     if (Object.keys(errors).length > 0) return;
-    if (!editForm.soluongton) e.soluongton = "Số lượng không được trống";
-    setEditErrors(e);
-    if (Object.keys(e).length > 0) return;
 
     try {
       setSaving(true);
@@ -112,7 +104,7 @@ export default function EditProductModal({
       onSuccess?.();
       onClose();
     } catch (err) {
-      console.error(err);
+      console.error("Lỗi cập nhật sản phẩm:", err);
       Swal.fire({
         icon: "error",
         title: "Lỗi",
@@ -222,9 +214,10 @@ export default function EditProductModal({
             </label>
 
             <div className="flex items-center gap-4 mt-3">
-              {preview ? (
+              {typeof preview === "string" && preview.length > 0 ? (
                 <img
                   src={preview}
+                  alt="Ảnh đại diện"
                   className="w-24 h-24 rounded-lg object-cover border border-white/10 bg-[#222]"
                 />
               ) : (

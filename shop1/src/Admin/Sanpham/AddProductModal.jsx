@@ -4,6 +4,7 @@ import {
   uploadProductAvatar,
   uploadVariantImage,
   getProductDetail,
+  getAllProducts,
 } from "./productApi";
 import Swal from "sweetalert2";
 import { Loader2 } from "lucide-react";
@@ -40,8 +41,31 @@ export default function AddProductModal({
   ]);
   //  ================================
   const [errors, setErrors] = useState({});
-
+  const [productNames, setProductNames] = useState([]);
   const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    if (!open) return;
+
+    const fetchProductNames = async () => {
+      try {
+        const res = await getAllProducts();
+
+        const names = res.data.map((p) =>
+          p.tensanpham
+            ?.trim()
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+        );
+
+        setProductNames(names);
+      } catch (err) {
+        console.error("Lỗi lấy danh sách sản phẩm:", err);
+      }
+    };
+
+    fetchProductNames();
+  }, [open]);
   // ================================
   // THÊM BIẾN THỂ
   // ================================
@@ -81,13 +105,21 @@ export default function AddProductModal({
   const validate = () => {
     const e = {};
 
-    if (!data.tensanpham?.trim()) {
+    const rawName = data.tensanpham?.trim();
+
+    const normalizedName = rawName
+      ?.toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+
+    if (!rawName) {
       e.tensanpham = "Vui lòng nhập tên sản phẩm";
-    } else if (!NO_SPECIAL_CHAR_REGEX.test(data.tensanpham)) {
+    } else if (!NO_SPECIAL_CHAR_REGEX.test(rawName)) {
       e.tensanpham = "Tên sản phẩm không được chứa ký tự đặc biệt";
-    }
-    if (data.tensanpham == data.tensanpham)
+    } else if (productNames.includes(normalizedName)) {
       e.tensanpham = "Tên sản phẩm đã tồn tại";
+    }
+
     if (!data.madanhmuc) e.madanhmuc = "Vui lòng chọn danh mục";
 
     if (!data.thuonghieu?.trim()) {
@@ -95,6 +127,7 @@ export default function AddProductModal({
     } else if (!NO_SPECIAL_CHAR_REGEX.test(data.thuonghieu)) {
       e.thuonghieu = "Thương hiệu không được chứa ký tự đặc biệt";
     }
+
     if (!avatarFile) e.anhdaidien = "Vui lòng chọn ảnh đại diện";
 
     variants.forEach((v, i) => {
@@ -108,173 +141,136 @@ export default function AddProductModal({
     setErrors(e);
     return Object.keys(e).length === 0;
   };
+
   // ================================
   // SUBMIT
   // ================================
   const handleSubmit = async () => {
     if (!validate()) return;
 
-    // Hiển thị loading
     Swal.fire({
       title: "Đang thêm sản phẩm...",
       html: "Vui lòng chờ trong giây lát",
       allowOutsideClick: false,
-      didOpen: () => {
-        Swal.showLoading();
-      },
+      didOpen: () => Swal.showLoading(),
     });
-    // try {
-    // ============================
-    // 1️⃣ TẠO PRODUCT TRƯỚC
-    // ============================
-    const slug = data.tensanpham
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "");
 
-    const bodyVariants = variants.map((v) => ({
-      makichthuoc: v.size,
-      mamausac: v.color,
-      giaban: v.giaban,
-      soluongton: v.ton,
-    }));
+    try {
+      // 1) Tạo slug
+      const slug = data.tensanpham
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
 
-    const newProduct = {
-      ...data,
-      slug,
-      anhdaidien: "", // tạm thời rỗng – lát cập nhật lại
-    };
+      // 2) Map biến thể
+      const bodyVariants = variants.map((v) => ({
+        makichthuoc: v.size,
+        mamausac: v.color,
+        giaban: v.giaban,
+        soluongton: v.ton,
+      }));
 
-    const res = await createProductWithVariants(newProduct, bodyVariants);
+      // 3) Tạo product trước
+      const newProduct = { ...data, slug, anhdaidien: "" };
+      const res = await createProductWithVariants(newProduct, bodyVariants);
 
-    const masanpham = res.productId; // ⬅ backend trả field này
-    if (!masanpham) {
+      // IMPORTANT: coi lại backend trả gì
+      const masanpham =
+        res?.productId || res?.data?.productId || res?.data?.masanpham;
+      if (!masanpham) throw new Error("Backend không trả productId/masanpham");
+
+      // 4) Upload avatar
+      const avatarRes = await uploadProductAvatar(masanpham, avatarFile);
+      if (!avatarRes?.url) throw new Error("Upload ảnh đại diện thất bại");
+
+      // 5) Upload ảnh biến thể
+      const detail = await getProductDetail(masanpham);
+      const dsBienThe = detail?.bienthe || [];
+
+      const mapBienThe = {};
+      dsBienThe.forEach((bt) => {
+        const key = `${bt.makichthuoc}-${bt.mamausac}`;
+        mapBienThe[key] = bt.mabienthe;
+      });
+
+      for (let i = 0; i < variants.length; i++) {
+        const key = `${variants[i].size}-${variants[i].color}`;
+        const mabienthe = mapBienThe[key];
+        if (!mabienthe) continue;
+
+        if (variants[i].image1)
+          await uploadVariantImage(mabienthe, variants[i].image1, 1);
+        if (variants[i].image2)
+          await uploadVariantImage(mabienthe, variants[i].image2, 2);
+      }
+
+      // 6) Thành công
+      Swal.close();
+      Swal.fire({
+        title: "Thành công!",
+        text: "Thêm sản phẩm thành công!",
+        icon: "success",
+      });
+
+      onSuccess();
+
+      setData({
+        tensanpham: "",
+        madanhmuc: "",
+        thuonghieu: "",
+        mota: "",
+        chatlieu: "",
+        kieudang: "",
+        baoquan: "",
+      });
+
+      setVariants([
+        {
+          size: "",
+          color: "",
+          giaban: "",
+          ton: "",
+          image1: null,
+          image2: null,
+        },
+      ]);
+      setAvatarFile(null);
+      onClose();
+    } catch (err) {
+      console.error("Lỗi thêm sản phẩm:", err);
+      Swal.close();
+
+      // axios chỉ có message chung
+      const rawMessage = err?.response?.data?.message || err?.message || "";
+
+      // TRÙNG SẢN PHẨM (slug)
+      if (
+        rawMessage.toLowerCase().includes("tồn tại") ||
+        rawMessage.toLowerCase().includes("duplicate") ||
+        err?.response?.status === 500 // quan trọng
+      ) {
+        setErrors((prev) => ({
+          ...prev,
+          tensanpham: "Tên sản phẩm đã tồn tại",
+        }));
+
+        // focus lại input
+        setTimeout(() => {
+          document.getElementById("tensanpham-input")?.focus();
+        }, 100);
+
+        return; // không cho rớt xuống swal
+      }
+
+      //lỗi khác mới show swal
       Swal.fire({
         title: "Lỗi!",
         text: "Thêm sản phẩm thất bại!",
         icon: "error",
-        confirmButtonText: "OK",
       });
-
-      return;
     }
-
-    // ============================
-    // 2️ UPLOAD ẢNH ĐẠI DIỆN
-    // ============================
-    const formAvatar = new FormData();
-    formAvatar.append("masanpham", masanpham);
-    formAvatar.append("image", avatarFile);
-
-    const avatarRes = await uploadProductAvatar(masanpham, avatarFile);
-    if (!avatarRes.url) {
-      Swal.fire({
-        title: "Lỗi!",
-        text: "Vui lòng chọn ảnh đại diện!",
-        icon: "error",
-        confirmButtonText: "OK",
-      });
-      return;
-    }
-
-    // ============================
-    // ============================
-    // 3️ UPLOAD ẢNH BIẾN THỂ (FIXED)
-    // ============================
-
-    // Lấy lại chi tiết sản phẩm để có đúng danh sách mabienthe
-    const detail = await getProductDetail(masanpham);
-    const dsBienThe = detail.bienthe;
-
-    // Tạo map { "size-color": mabienthe }
-    const mapBienThe = {};
-    dsBienThe.forEach((bt) => {
-      const key = `${bt.makichthuoc}-${bt.mamausac}`;
-      mapBienThe[key] = bt.mabienthe;
-    });
-
-    // Upload ảnh tương ứng từng biến thể
-    for (let i = 0; i < variants.length; i++) {
-      const key = `${variants[i].size}-${variants[i].color}`;
-      const mabienthe = mapBienThe[key];
-
-      if (!mabienthe) {
-        console.warn("Không tìm thấy mabienthe cho:", key);
-        continue;
-      }
-
-      if (variants[i].image1) {
-        await uploadVariantImage(mabienthe, variants[i].image1, 1);
-      }
-      if (variants[i].image2) {
-        await uploadVariantImage(mabienthe, variants[i].image2, 2);
-      }
-    }
-    setVariants((prev) => [...prev, res.data.newVariant]);
-    setShowAddPopup(false);
-    setAddForm({
-      mamausac: "",
-      makichthuoc: "",
-      tendanhmuc: "",
-      giaban: "",
-      soluongton: "",
-      mota: "",
-      thuonghieu: "",
-      chatlieu: "",
-      kieudang: "",
-      baoquan: "",
-      anhdaidien: "",
-    });
-    Swal.fire({
-      title: "Thành công!",
-      text: "Thêm sản phẩm thành công!",
-      icon: "success",
-      confirmButtonText: "OK",
-    });
-
-    // Gọi load() để cập nhật bảng ngoài
-    onSuccess();
-
-    // RESET FORM để lần sau mở modal không bị dính data cũ
-    setData({
-      tensanpham: "",
-      madanhmuc: "",
-      thuonghieu: "",
-      mota: "",
-      chatlieu: "",
-      kieudang: "",
-      baoquan: "",
-    });
-
-    // RESET biến thể
-    setVariants([
-      {
-        size: "",
-        color: "",
-        giaban: "",
-        ton: "",
-        image1: null,
-        image2: null,
-      },
-    ]);
-
-    // RESET ảnh
-    setAvatarFile(null);
-
-    // Đóng modal
-    onClose();
-    // } catch (err) {
-    //   console.error("Lỗi thêm sản phẩm:", err);
-    //   Swal.close();
-    //   Swal.fire({
-    //     title: "Lỗi!",
-    //     text: "Thêm sản phẩm thất bại!",
-    //     icon: "error",
-    //     confirmButtonText: "OK",
-    //   });
-    // }
   };
 
   return (
@@ -303,16 +299,14 @@ export default function AddProductModal({
               Tên sản phẩm *
             </label>
             <input
+              id="tensanpham-input"
               className={`bg-[#1a1a1a] border p-2 rounded-lg w-full
     ${errors.tensanpham ? "border-red-500" : "border-white/10"}
   `}
               value={data.tensanpham}
               onChange={(e) => {
-                const value = e.target.value;
-                if (NO_SPECIAL_CHAR_REGEX.test(value) || value === "") {
-                  setData({ ...data, tensanpham: value });
-                  setErrors((p) => ({ ...p, tensanpham: "" }));
-                }
+                setData({ ...data, tensanpham: e.target.value });
+                setErrors((p) => ({ ...p, tensanpham: "" }));
               }}
             />
 

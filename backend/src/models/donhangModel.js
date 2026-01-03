@@ -60,6 +60,7 @@ export const layTatCaDonHang = async () => {
       dh.phivanchuyen,
       dh.tongthanhtoan,
       dh.trangthai,
+      dh.lydo_huy,
       dh.ngaytao,
 
       -- 🔥 HOÀN TIỀN

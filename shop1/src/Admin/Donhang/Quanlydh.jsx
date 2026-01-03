@@ -28,7 +28,7 @@ export default function Quanlydh() {
     ghichu: "",
   });
 
-  /* ================= FETCH (KHÔNG AUTO REFRESH) ================= */
+  /* ================= FETCH ================= */
   const fetchOrders = async () => {
     try {
       const res = await axios.get(API);
@@ -105,29 +105,60 @@ export default function Quanlydh() {
     }
   };
 
-  const adminHuyDon = async (id) => {
+  /* ===== ADMIN DUYỆT YÊU CẦU HỦY ===== */
+  const adminHuyDon = async (order) => {
+    // CHỈ cho duyệt khi khách đã gửi yêu cầu hủy
+    if (order.trangthai !== "yêu cầu hủy") {
+      Swal.fire(
+        "Không hợp lệ",
+        "Chỉ có thể hủy đơn khi khách đã gửi yêu cầu hủy",
+        "error"
+      );
+      return;
+    }
+
+    const lydo = order.lydo_huy || "Không có";
+
     const confirm = await Swal.fire({
-      title: "Xác nhận hủy đơn?",
+      title: "Xác nhận duyệt hủy đơn?",
+      html: `
+      <div style="text-align:left">
+        <p><b>Mã đơn:</b> ${order.madonhang}</p>
+        <p><b>Lý do hủy:</b> ${lydo}</p>
+      </div>
+    `,
       icon: "warning",
       showCancelButton: true,
-      confirmButtonText: "Hủy đơn",
+      confirmButtonText: "Xác nhận hủy",
       cancelButtonText: "Không",
     });
 
     if (!confirm.isConfirmed) return;
 
     try {
-      await axios.put(`${API}/admin/huy/${id}`);
-      Swal.fire("Thành công", "Đã hủy đơn hàng", "success");
-      fetchOrders();
+      const token = localStorage.getItem("token");
+
+      await axios.put(
+        `${API}/admin/huy/${order.madonhang}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      Swal.fire("Thành công", "Đã xác nhận hủy đơn hàng", "success");
+      fetchOrders(); // reload danh sách
     } catch (err) {
       Swal.fire(
         "Lỗi",
-        err?.response?.data?.message || "Không thể hủy đơn",
+        err?.response?.data?.message || "Không thể xác nhận hủy đơn",
         "error"
       );
     }
   };
+
 
   const adminXacNhanDon = async (id) => {
     const confirm = await Swal.fire({
@@ -155,7 +186,6 @@ export default function Quanlydh() {
   };
 
   const checkHoanTien = async (mahoantien) => {
-    console.log("▶️ CHECK HOÀN TIỀN - mahoantien:", mahoantien);
     if (!mahoantien) {
       return Swal.fire("Lỗi", "Không có mã hoàn tiền", "error");
     }
@@ -171,10 +201,7 @@ export default function Quanlydh() {
         }
       );
 
-      const { result, message } = res.data;
-      console.log("ZALOPAY RESULT:", result);
-
-      //  ZaloPay xác nhận hoàn tiền thành công
+      const { result } = res.data;
       const subCode = result?.sub_return_code;
 
       if (subCode === 1) {
@@ -183,17 +210,10 @@ export default function Quanlydh() {
           "ZaloPay đã hoàn tiền xong",
           "success"
         );
-      } else if (subCode === 2) {
+      } else if (subCode === 2 || subCode === -14) {
         Swal.fire(
           "Đang hoàn tiền",
-          "ZaloPay đang xử lý hoàn tiền, vui lòng kiểm tra lại sau",
-          "info"
-        );
-      } else if (subCode === -14) {
-        //  FIX QUAN TRỌNG: -14 không phải lỗi CHECK
-        Swal.fire(
-          "Đang hoàn tiền",
-          "Giao dịch hoàn tiền đang được xử lý, vui lòng kiểm tra lại sau",
+          "Giao dịch hoàn tiền đang được xử lý",
           "info"
         );
       } else {
@@ -204,7 +224,6 @@ export default function Quanlydh() {
         );
       }
 
-      // reload lại danh sách đơn
       fetchOrders();
     } catch (err) {
       Swal.fire(
@@ -247,15 +266,24 @@ export default function Quanlydh() {
 
           <tbody>
             {paginatedOrders.map((x) => {
-              const isDaHuy = x.trangthai?.toLowerCase() === "đã hủy";
+              const tt = x.trangthai?.trim().toLowerCase() || "";
+
+              const isDaHuy = tt === "đã hủy" || tt === "da_huy";
               const isChoXacNhan =
-                x.trangthai?.trim().toLowerCase() === "chờ xác nhận";
+                tt === "chờ xác nhận" || tt === "cho_xac_nhan";
+              const isYeuCauHuy =
+                tt === "yêu cầu hủy" ||
+                tt === "yeu cau huy" ||
+                tt === "yeu_cau_huy";
+
 
               const isHoanTien = x.trangthai_hoantien === "thanh_cong";
               const disableEdit = isDaHuy || isHoanTien;
-              const disableCancel = isDaHuy || isHoanTien;
+              const disableCancel = !isYeuCauHuy || isDaHuy || isHoanTien;
               const disableRefundCheck =
                 !x.mahoantien || x.trangthai_hoantien !== "dang_xu_ly";
+
+              const hienTrangThai = isYeuCauHuy ? "Yêu cầu hủy" : x.trangthai;
 
               return (
                 <tr key={x.madonhang} className="border-b border-white/5">
@@ -271,12 +299,11 @@ export default function Quanlydh() {
                       ? "Đang hoàn tiền (ZaloPay)"
                       : x.trangthai_hoantien === "thanh_cong"
                         ? "Đã hoàn tiền"
-                        : x.trangthai}
+                        : hienTrangThai}
                   </td>
 
                   <td className="p-3">
                     <div className="grid grid-cols-5 gap-2 place-items-center">
-                      {/* XEM */}
                       <button
                         className={`${actionBtn(false)} bg-indigo-600`}
                         onClick={() => {
@@ -288,7 +315,6 @@ export default function Quanlydh() {
                       >
                         <Eye size={16} />
                       </button>
-                      {/* XÁC NHẬN */}
 
                       <button
                         className={`${actionBtn(!isChoXacNhan)} bg-green-600`}
@@ -306,7 +332,6 @@ export default function Quanlydh() {
                         <CheckCircle size={16} />
                       </button>
 
-                      {/* SỬA */}
                       <button
                         className={`${actionBtn(disableEdit)} bg-yellow-600`}
                         disabled={disableEdit}
@@ -331,24 +356,22 @@ export default function Quanlydh() {
                         <Pencil size={16} />
                       </button>
 
-                      {/* HỦY */}
                       <button
                         className={`${actionBtn(disableCancel)} bg-red-600`}
                         disabled={disableCancel}
                         onClick={() => {
                           if (disableCancel) return;
-                          adminHuyDon(x.madonhang);
+                          adminHuyDon(x);
                         }}
                         title={
                           disableCancel
-                            ? "Không thể hủy đơn đã hoàn tiền / đã hủy"
-                            : "Hủy đơn"
+                            ? "Chỉ hủy khi đơn đang ở trạng thái Yêu cầu hủy"
+                            : "Xác nhận hủy (duyệt yêu cầu hủy)"
                         }
                       >
                         <XCircle size={16} />
                       </button>
 
-                      {/* CHECK HOÀN TIỀN */}
                       <button
                         className={`${actionBtn(
                           disableRefundCheck
@@ -382,7 +405,6 @@ export default function Quanlydh() {
         onPageChange={setPage}
       />
 
-      {/* ================= MODAL ================= */}
       {showDetail && selectedOrder && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
           <div className="bg-[#111] w-[600px] p-6 rounded-xl border border-white/10">
@@ -408,6 +430,11 @@ export default function Quanlydh() {
                 <p>
                   <b>Ghi chú:</b> {selectedOrder.ghichu || "Không có"}
                 </p>
+                {selectedOrder.lydo_huy && (
+                  <p>
+                    <b>Lý do hủy:</b> {selectedOrder.lydo_huy}
+                  </p>
+                )}
 
                 <div className="text-right mt-4">
                   <button

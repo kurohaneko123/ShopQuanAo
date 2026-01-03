@@ -485,8 +485,16 @@ export default function Checkout() {
         }
       }
     } catch (err) {
-      console.error("Lỗi tạo đơn:", err);
-      Swal.fire("Lỗi!", "Không thể tạo đơn hàng!", "error");
+      console.error("Lỗi tạo đơn:", err?.response?.data || err);
+
+      const message =
+        err?.response?.data?.message || "Không thể tạo đơn hàng!";
+
+      Swal.fire({
+        icon: "error",
+        title: "Lỗi!",
+        text: message,
+      });
     }
   };
 

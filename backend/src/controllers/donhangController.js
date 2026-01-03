@@ -11,9 +11,11 @@ import {
   laySanPhamBanChay,
 } from "../models/donhangModel.js";
 
-// Tạo 1 đơn hàng + TRỪ KHO BIẾN THỂ
+
+// Tạo 1 đơn hàng (CHỈ CHECK KHO – KHÔNG TRỪ)
 export const themDonHang = async (req, res) => {
-  const connection = await db.getConnection(); // dùng transaction
+  const connection = await db.getConnection();
+
   try {
     const data = req.body;
 
@@ -26,35 +28,37 @@ export const themDonHang = async (req, res) => {
     await connection.beginTransaction();
 
     /* =======================
-           1️ TẠO ĐƠN HÀNG
-        ======================= */
+       1️⃣ TẠO ĐƠN HÀNG (PENDING)
+    ======================= */
     const idDonHang = await taoDonHang(data, connection);
+    // 👉 trạng thái đơn lúc này: "pending" / "cho_xac_nhan"
 
     /* =======================
-           2️ XỬ LÝ TỪNG SẢN PHẨM
-           - CHECK KHO
-           - TRỪ KHO
-           - THÊM CHI TIẾT
-        ======================= */
+       2️⃣ CHECK KHO + THÊM CHI TIẾT
+       ❌ KHÔNG TRỪ KHO
+    ======================= */
     for (const item of data.danhsach) {
       const { mabienthe, soluong } = item;
 
-      // 🔹 Trừ tồn kho (an toàn)
-      const [result] = await connection.query(
+      // 🔍 CHỈ CHECK TỒN
+      const [[bienthe]] = await connection.query(
         `
-        UPDATE bienthesanpham
-        SET soluongton = soluongton - ?
+        SELECT soluongton
+        FROM bienthesanpham
         WHERE mabienthe = ?
-          AND soluongton >= ?
         `,
-        [soluong, mabienthe, soluong]
+        [mabienthe]
       );
 
-      if (result.affectedRows === 0) {
-        throw new Error(`Biến thể ${mabienthe} không đủ số lượng tồn`);
+      if (!bienthe || bienthe.soluongton < soluong) {
+        await connection.rollback();
+
+        return res.status(400).json({
+          message: `Biến thể ${mabienthe} không đủ số lượng tồn`,
+        });
       }
 
-      //  Thêm chi tiết đơn hàng
+      // ✅ Chỉ thêm chi tiết đơn hàng
       await taoChiTietDonHang(idDonHang, item, connection);
     }
 
@@ -66,16 +70,17 @@ export const themDonHang = async (req, res) => {
     });
   } catch (error) {
     await connection.rollback();
-    console.error(" Lỗi khi thêm đơn hàng:", error);
+    console.error("Lỗi hệ thống khi tạo đơn hàng:", error);
 
     return res.status(500).json({
-      message: "Tạo đơn hàng thất bại",
-      error: error.message,
+      message: "Lỗi hệ thống khi tạo đơn hàng",
     });
   } finally {
     connection.release();
   }
 };
+
+
 //Lấy danh sách đơn hàng
 export const layDanhSachDonHang = async (req, res) => {
   try {
@@ -181,23 +186,38 @@ export const suaDonHang = async (req, res) => {
   }
 };
 
-//Hủy đơn hàng ( khách hàng )
-const TRANG_THAI_KHACH_DUOC_HUY = ["chờ xác nhận", "đã xác nhận"];
+// Khách hàng GỬI YÊU CẦU HỦY ĐƠN (chờ admin xác nhận)
+// Khách hàng GỬI YÊU CẦU HỦY ĐƠN (chờ admin xác nhận)
+const TRANG_THAI_KHACH_DUOC_YEU_CAU_HUY = [
+  "chờ xác nhận",
+  "đã xác nhận",
+];
 
 export const khachHuyDonHang = async (req, res) => {
   const connection = await db.getConnection();
+
   try {
     const madonhang = req.params.id;
+    const { lydo_huy } = req.body;
+
+    if (!lydo_huy || !lydo_huy.trim()) {
+      return res.status(400).json({
+        message: "Vui lòng nhập lý do hủy đơn hàng",
+      });
+    }
+
     await connection.beginTransaction();
 
     const donhang = await layDonHangTheoID(madonhang);
     if (!donhang) {
       await connection.rollback();
-      return res.status(404).json({ message: "Không tìm thấy đơn hàng!" });
+      return res.status(404).json({
+        message: "Không tìm thấy đơn hàng!",
+      });
     }
 
-    // Đã thanh toán → không cho khách hủy
-    if (donhang.dathanhtoan === 1) {
+    // Đã thanh toán → không cho yêu cầu hủy
+    if (Number(donhang.dathanhtoan) === 1) {
       await connection.rollback();
       return res.status(400).json({
         message: "Đơn hàng đã thanh toán, vui lòng liên hệ admin",
@@ -208,61 +228,48 @@ export const khachHuyDonHang = async (req, res) => {
       ? donhang.trangthai.trim().toLowerCase()
       : "chờ xác nhận";
 
-    if (!TRANG_THAI_KHACH_DUOC_HUY.includes(tt)) {
+    if (!TRANG_THAI_KHACH_DUOC_YEU_CAU_HUY.includes(tt)) {
       await connection.rollback();
       return res.status(400).json({
-        message: `Khách không thể hủy đơn ở trạng thái: ${donhang.trangthai}`,
+        message: `Không thể yêu cầu hủy ở trạng thái: ${donhang.trangthai}`,
       });
     }
 
-    const [chitiet] = await connection.query(
-      `SELECT mabienthe, soluong FROM chitietdonhang WHERE madonhang = ?`,
-      [madonhang]
-    );
-
-    for (const item of chitiet) {
-      await connection.query(
-        `UPDATE bienthesanpham
-         SET soluongton = soluongton + ?
-         WHERE mabienthe = ?`,
-        [item.soluong, item.mabienthe]
-      );
-    }
-
-    // Update đơn bằng transaction
+    // ✅ CHỈ CẬP NHẬT TRẠNG THÁI + LÝ DO (KHÔNG HOÀN KHO)
     await connection.query(
-      `UPDATE donhang
-       SET trangthai = 'đã hủy',
-           ngaycapnhat = NOW()
-       WHERE madonhang = ?`,
-      [madonhang]
+      `
+      UPDATE donhang
+      SET trangthai = 'yêu cầu hủy',
+          lydo_huy = ?,
+          ngaycapnhat = NOW()
+      WHERE madonhang = ?
+      `,
+      [lydo_huy.trim(), madonhang]
     );
 
     await connection.commit();
 
-    res.json({
-      message: "Khách hủy đơn hàng thành công & đã hoàn kho",
+    return res.json({
+      message: "Đã gửi yêu cầu hủy đơn hàng. Vui lòng chờ admin xác nhận.",
       madonhang,
-      restoredItems: chitiet.length,
     });
   } catch (err) {
     await connection.rollback();
-    console.error("Lỗi khách hủy đơn:", err);
-    res.status(500).json({ message: "Lỗi máy chủ", error: err.message });
+    console.error("Lỗi khách yêu cầu hủy đơn:", err);
+
+    return res.status(500).json({
+      message: "Lỗi máy chủ",
+    });
   } finally {
     connection.release();
   }
 };
-// Admin hủy đơn hàng
-const TRANG_THAI_ADMIN_DUOC_HUY = [
-  "chờ xác nhận",
-  "đã xác nhận",
-  "đang chuẩn bị",
-  "đang giao",
-];
 
+
+// Admin XÁC NHẬN HỦY ĐƠN HÀNG
 export const adminHuyDonHang = async (req, res) => {
   const connection = await db.getConnection();
+
   try {
     const madonhang = req.params.id;
     await connection.beginTransaction();
@@ -275,21 +282,31 @@ export const adminHuyDonHang = async (req, res) => {
 
     const tt = donhang.trangthai
       ? donhang.trangthai.trim().toLowerCase()
-      : "chờ xác nhận";
+      : "";
 
-    if (!TRANG_THAI_ADMIN_DUOC_HUY.includes(tt)) {
+    /* 🚫 CHẶN ĐƠN ĐANG / ĐÃ GIAO */
+    if (["đang giao", "đã giao"].includes(tt)) {
       await connection.rollback();
       return res.status(400).json({
-        message: `Admin không thể hủy đơn ở trạng thái: ${donhang.trangthai}`,
+        message:
+          "Đơn hàng đã hoặc đang giao, không thể hủy. Vui lòng xử lý theo quy trình trả hàng.",
       });
     }
-    const ghnOrderCode = donhang.ghn_order_code;
-    if (ghnOrderCode) {
+
+    /* ✅ CHỈ HỦY KHI KHÁCH ĐÃ GỬI YÊU CẦU */
+    if (tt !== "yêu cầu hủy") {
+      await connection.rollback();
+      return res.status(400).json({
+        message: "Chỉ có thể hủy đơn khi khách đã gửi yêu cầu hủy",
+      });
+    }
+
+    /* ================== HỦY GHN (NẾU CÓ) ================== */
+    if (donhang.ghn_order_code) {
       try {
-        console.log("HUY GHN ORDER CODE:", donhang.ghn_order_code);
-        await axios.post(
+        const ghnRes = await axios.post(
           "https://dev-online-gateway.ghn.vn/shiip/public-api/v2/switch-status/cancel",
-          { order_codes: [ghnOrderCode] },
+          { order_codes: [donhang.ghn_order_code] },
           {
             headers: {
               "Content-Type": "application/json",
@@ -298,33 +315,27 @@ export const adminHuyDonHang = async (req, res) => {
             },
           }
         );
-      } catch (ghnErr) {
-        console.log(
-          "GHN CANCEL ERROR:",
-          ghnErr?.response?.data || ghnErr.message
-        );
 
+        // 👉 GHN có trả return_code
+        if (ghnRes.data?.code !== 200) {
+          throw new Error("GHN không cho phép hủy đơn");
+        }
+      } catch (ghnErr) {
         await connection.rollback();
         return res.status(400).json({
-          message: "Huỷ GHN thất bại, không thể huỷ đơn",
-          ghn: ghnErr?.response?.data || null, // để anh debug
+          message:
+            "Huỷ GHN thất bại. Đơn đang được GHN xử lý, không thể hủy trên hệ thống.",
+          ghn: ghnErr?.response?.data || ghnErr.message,
         });
       }
     }
-    // Lấy chi tiết đơn hàng
+
+    /* ================== HOÀN KHO ================== */
     const [chitiet] = await connection.query(
       `SELECT mabienthe, soluong FROM chitietdonhang WHERE madonhang = ?`,
       [madonhang]
     );
 
-    if (!TRANG_THAI_ADMIN_DUOC_HUY.includes(tt)) {
-      await connection.rollback();
-      return res.status(400).json({
-        message: `Admin không thể hủy đơn ở trạng thái: ${donhang.trangthai}`,
-      });
-    }
-
-    // Hoàn kho
     for (const item of chitiet) {
       await connection.query(
         `UPDATE bienthesanpham
@@ -334,7 +345,7 @@ export const adminHuyDonHang = async (req, res) => {
       );
     }
 
-    // Update đơn hàng (DÙNG connection)
+    /* ================== UPDATE ĐƠN ================== */
     await connection.query(
       `
       UPDATE donhang
@@ -342,19 +353,15 @@ export const adminHuyDonHang = async (req, res) => {
           ngaycapnhat = NOW()
       WHERE madonhang = ?
       `,
-
       [madonhang]
     );
-    // SAU UPDATE donhang = 'đã hủy'
 
-    // ================== AUTO REFUND ZALOPAY ==================
+    /* ================== REFUND ZALOPAY ================== */
     if (
       donhang.hinhthucthanhtoan === "ZALOPAY" &&
       Number(donhang.dathanhtoan) === 1
     ) {
       try {
-        console.log("AUTO REFUND ZALOPAY FOR ORDER:", madonhang);
-
         await axios.post(
           "http://localhost:5000/api/payment/zalopay/refund",
           { madonhang },
@@ -364,35 +371,32 @@ export const adminHuyDonHang = async (req, res) => {
             },
           }
         );
-
-        console.log("AUTO REFUND REQUEST SENT");
       } catch (refundErr) {
         console.error(
           "AUTO REFUND FAILED:",
           refundErr?.response?.data || refundErr.message
         );
-        // KHÔNG rollback – vì đơn & kho đã hủy OK
+        // ❗ KHÔNG rollback
       }
     }
 
     await connection.commit();
 
     return res.json({
-      message: "Admin đã hủy đơn hàng & hoàn kho thành công",
+      message: "Admin đã xác nhận hủy đơn hàng thành công",
       madonhang,
       oldStatus: donhang.trangthai,
       newStatus: "đã hủy",
-      restoredItems: chitiet.length,
-      needRefund: donhang.dathanhtoan === 1,
     });
   } catch (err) {
     await connection.rollback();
     console.error("Lỗi admin hủy đơn:", err);
-    res.status(500).json({ message: "Lỗi máy chủ", error: err.message });
+    return res.status(500).json({ message: "Lỗi máy chủ" });
   } finally {
     connection.release();
   }
 };
+
 
 //Lấy đơn hàng theo id
 export const layDonHangById = async (req, res) => {

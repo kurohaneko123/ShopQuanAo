@@ -86,84 +86,72 @@ export default function DonHang() {
      - ZALOPAY → hoàn tiền
   ================================ */
   const cancelOrder = async (order) => {
-    if (!window.confirm("Bạn có chắc muốn hủy / hoàn tiền đơn hàng này?"))
-      return;
+    // 1️⃣ HỎI LÝ DO HỦY
+    const { value: lydo_huy } = await Swal.fire({
+      title: "Yêu cầu hủy đơn hàng",
+      input: "select",
+      inputOptions: {
+        "Đặt nhầm sản phẩm": "Đặt nhầm sản phẩm",
+        "Không còn nhu cầu": "Không còn nhu cầu",
+        "Thời gian giao hàng quá lâu": "Thời gian giao hàng quá lâu",
+        "Muốn đổi sang sản phẩm khác": "Muốn đổi sang sản phẩm khác",
+        "Sai kích thước": "Sai kích thước",
+        "Sai màu sắc": "Sai màu sắc",
+        "Khác": "Lý do khác",
+      },
+      inputPlaceholder: "Chọn lý do hủy",
+      showCancelButton: true,
+      confirmButtonText: "Gửi yêu cầu",
+      cancelButtonText: "Thoát",
+      reverseButtons: true,
+      preConfirm: (value) => {
+        if (!value) {
+          Swal.showValidationMessage("Vui lòng chọn lý do hủy");
+        }
+        return value;
+      },
+    });
+
+    if (!lydo_huy) return;
 
     const token = localStorage.getItem("token");
 
     try {
-      // COD → hủy đơn
-      if (order.hinhthucthanhtoan === "COD") {
-        await axios.put(
-          `${BASE_URL}/huy/${order.madonhang}`,
-          {},
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+      // 2️⃣ CHỈ GỬI YÊU CẦU HỦY (KHÔNG PHÂN BIỆT COD / ZALOPAY)
+      await axios.put(
+        `${BASE_URL}/huy/${order.madonhang}`, // 👈 giữ nguyên /huy
+        { lydo_huy },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
-        setOrders((prev) =>
-          prev.map((o) =>
-            o.madonhang === order.madonhang ? { ...o, trangthai: "Đã hủy" } : o
-          )
-        );
-        return;
-      }
+      // 3️⃣ UPDATE UI
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.madonhang === order.madonhang
+            ? { ...o, trangthai: "Yêu cầu hủy" }
+            : o
+        )
+      );
 
-      // 🔵 ZALOPAY → REFUND (ASYNC)
-      if (order.hinhthucthanhtoan === "ZALOPAY") {
-        const refundRes = await axios.post(
-          "http://localhost:5000/api/payment/zalopay/refund",
-          { madonhang: order.madonhang },
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-
-        const refund_id = refundRes.data?.result?.refund_id;
-        if (!refund_id) throw new Error("Refund không hợp lệ");
-
-        setOrders((prev) =>
-          prev.map((o) =>
-            o.madonhang === order.madonhang
-              ? { ...o, trangthai: "Đang hoàn tiền" }
-              : o
-          )
-        );
-
-        setTimeout(async () => {
-          try {
-            const statusRes = await axios.get(
-              "http://localhost:5000/api/payment/zalopay/refund-status",
-              {
-                params: { refund_id },
-                headers: { Authorization: `Bearer ${token}` },
-              }
-            );
-
-            if (statusRes.data?.return_code === 1) {
-              setOrders((prev) =>
-                prev.map((o) =>
-                  o.madonhang === order.madonhang
-                    ? { ...o, trangthai: "Đã hoàn tiền" }
-                    : o
-                )
-              );
-            }
-          } catch (e) {
-            console.error("Lỗi query refund-status:", e);
-          }
-        }, 2000);
-      }
+      Swal.fire(
+        "Đã gửi yêu cầu",
+        "Yêu cầu hủy đơn hàng đã được gửi. Vui lòng chờ admin xác nhận.",
+        "success"
+      );
     } catch (err) {
-      console.error("Lỗi hủy / hoàn tiền:", err);
+      console.error("Lỗi gửi yêu cầu hủy:", err);
+
       Swal.fire(
         "Lỗi!",
-        "Đã có lỗi xảy ra khi hủy / hoàn tiền đơn hàng.",
+        err?.response?.data?.message ||
+        "Không thể gửi yêu cầu hủy đơn hàng.",
         "error"
       );
     }
   };
+
 
   const getStatusColor = (tt) => {
     tt = tt.toLowerCase();
@@ -429,11 +417,10 @@ export default function DonHang() {
                   key={p}
                   onClick={() => goToPage(p)}
                   className={`h-10 w-10 rounded-full text-sm font-semibold transition
-          ${
-            active
-              ? "bg-slate-900 text-white"
-              : "text-slate-700 hover:bg-slate-50 border"
-          }
+          ${active
+                      ? "bg-slate-900 text-white"
+                      : "text-slate-700 hover:bg-slate-50 border"
+                    }
         `}
                   aria-label={`Trang ${p}`}
                 >
@@ -446,11 +433,10 @@ export default function DonHang() {
             onClick={() => goToPage(safePage + 1)}
             disabled={safePage === totalPages}
             className={`h-10 w-10 rounded-full border flex items-center justify-center transition
-      ${
-        safePage === totalPages
-          ? "opacity-40 cursor-not-allowed"
-          : "hover:bg-slate-50"
-      }
+      ${safePage === totalPages
+                ? "opacity-40 cursor-not-allowed"
+                : "hover:bg-slate-50"
+              }
     `}
             aria-label="Trang sau"
           >

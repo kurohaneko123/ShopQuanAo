@@ -158,34 +158,52 @@ export const guiMaXacNhan = async (req, res) => {
 // 2️. Đặt lại mật khẩu sau khi nhập mã
 export const datLaiMatKhau = async (req, res) => {
   try {
-    const { email, resettoken, matkhaumoi } = req.body; // 👈 tên biến trùng với body
-    if (!email || !resettoken || !matkhaumoi)
-      return res.status(400).json({ message: "Thiếu dữ liệu cần thiết." });
+    const { email, resettoken, matkhaumoi } = req.body;
 
-    // Tìm người dùng có email và mã khớp
+    if (!email || !resettoken || !matkhaumoi) {
+      return res.status(400).json({ message: "Thiếu dữ liệu cần thiết." });
+    }
+
+    // ✅ CHỈ QUERY THEO EMAIL
     const [rows] = await pool.query(
-      "SELECT * FROM nguoidung WHERE email = ? AND resettoken = ?",
-      [email, resettoken]
+      "SELECT * FROM nguoidung WHERE email = ?",
+      [email]
     );
-    if (rows.length === 0)
-      return res.status(400).json({ message: "Mã xác nhận không hợp lệ!" });
+
+    if (rows.length === 0) {
+      return res.status(400).json({ message: "Người dùng không tồn tại!" });
+    }
 
     const nguoidung = rows[0];
-    const now = new Date();
-    if (new Date(nguoidung.thoigianhethan) < now)
-      return res.status(400).json({ message: "Mã xác nhận đã hết hạn!" });
 
-    // Cập nhật mật khẩu mới (hash)
+    // ✅ SO SÁNH OTP TRONG JS + TRIM + ÉP KIỂU
+    if (
+      !nguoidung.resettoken ||
+      String(nguoidung.resettoken).trim() !== String(resettoken).trim()
+    ) {
+      return res.status(400).json({ message: "Mã xác nhận không hợp lệ!" });
+    }
+
+    // ✅ CHECK HẾT HẠN
+    if (new Date(nguoidung.thoigianhethan).getTime() < Date.now()) {
+      return res.status(400).json({ message: "Mã xác nhận đã hết hạn!" });
+    }
+
+    // 🔐 HASH PASSWORD
     const bcrypt = await import("bcryptjs");
     const hash = await bcrypt.hash(matkhaumoi, 10);
+
     await pool.query(
-      "UPDATE nguoidung SET matkhau = ?, resettoken = NULL, thoigianhethan = NULL WHERE email = ?",
+      `UPDATE nguoidung
+   SET matkhau = ?, resettoken = NULL, thoigianhethan = NULL
+   WHERE email = ?`,
       [hash, email]
     );
 
+
     res.json({ message: "Đặt lại mật khẩu thành công!" });
   } catch (error) {
-    console.error("❌ Lỗi đặt lại mật khẩu:", error);
+    console.error(" Lỗi đặt lại mật khẩu:", error);
     res.status(500).json({ message: "Lỗi máy chủ khi đặt lại mật khẩu." });
   }
 };

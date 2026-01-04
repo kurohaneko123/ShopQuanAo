@@ -9,6 +9,8 @@ import Swal from "sweetalert2";
 export default function AccountModal({ isOpen, onClose }) {
   const [mode, setMode] = useState("login");
   const [loading, setLoading] = useState(false);
+  const [resetToken, setResetToken] = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const navigate = useNavigate();
 
   // Biến dành cho quên mật khẩu
@@ -19,6 +21,9 @@ export default function AccountModal({ isOpen, onClose }) {
 
   // Gửi request lên API backend
   const handleSubmit = async (e) => {
+    if (mode === "forgot" && resetStep === 2 && !resetEmail) {
+      throw new Error("Email không hợp lệ, vui lòng gửi lại mã.");
+    }
     e.preventDefault();
 
     const email = e.target.email?.value?.trim() || "";
@@ -168,15 +173,16 @@ export default function AccountModal({ isOpen, onClose }) {
 
         // B2: đặt lại mật khẩu
         if (resetStep === 2) {
-          const token = e.target.token?.value?.trim() || "";
-          const newPassword = e.target.newpassword?.value?.trim() || "";
+          if (!resetToken || !newPassword) {
+            throw new Error("Vui lòng nhập đầy đủ mã xác nhận và mật khẩu mới.");
+          }
 
           const res = await fetch(`${API_URL}/datlaimatkhau`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               email: resetEmail,
-              resettoken: token,
+              resettoken: resetToken,
               matkhaumoi: newPassword,
             }),
           });
@@ -242,10 +248,10 @@ export default function AccountModal({ isOpen, onClose }) {
             {mode === "login"
               ? "Chào mừng bạn quay trở lại "
               : mode === "register"
-              ? "Tạo tài khoản để nhận ưu đãi"
-              : resetStep === 1
-              ? "Nhập email để nhận mã xác nhận"
-              : "Đặt lại mật khẩu"}
+                ? "Tạo tài khoản để nhận ưu đãi"
+                : resetStep === 1
+                  ? "Nhập email để nhận mã xác nhận"
+                  : "Đặt lại mật khẩu"}
           </p>
         </div>
 
@@ -336,20 +342,31 @@ export default function AccountModal({ isOpen, onClose }) {
           {mode === "forgot" && resetStep === 2 && (
             <>
               <input
-                name="token"
-                placeholder="Mã xác nhận"
-                className="floating-input"
-                required
+                value={resetEmail}
+                readOnly
+                className="w-full px-4 py-3.5 rounded-xl border bg-gray-100 text-gray-600"
               />
+
               <input
-                name="newpassword"
-                type="password"
-                placeholder="Mật khẩu mới"
-                className="floating-input"
+                value={resetToken}
+                onChange={(e) => setResetToken(e.target.value)}
+                placeholder="Mã xác nhận"
                 required
+                className="w-full px-4 py-3.5 rounded-xl border bg-gray-100 text-gray-600"
               />
+
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Mật khẩu mới"
+                required
+                className="w-full px-4 py-3.5 rounded-xl border bg-gray-100 text-gray-600"
+              />
+
             </>
           )}
+
 
           <button
             type="submit"
@@ -361,12 +378,12 @@ export default function AccountModal({ isOpen, onClose }) {
             {loading
               ? "Đang xử lý..."
               : mode === "login"
-              ? "Đăng nhập"
-              : mode === "register"
-              ? "Tạo tài khoản"
-              : resetStep === 1
-              ? "Gửi mã xác nhận"
-              : "Đặt lại mật khẩu"}
+                ? "Đăng nhập"
+                : mode === "register"
+                  ? "Tạo tài khoản"
+                  : resetStep === 1
+                    ? "Gửi mã xác nhận"
+                    : "Đặt lại mật khẩu"}
           </button>
         </form>
 

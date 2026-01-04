@@ -21,7 +21,7 @@ import ProductReviews from "./chitietsp/ProductReviews.jsx";
 export default function ChiTietSanPham() {
   const { id } = useParams();
   const navigate = useNavigate();
-
+  const [openSizeGuide, setOpenSizeGuide] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [product, setProduct] = useState(null);
   const [variants, setVariants] = useState([]);
@@ -397,11 +397,13 @@ export default function ChiTietSanPham() {
               <div>
                 <div className="flex items-center justify-between">
                   <h4 className="font-semibold text-slate-900">Kích cỡ</h4>
-                  {selectedSize && (
-                    <span className="text-sm text-slate-500">
-                      Đã chọn: {selectedSize}
-                    </span>
-                  )}
+
+                  <button
+                    onClick={() => setOpenSizeGuide(true)}
+                    className="text-sm text-[rgb(96,148,216)] hover:underline font-medium"
+                  >
+                    Hướng dẫn chọn size
+                  </button>
                 </div>
 
                 <div className="mt-3 flex gap-2 flex-wrap">
@@ -525,6 +527,9 @@ export default function ChiTietSanPham() {
           currentPrice={priceToShow}
         />
       </div>
+      {openSizeGuide && (
+        <SizeGuideModal onClose={() => setOpenSizeGuide(false)} />
+      )}
     </div>
   );
 }
@@ -537,6 +542,115 @@ function TrustItem({ icon, title, desc }) {
         <div>
           <p className="text-sm font-semibold text-slate-900">{title}</p>
           <p className="text-xs text-slate-600 mt-0.5">{desc}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+function SizeGuideModal({ onClose }) {
+  return (
+    <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center px-4">
+      <div className="bg-white rounded-3xl w-full max-w-3xl max-h-[85vh] overflow-hidden shadow-2xl">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b">
+          <h3 className="text-lg font-bold text-slate-900">
+            Hướng dẫn chọn size
+          </h3>
+          <button
+            onClick={onClose}
+            className="text-slate-500 hover:text-slate-900 text-xl"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 space-y-8 overflow-y-auto max-h-[70vh]">
+          {/* ===== QUẦN ===== */}
+          <div>
+            <h4 className="font-semibold text-slate-900 mb-3">
+              Quần (All-day Pant)
+            </h4>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm border border-slate-200 rounded-xl overflow-hidden">
+                <thead className="bg-slate-100">
+                  <tr>
+                    <th className="p-2 text-left">Size</th>
+                    <th className="p-2">S</th>
+                    <th className="p-2">M</th>
+                    <th className="p-2">L</th>
+                    <th className="p-2">XL</th>
+                    <th className="p-2">2XL</th>
+                  </tr>
+                </thead>
+                <tbody className="text-center">
+                  <tr className="border-t">
+                    <td className="p-2 text-left font-medium">Cân nặng (kg)</td>
+                    <td>48–55</td>
+                    <td>55–62</td>
+                    <td>62–69</td>
+                    <td>69–76</td>
+                    <td>76–85</td>
+                  </tr>
+                  <tr className="border-t bg-slate-50">
+                    <td className="p-2 text-left font-medium">
+                      Chiều cao (cm)
+                    </td>
+                    <td>155–160</td>
+                    <td>160–165</td>
+                    <td>165–172</td>
+                    <td>172–177</td>
+                    <td>177–183</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* ===== ÁO ===== */}
+          <div>
+            <h4 className="font-semibold text-slate-900 mb-3">Áo / Hoodie</h4>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm border border-slate-200 rounded-xl overflow-hidden">
+                <thead className="bg-slate-100">
+                  <tr>
+                    <th className="p-2 text-left">Size</th>
+                    <th className="p-2">S</th>
+                    <th className="p-2">M</th>
+                    <th className="p-2">L</th>
+                    <th className="p-2">XL</th>
+                    <th className="p-2">2XL</th>
+                  </tr>
+                </thead>
+                <tbody className="text-center">
+                  <tr className="border-t">
+                    <td className="p-2 text-left font-medium">
+                      Chiều cao (cm)
+                    </td>
+                    <td>155–160</td>
+                    <td>160–165</td>
+                    <td>165–172</td>
+                    <td>172–177</td>
+                    <td>177–183</td>
+                  </tr>
+                  <tr className="border-t bg-slate-50">
+                    <td className="p-2 text-left font-medium">Cân nặng (kg)</td>
+                    <td>48–55</td>
+                    <td>55–62</td>
+                    <td>62–69</td>
+                    <td>69–76</td>
+                    <td>76–85</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <p className="mt-2 text-xs text-slate-500">
+              * Thông số mang tính tham khảo, có thể chênh lệch do chất liệu vải
+            </p>
+          </div>
         </div>
       </div>
     </div>

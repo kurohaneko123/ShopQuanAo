@@ -37,7 +37,7 @@ export default function QuanLyVoucher() {
   });
   const [addErrors, setAddErrors] = useState({});
   const [editErrors, setEditErrors] = useState({});
-  const ITEMS_PER_PAGE = 1;
+  const ITEMS_PER_PAGE = 3;
   const [page, setPage] = useState(1);
 
   const [editData, setEditData] = useState({});

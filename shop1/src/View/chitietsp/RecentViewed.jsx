@@ -1,12 +1,28 @@
-import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { ShoppingBag } from "lucide-react";
+import React, { useEffect, useState, useRef  } from "react";
+import { Link , useNavigate} from "react-router-dom";
+import { ShoppingBag, ChevronLeft, ChevronRight } from "lucide-react";
 export default function RecentViewed({
   currentId,
   currentProduct,
   currentPrice,
 }) {
   const [recentViewed, setRecentViewed] = useState([]);
+  const scrollRef = useRef(null);
+  const navigate = useNavigate();
+
+  const scrollLeft = () => {
+    scrollRef.current?.scrollBy({
+      left: -300,
+      behavior: "smooth",
+    });
+  };
+
+  const scrollRight = () => {
+    scrollRef.current?.scrollBy({
+      left: 300,
+      behavior: "smooth",
+    });
+  };
 
   useEffect(() => {
     if (!currentProduct) return;
@@ -54,64 +70,111 @@ export default function RecentViewed({
       </h2>
       <p className="text-sm text-slate-500 mt-1"></p>
 
-      <div className="mt-4 flex gap-4 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {recentViewed.map((p) => (
-          <div key={p.masanpham} className="min-w-[260px] max-w-[260px]">
-            <div
-              className="
-        group cursor-pointer
-        rounded-3xl border border-slate-200 bg-white
-        overflow-hidden
-        shadow-sm hover:shadow-lg
-        transition
-      "
-              onClick={() => navigate(`/product/${p.masanpham}`)}
-            >
-              {/* ẢNH */}
-              <div className="relative aspect-[4/5] bg-slate-50 overflow-hidden">
-                <img
-                  src={p.anhdaidien}
-                  alt={p.tensanpham}
-                  className="w-full h-full object-contain group-hover:scale-[1.03] transition"
-                />
+      <div className="relative mt-4">
+        {/* NÚT TRÁI */}
+        <button
+          type="button"
+          onClick={scrollLeft}
+          className="
+      absolute -left-4 top-1/2 -translate-y-1/2 z-10
+      w-10 h-10 rounded-full
+      bg-white border border-slate-200
+      shadow-md
+      flex items-center justify-center
+      hover:bg-slate-100 transition
+    "
+          aria-label="Trượt trái"
+        >
+          <ChevronLeft size={20} />
+        </button>
 
-                {/* ICON THÊM GIỎ */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    // TODO: handleAddToCart(p)
-                  }}
-                  className="
-            absolute bottom-3 right-3
-            w-11 h-11 rounded-full
-            bg-white text-[rgb(96,148,216)]
-            border border-slate-200
-            flex items-center justify-center
-            shadow-md
-            hover:bg-[rgb(96,148,216)]
-            hover:text-white
-            hover:border-[rgb(60,110,190)]
-            hover:scale-105
-            transition-all duration-300
+        {/* NÚT PHẢI */}
+        <button
+          type="button"
+          onClick={scrollRight}
+          className="
+      absolute -right-4 top-1/2 -translate-y-1/2 z-10
+      w-10 h-10 rounded-full
+      bg-white border border-slate-200
+      shadow-md
+      flex items-center justify-center
+      hover:bg-slate-100 transition
+    "
+          aria-label="Trượt phải"
+        >
+          <ChevronRight size={20} />
+        </button>
+
+        {/* LIST */}
+        <div
+          ref={scrollRef}
+          className="
+      flex gap-4 overflow-x-auto pb-2
+      scroll-smooth
+      [scrollbar-width:none] [&::-webkit-scrollbar]:hidden
+    "
+        >
+          {recentViewed.map((p) => (
+            <div key={p.masanpham} className="min-w-[260px] max-w-[260px]">
+              {/* card của em giữ nguyên ở đây */}
+              <div
+                className="
+            group cursor-pointer
+            rounded-3xl border border-slate-200 bg-white
+            overflow-hidden
+            shadow-sm hover:shadow-lg
+            transition
           "
-                >
-                  <ShoppingBag size={22} />
-                </button>
-              </div>
+                onClick={() => navigate(`/product/${p.masanpham}`)}
+              >
+                {/* ẢNH */}
+                <div className="relative aspect-[4/5] bg-slate-50 overflow-hidden">
+                  <img
+                    src={p.anhdaidien}
+                    alt={p.tensanpham}
+                    className="w-full h-full object-contain group-hover:scale-[1.03] transition"
+                  />
 
-              {/* NỘI DUNG */}
-              <div className="p-4 space-y-1">
-                <p className="text-sm font-semibold text-slate-900 line-clamp-2">
-                  {p.tensanpham}
-                </p>
+                  {/* ICON THÊM GIỎ */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // TODO: handleAddToCart(p)
+                    }}
+                    className="
+                absolute bottom-3 right-3
+                w-11 h-11 rounded-full
+                bg-white text-[rgb(96,148,216)]
+                border border-slate-200
+                flex items-center justify-center
+                shadow-md
+                hover:bg-[rgb(96,148,216)]
+                hover:text-white
+                hover:border-[rgb(60,110,190)]
+                hover:scale-105
+                transition-all duration-300
+              "
+                    aria-label="Thêm vào giỏ"
+                  >
+                    <ShoppingBag size={22} />
+                  </button>
+                </div>
 
-                <p className="text-red-600 font-bold text-[15px]">
-                  {Number(p.giaban || 0).toLocaleString("vi-VN")}₫
-                </p>
+                {/* NỘI DUNG */}
+                <div className="p-4 space-y-1">
+                  <p className="text-sm font-semibold text-slate-900 line-clamp-2">
+                    {p.tensanpham}
+                  </p>
+
+                  <p className="text-red-600 font-bold text-[15px]">
+                    {Number(p.giaban || 0).toLocaleString("vi-VN")}₫
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -19,8 +19,6 @@ export default function AddProductModal({
   sizes,
   onSuccess,
 }) {
-  if (!open) return null;
-
   // ================================
   // STATE SẢN PHẨM
   // ================================
@@ -43,6 +41,18 @@ export default function AddProductModal({
   const [errors, setErrors] = useState({});
   const [productNames, setProductNames] = useState([]);
   const [loading, setLoading] = useState(false);
+  const hasDuplicateVariants = () => {
+    const set = new Set();
+
+    for (const v of variants) {
+      if (!v.size || !v.color) continue;
+      const key = `${v.size}-${v.color}`;
+      if (set.has(key)) return true;
+      set.add(key);
+    }
+    return false;
+  };
+
   useEffect(() => {
     if (!open) return;
 
@@ -50,7 +60,9 @@ export default function AddProductModal({
       try {
         const res = await getAllProducts();
 
-        const names = res.data.map((p) =>
+        const list = Array.isArray(res?.data?.data) ? res.data.data : [];
+
+        const names = list.map((p) =>
           p.tensanpham
             ?.trim()
             .toLowerCase()
@@ -61,6 +73,7 @@ export default function AddProductModal({
         setProductNames(names);
       } catch (err) {
         console.error("Lỗi lấy danh sách sản phẩm:", err);
+        setProductNames([]);
       }
     };
 
@@ -147,7 +160,14 @@ export default function AddProductModal({
   // ================================
   const handleSubmit = async () => {
     if (!validate()) return;
-
+    if (hasDuplicateVariants()) {
+      Swal.fire({
+        title: "Lỗi!",
+        text: "Có biến thể trùng lặp về size và màu sắc!",
+        icon: "error",
+      });
+      return;
+    }
     Swal.fire({
       title: "Đang thêm sản phẩm...",
       html: "Vui lòng chờ trong giây lát",
@@ -272,6 +292,7 @@ export default function AddProductModal({
       });
     }
   };
+  if (!open) return null;
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
@@ -353,6 +374,9 @@ export default function AddProductModal({
                 value={data[key]}
                 onChange={(e) => setData({ ...data, [key]: e.target.value })}
               />
+              {errors[key] && (
+                <p className="text-red-500 text-xs mt-1">{errors[key]}</p>
+              )}
             </div>
           ))}
         </div>

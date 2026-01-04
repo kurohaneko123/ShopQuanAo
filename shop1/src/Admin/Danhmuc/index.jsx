@@ -41,6 +41,15 @@ export default function CategoriesPage() {
       e.tendanhmuc = "Tên danh mục không được chứa ký tự đặc biệt";
     }
     if (!form.gioitinh) e.gioitinh = "Vui lòng chọn giới tính";
+    const name = form.tendanhmuc?.toLowerCase() || "";
+
+    if (name.includes("nữ") && form.gioitinh === "Nam") {
+      e.gioitinh = "Danh mục có 'nữ' thì giới tính phải là Nữ";
+    }
+
+    if (name.includes("nam") && form.gioitinh === "Nu") {
+      e.gioitinh = "Danh mục có 'nam' thì giới tính phải là Nam";
+    }
 
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -315,15 +324,19 @@ export default function CategoriesPage() {
                 <select
                   value={form.gioitinh}
                   onChange={(e) => setField("gioitinh", e.target.value)}
+                  onBlur={() => setTouched((p) => ({ ...p, gioitinh: true }))}
                   className={`w-full px-3 py-2 rounded-lg
-              bg-black/40 text-gray-200
-              border border-white/10
-              focus:border-indigo-500 outline-none`}
+    bg-black/40 text-gray-200
+    border ${errors.gioitinh ? "border-red-500/60" : "border-white/10"}
+    focus:border-indigo-500 outline-none`}
                 >
                   <option value="">Không phân loại</option>
                   <option value="Nam">Nam</option>
                   <option value="Nu">Nữ</option>
                 </select>
+                {touched.gioitinh && errors.gioitinh && (
+                  <p className="mt-1 text-xs text-red-400">{errors.gioitinh}</p>
+                )}
               </div>
 
               {/* MÔ TẢ */}

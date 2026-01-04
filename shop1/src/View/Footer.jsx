@@ -72,28 +72,6 @@ export default function Footer() {
             </li>
           </ul>
         </div>
-
-        {/* 4️⃣ ĐĂNG KÝ NHẬN TIN */}
-        <div>
-          {/* <h3 className="text-lg font-semibold text-white mb-4 tracking-wide">
-            Đăng ký nhận tin
-          </h3>
-          <p className="text-sm mb-4 opacity-80">
-            Nhận thông tin ưu đãi, bộ sưu tập mới và tin tức độc quyền từ
-            HORIZON.
-          </p> */}
-
-          {/* <div className="flex">
-            <input
-              type="email"
-              placeholder="Nhập email của bạn"
-              className="px-4 py-2 rounded-l-lg w-full outline-none text-gray-800 text-sm"
-            />
-            <button className="bg-indigo-600 text-white px-4 py-2 rounded-r-lg hover:bg-indigo-700 transition">
-              Gửi
-            </button>
-          </div> */}
-        </div>
       </div>
 
       {/* 5️⃣ COPYRIGHT */}

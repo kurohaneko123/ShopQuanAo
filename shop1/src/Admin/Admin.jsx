@@ -114,16 +114,6 @@ export default function AdminLayout() {
               onClick={() => setOpen(false)}
             >
               <Boxes size={18} /> Sản phẩm
-              {({ isActive }) => (
-                <>
-                  <span
-                    className={isActive ? "text-indigo-400" : "text-gray-400"}
-                  >
-                    <Boxes size={18} />
-                  </span>
-                  <span>Sản phẩm</span>
-                </>
-              )}
             </NavLink>
 
             <NavLink

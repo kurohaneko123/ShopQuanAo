@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, Outlet, NavLink } from "react-router-dom";
 import {
-  BarChart2,
+  BarChart3,
+  Boxes,
+  LayoutGrid,
+  TicketPercent,
   Users,
-  Package,
-  DollarSign,
+  ReceiptText,
   LogOut,
   Menu,
 } from "lucide-react";
+
 import Swal from "sweetalert2";
 import axios from "axios";
 
@@ -92,7 +95,7 @@ export default function AdminLayout() {
             }
             onClick={() => setOpen(false)}
           >
-            <BarChart2 size={18} />
+            <BarChart3 size={18} />
             Dashboard
           </NavLink>
 
@@ -110,7 +113,17 @@ export default function AdminLayout() {
               }
               onClick={() => setOpen(false)}
             >
-              <Package size={18} /> Sản phẩm
+              <Boxes size={18} /> Sản phẩm
+              {({ isActive }) => (
+                <>
+                  <span
+                    className={isActive ? "text-indigo-400" : "text-gray-400"}
+                  >
+                    <Boxes size={18} />
+                  </span>
+                  <span>Sản phẩm</span>
+                </>
+              )}
             </NavLink>
 
             <NavLink
@@ -125,7 +138,7 @@ export default function AdminLayout() {
               }
               onClick={() => setOpen(false)}
             >
-              <Package size={18} /> Danh mục
+              <LayoutGrid size={18} /> Danh mục
             </NavLink>
 
             <NavLink
@@ -140,7 +153,7 @@ export default function AdminLayout() {
               }
               onClick={() => setOpen(false)}
             >
-              <Package size={18} /> Khuyến mãi
+              <TicketPercent size={18} /> Khuyến mãi
             </NavLink>
 
             <NavLink
@@ -170,7 +183,7 @@ export default function AdminLayout() {
               }
               onClick={() => setOpen(false)}
             >
-              <DollarSign size={18} /> Đơn hàng
+              <ReceiptText size={18} /> Đơn hàng
             </NavLink>
           </nav>
         </div>

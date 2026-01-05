@@ -11,7 +11,6 @@ import {
   laySanPhamBanChay,
 } from "../models/donhangModel.js";
 
-
 // Tạo 1 đơn hàng (CHỈ CHECK KHO – KHÔNG TRỪ)
 export const themDonHang = async (req, res) => {
   const connection = await db.getConnection();
@@ -80,7 +79,6 @@ export const themDonHang = async (req, res) => {
   }
 };
 
-
 //Lấy danh sách đơn hàng
 export const layDanhSachDonHang = async (req, res) => {
   try {
@@ -105,7 +103,8 @@ export const layDanhSachDonHang = async (req, res) => {
 const TRANG_THAI_CHO_PHEP_SUA = [
   "chờ xác nhận",
   "đã xác nhận",
-  "đang chuẩn bị",
+  "đang giao hàng",
+  "đã giao hàng",
 ];
 
 // 🔧 SỬA THÔNG TIN ĐƠN HÀNG (KHÔNG ĐỤNG TRẠNG THÁI)
@@ -133,7 +132,7 @@ export const suaDonHang = async (req, res) => {
       });
     }
 
-    // 🚫 CHẶN TUYỆT ĐỐI ĐỔI TRẠNG THÁI
+    // CHẶN TUYỆT ĐỐI ĐỔI TRẠNG THÁI
     if (data.trangthai) {
       return res.status(400).json({
         message: "API này không cho phép thay đổi trạng thái đơn hàng!",
@@ -188,10 +187,7 @@ export const suaDonHang = async (req, res) => {
 
 // Khách hàng GỬI YÊU CẦU HỦY ĐƠN (chờ admin xác nhận)
 // Khách hàng GỬI YÊU CẦU HỦY ĐƠN (chờ admin xác nhận)
-const TRANG_THAI_KHACH_DUOC_YEU_CAU_HUY = [
-  "chờ xác nhận",
-  "đã xác nhận",
-];
+const TRANG_THAI_KHACH_DUOC_YEU_CAU_HUY = ["chờ xác nhận", "đã xác nhận"];
 
 export const khachHuyDonHang = async (req, res) => {
   const connection = await db.getConnection();
@@ -265,7 +261,6 @@ export const khachHuyDonHang = async (req, res) => {
   }
 };
 
-
 // Admin XÁC NHẬN HỦY ĐƠN HÀNG
 export const adminHuyDonHang = async (req, res) => {
   const connection = await db.getConnection();
@@ -280,12 +275,10 @@ export const adminHuyDonHang = async (req, res) => {
       return res.status(404).json({ message: "Không tìm thấy đơn hàng!" });
     }
 
-    const tt = donhang.trangthai
-      ? donhang.trangthai.trim().toLowerCase()
-      : "";
+    const tt = donhang.trangthai ? donhang.trangthai.trim().toLowerCase() : "";
 
-    /* 🚫 CHẶN ĐƠN ĐANG / ĐÃ GIAO */
-    if (["đang giao", "đã giao"].includes(tt)) {
+    /*  CHẶN ĐƠN ĐANG / ĐÃ GIAO */
+    if (["đang giao hàng", "đã giao hàng"].includes(tt)) {
       await connection.rollback();
       return res.status(400).json({
         message:
@@ -396,7 +389,6 @@ export const adminHuyDonHang = async (req, res) => {
     connection.release();
   }
 };
-
 
 //Lấy đơn hàng theo id
 export const layDonHangById = async (req, res) => {
@@ -741,5 +733,55 @@ export const layChiTietHoaDon = async (req, res) => {
   } catch (err) {
     console.error("Lỗi chi tiết hóa đơn:", err);
     res.status(500).json({ message: "Lỗi server" });
+  }
+};
+// ADMIN CHUYỂN TRẠNG THÁI ĐƠN HÀNG
+// ADMIN CHUYỂN TRẠNG THÁI ĐƠN HÀNG
+// donhangController.js
+export const adminChuyenTrangThai = async (req, res) => {
+  try {
+    const { id } = req.params;
+    let { trangthai } = req.body;
+
+    const donhang = await layDonHangTheoID(id);
+    if (!donhang)
+      return res.status(404).json({ message: "Không tìm thấy đơn hàng" });
+
+    // ✅ phòng hờ: nếu DB bị rỗng -> coi như chờ xác nhận
+    const current =
+      donhang.trangthai && String(donhang.trangthai).trim()
+        ? String(donhang.trangthai).trim().toLowerCase()
+        : "chờ xác nhận";
+
+    trangthai = (trangthai || "").trim().toLowerCase();
+
+    // 🚫 KHÓA CỨNG
+    if (["đã hủy", "đã hoàn tiền"].includes(current)) {
+      return res
+        .status(400)
+        .json({ message: "Đơn đã kết thúc, không thể đổi trạng thái" });
+    }
+
+    const hopLe = {
+      "đã xác nhận": ["đang giao hàng"],
+      "đang giao hàng": ["đã giao hàng"],
+    };
+
+    if (!hopLe[current] || !hopLe[current].includes(trangthai)) {
+      return res.status(400).json({
+        message: `Không thể chuyển từ '${current}' sang '${trangthai}'`,
+      });
+    }
+
+    await capNhatTrangThaiDonHang(id, trangthai);
+
+    return res.json({
+      message: "Chuyển trạng thái thành công",
+      madonhang: id,
+      from: current,
+      to: trangthai,
+    });
+  } catch (err) {
+    return res.status(500).json({ message: "Lỗi server", error: err.message });
   }
 };

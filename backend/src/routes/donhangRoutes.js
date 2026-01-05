@@ -12,6 +12,7 @@ import {
   sanPhamNoiBat,
   demDonHang,
   layChiTietHoaDon,
+  adminChuyenTrangThai,
 } from "../controllers/donhangController.js";
 import { xacthucToken } from "../middleware/xacthuctoken.js";
 const router = express.Router();
@@ -32,6 +33,9 @@ router.put("/huy/:id", khachHuyDonHang);
 router.put("/admin/huy/:id", adminHuyDonHang);
 // API Lịch sử đơn hàng của người dùng (dựa theo JWT)
 router.get("/lsdonhang", xacthucToken, layLichSuDonHangCuaToi);
+// admin chuyển trạng thái
+router.put("/admin/trangthai/:id", adminChuyenTrangThai);
+
 // API Admin hủy đơn hàng zalopay
 router.put("/admin/huy-zalopay/:id", adminHuyDonHangZaloPay);
 //ROUTES có PARAM luôn để cuối

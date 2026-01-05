@@ -61,7 +61,6 @@ export default function ChiTietSanPham() {
         setErrors({ color: "", size: "Sản phẩm này đã hết hàng." });
         return;
       }
-
       if (quantity > Number(variant.soluongton)) {
         setErrors({
           color: "",
@@ -132,11 +131,16 @@ export default function ChiTietSanPham() {
         const res = await axios.get(`${BASE_URL}/api/sanpham/${id}`);
         setProduct(res.data.sanpham);
         setVariants(res.data.bienthe);
+        reload();
 
         if (res.data.bienthe.length > 0) {
           setSelectedColor(res.data.bienthe[0].tenmausac);
           setSelectedSize(res.data.bienthe[0].tenkichthuoc);
         }
+        const interval = setInterval(() => {
+          reload();
+        }, 5000);
+        return () => clearInterval(interval);
       } catch (err) {
         console.error(" Lỗi khi tải chi tiết sản phẩm:", err);
       } finally {
@@ -191,8 +195,6 @@ export default function ChiTietSanPham() {
     if (currentImages.length > 0) setMainImage(currentImages[0]);
     else setMainImage(product?.anhdaidien || "");
   }, [selectedColor, variants]); // eslint-disable-line
-
-  //  NEW: gợi ý sản phẩm (fallback an toàn: thử gọi list, fail thì bỏ trống)
 
   if (loading)
     return (

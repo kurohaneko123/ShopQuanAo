@@ -3,11 +3,11 @@ import db from "../config/db.js";
 // Tạo 1 đơn hàng mới
 export const taoDonHang = async (data, connection) => {
   const sql = `
-    INSERT INTO donhang 
-    (manguoidung, tennguoinhan, sodienthoai, diachigiao, donvivanchuyen,
-     hinhthucthanhtoan, tongtien, phivanchuyen, tongthanhtoan, ghichu, ngaytao)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
-  `;
+  INSERT INTO donhang 
+  (manguoidung, tennguoinhan, sodienthoai, diachigiao, donvivanchuyen,
+   hinhthucthanhtoan, tongtien, phivanchuyen, tongthanhtoan, ghichu, trangthai, ngaytao)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'chờ xác nhận', NOW())
+`;
 
   const [result] = await connection.query(sql, [
     data.manguoidung,

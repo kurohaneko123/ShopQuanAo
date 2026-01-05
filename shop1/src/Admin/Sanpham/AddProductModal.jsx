@@ -129,9 +129,10 @@ export default function AddProductModal({
       e.tensanpham = "Vui lòng nhập tên sản phẩm";
     } else if (!NO_SPECIAL_CHAR_REGEX.test(rawName)) {
       e.tensanpham = "Tên sản phẩm không được chứa ký tự đặc biệt";
-    } else if (productNames.includes(normalizedName)) {
-      e.tensanpham = "Tên sản phẩm đã tồn tại";
     }
+    // } else if (productNames.includes(normalizedName)) {
+    //   e.tensanpham = "Tên sản phẩm đã tồn tại";
+    // }
 
     if (!data.madanhmuc) e.madanhmuc = "Vui lòng chọn danh mục";
 
@@ -265,26 +266,26 @@ export default function AddProductModal({
       // axios chỉ có message chung
       const rawMessage = err?.response?.data?.message || err?.message || "";
 
-      // TRÙNG SẢN PHẨM (slug)
-      if (
-        rawMessage.toLowerCase().includes("tồn tại") ||
-        rawMessage.toLowerCase().includes("duplicate") ||
-        err?.response?.status === 500 // quan trọng
-      ) {
-        setErrors((prev) => ({
-          ...prev,
-          tensanpham: "Tên sản phẩm đã tồn tại",
-        }));
+      // // TRÙNG SẢN PHẨM (slug)
+      // if (
+      //   rawMessage.toLowerCase().includes("tồn tại") ||
+      //   rawMessage.toLowerCase().includes("duplicate") ||
+      //   err?.response?.status === 500 // quan trọng
+      // ) {
+      //   setErrors((prev) => ({
+      //     ...prev,
+      //     tensanpham: "Tên sản phẩm đã tồn tại",
+      //   }));
 
-        // focus lại input
-        setTimeout(() => {
-          document.getElementById("tensanpham-input")?.focus();
-        }, 100);
+      //   // focus lại input
+      //   setTimeout(() => {
+      //     document.getElementById("tensanpham-input")?.focus();
+      //   }, 100);
 
-        return; // không cho rớt xuống swal
-      }
+      //   return; // không cho rớt xuống swal
+      // }
 
-      //lỗi khác mới show swal
+      // //lỗi khác mới show swal
       Swal.fire({
         title: "Lỗi!",
         text: "Thêm sản phẩm thất bại!",

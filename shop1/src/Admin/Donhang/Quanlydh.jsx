@@ -26,15 +26,55 @@ export default function Quanlydh() {
     sodienthoai: "",
     diachigiao: "",
     ghichu: "",
+    trangthai: "",
   });
 
   /* ================= FETCH ================= */
+  const normalizeTrangThai = (o) => {
+    const raw =
+      o.trangthai ??
+      o.TrangThai ??
+      o.status ??
+      o.trang_thai ??
+      o.trangThai ??
+      "";
+
+    const val = String(raw).trim();
+
+    // ✅ nếu BE trả rỗng thì coi như "chờ xác nhận" (đúng nghiệp vụ)
+    return val;
+  };
+  const displayTrangThai = (o) => {
+    const tt = normalizeTrangThai(o);
+    return tt ? tt : "(Chưa có trạng thái)";
+  };
   const fetchOrders = async () => {
     try {
+      setLoading(true);
+
       const res = await axios.get(API);
-      const data = res.data?.data || [];
+
+      // ✅ bắt mọi kiểu response phổ biến
+      const rows = Array.isArray(res.data)
+        ? res.data
+        : Array.isArray(res.data?.data)
+        ? res.data.data
+        : Array.isArray(res.data?.rows)
+        ? res.data.rows
+        : [];
+
+      const data = rows.map((o) => ({
+        ...o,
+        trangthai: normalizeTrangThai(o), // raw thật từ DB
+        trangthai_view: displayTrangThai(o), // cái để render UI
+      }));
+
       setOrders(data);
       setFiltered(data);
+
+      // ✅ nếu đang ở page > maxPage thì kéo về page hợp lệ
+      const maxPage = Math.max(1, Math.ceil(data.length / ITEMS_PER_PAGE));
+      setPage((p) => (p > maxPage ? maxPage : p));
     } catch (err) {
       console.error("Lỗi lấy đơn hàng:", err);
     } finally {
@@ -60,10 +100,11 @@ export default function Quanlydh() {
   /* ================= HELPER UI ================= */
   const actionBtn = (disabled = false) =>
     `w-9 h-9 rounded-lg flex items-center justify-center transition
-     ${disabled
-      ? "bg-gray-700 text-gray-400 cursor-not-allowed opacity-60"
-      : "text-white hover:brightness-110"
-    }`;
+     ${
+       disabled
+         ? "bg-gray-700 text-gray-400 cursor-not-allowed opacity-60"
+         : "text-white hover:brightness-110"
+     }`;
 
   /* ================= ACTION LOGIC ================= */
   const submitEditInfo = async () => {
@@ -158,12 +199,44 @@ export default function Quanlydh() {
       );
     }
   };
+  const chuyenTrangThai = async (id, trangthai) => {
+    const confirm = await Swal.fire({
+      title: "Xác nhận?",
+      text: `Chuyển đơn sang trạng thái: ${trangthai}`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "OK",
+      cancelButtonText: "Hủy",
+    });
+    if (!confirm.isConfirmed) return;
 
+    try {
+      const token = localStorage.getItem("token"); // nếu sau này BE bắt token
+      await axios.put(
+        `${API}/admin/trangthai/${id}`,
+        { trangthai },
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        }
+      );
+
+      //  CỰC QUAN TRỌNG: lấy lại từ DB để khỏi “ảo”
+      await fetchOrders();
+
+      Swal.fire("Thành công", "Đã chuyển trạng thái", "success");
+    } catch (err) {
+      Swal.fire(
+        "Lỗi",
+        err?.response?.data?.message || "Không thể chuyển trạng thái",
+        "error"
+      );
+    }
+  };
 
   const adminXacNhanDon = async (id) => {
     const confirm = await Swal.fire({
       title: "Xác nhận đơn hàng?",
-      text: "Đơn hàng sẽ được trừ kho và chuyển sang trạng thái đã xác nhận",
+      text: "Đơn hàng sẽ được chuyển sang trạng thái đã xác nhận",
       icon: "question",
       showCancelButton: true,
       confirmButtonText: "Xác nhận",
@@ -266,7 +339,14 @@ export default function Quanlydh() {
 
           <tbody>
             {paginatedOrders.map((x) => {
-              const tt = x.trangthai?.trim().toLowerCase() || "";
+              const tt = (x.trangthai || "").trim().toLowerCase();
+              const isInvalidTrangThai = !x.trangthai || !x.trangthai.trim();
+
+              const isDaXacNhan = tt === "đã xác nhận" || tt === "da_xac_nhan";
+              const isDangGiaoHang =
+                tt === "đang giao hàng" || tt === "dang_giao_hang";
+              const isDaGiaoHang =
+                tt === "đã giao hàng" || tt === "da_giao_hang";
 
               const isDaHuy = tt === "đã hủy" || tt === "da_huy";
               const isChoXacNhan =
@@ -276,14 +356,18 @@ export default function Quanlydh() {
                 tt === "yeu cau huy" ||
                 tt === "yeu_cau_huy";
 
-
               const isHoanTien = x.trangthai_hoantien === "thanh_cong";
               const disableEdit = isDaHuy || isHoanTien;
               const disableCancel = !isYeuCauHuy || isDaHuy || isHoanTien;
               const disableRefundCheck =
                 !x.mahoantien || x.trangthai_hoantien !== "dang_xu_ly";
 
-              const hienTrangThai = isYeuCauHuy ? "Yêu cầu hủy" : x.trangthai;
+              const hienTrangThai =
+                x.trangthai_hoantien === "dang_xu_ly"
+                  ? "Đang hoàn tiền (ZaloPay)"
+                  : x.trangthai_hoantien === "thanh_cong"
+                  ? "Đã hoàn tiền"
+                  : x.trangthai_view;
 
               return (
                 <tr key={x.madonhang} className="border-b border-white/5">
@@ -294,16 +378,34 @@ export default function Quanlydh() {
                     {Number(x.tongthanhtoan).toLocaleString()}đ
                   </td>
 
-                  <td className="p-3 text-center">
-                    {x.trangthai_hoantien === "dang_xu_ly"
-                      ? "Đang hoàn tiền (ZaloPay)"
-                      : x.trangthai_hoantien === "thanh_cong"
-                        ? "Đã hoàn tiền"
-                        : hienTrangThai}
+                  <td className="p-3 text-center font-medium">
+                    {hienTrangThai}
                   </td>
 
                   <td className="p-3">
-                    <div className="grid grid-cols-5 gap-2 place-items-center">
+                    <div className="grid grid-cols-6 gap-2 place-items-center">
+                      {!isInvalidTrangThai && isDaXacNhan && (
+                        <button
+                          className="bg-blue-600 px-2 py-1 rounded text-xs"
+                          onClick={() =>
+                            chuyenTrangThai(x.madonhang, "đang giao hàng")
+                          }
+                        >
+                          Giao hàng
+                        </button>
+                      )}
+
+                      {!isInvalidTrangThai && isDangGiaoHang && (
+                        <button
+                          className="bg-emerald-600 px-2 py-1 rounded text-xs"
+                          onClick={() =>
+                            chuyenTrangThai(x.madonhang, "đã giao hàng")
+                          }
+                        >
+                          Đã giao
+                        </button>
+                      )}
+
                       <button
                         className={`${actionBtn(false)} bg-indigo-600`}
                         onClick={() => {
@@ -343,6 +445,7 @@ export default function Quanlydh() {
                             sodienthoai: x.sodienthoai || "",
                             diachigiao: x.diachigiao || "",
                             ghichu: x.ghichu || "",
+                            trangthai: x.trangthai,
                           });
                           setShowDetail(true);
                           setIsEdit(true);

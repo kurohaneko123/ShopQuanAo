@@ -31,13 +31,25 @@ export default function OrderSuccess() {
     );
   }, [location.state, location.search]);
 
-  // ❌ KHÔNG quyết định checking bằng paymentMethod nữa
-  // ✅ checking sẽ được quyết định dựa trên DB
   const [checking, setChecking] = useState(true);
 
-  // 🔥 Trạng thái hoàn tiền
   // null | "dang_xu_ly" | "thanh_cong" | "that_bai"
   const [refundStatus, setRefundStatus] = useState(null);
+  // ✅ AUTO SUCCESS CHO COD
+  useEffect(() => {
+    if (!orderId) return;
+
+    if (paymentMethod === "COD") {
+      // COD không cần xác nhận thanh toán
+      setChecking(false);
+
+      // Xóa giỏ hàng
+      const uid = localStorage.getItem("activeUserId");
+      const cartKey = uid ? `cart_${uid}` : "cart_guest";
+      localStorage.removeItem(cartKey);
+      localStorage.removeItem("checkoutPayload");
+    }
+  }, [orderId, paymentMethod]);
 
   // 2️⃣ Polling khi là ZaloPay
   useEffect(() => {
@@ -45,9 +57,7 @@ export default function OrderSuccess() {
 
     const timer = setInterval(async () => {
       try {
-        const res = await fetch(
-          `http://localhost:5000/api/donhang/${orderId}`
-        );
+        const res = await fetch(`http://localhost:5000/api/donhang/${orderId}`);
         const data = await res.json();
 
         // 🔥 CASE 1: ĐÃ HOÀN TIỀN → KHÔNG CHECKING

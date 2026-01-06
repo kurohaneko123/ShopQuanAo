@@ -16,6 +16,11 @@ export default function Dashboard() {
   const [tooltip, setTooltip] = useState(null);
   const [topProducts, setTopProducts] = useState([]);
   const [loadingTop, setLoadingTop] = useState(true);
+  const [selectedMonth, setSelectedMonth] = useState(
+    new Date().getMonth() // 0-11
+  );
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+
   useEffect(() => {
     const fetchTop = async () => {
       try {
@@ -64,6 +69,8 @@ export default function Dashboard() {
     };
     fetchAll();
   }, []);
+  const getDaysInMonth = (year, monthIndex) =>
+    new Date(year, monthIndex + 1, 0).getDate();
 
   if (loading) return <p className="text-gray-400">Đang tải...</p>;
 
@@ -77,11 +84,23 @@ export default function Dashboard() {
   );
 
   // ===== DOANH THU THEO THÁNG =====
-  const revenueByMonth = Array(12).fill(0);
+  const daysInMonth = getDaysInMonth(selectedYear, selectedMonth);
+
+  // tạo sẵn đủ ngày (1 → 28/29/30/31)
+  const revenueByDay = Array(daysInMonth).fill(0);
+  const ordersByDay = Array(daysInMonth).fill(0);
+
   orders.forEach((o) => {
-    const m = new Date(o.ngaytao).getMonth();
-    revenueByMonth[m] += Number(o.tongthanhtoan || 0);
+    const d = new Date(o.ngaytao);
+    if (d.getFullYear() === selectedYear && d.getMonth() === selectedMonth) {
+      const dayIndex = d.getDate() - 1; // 1 → 0
+      revenueByDay[dayIndex] += Number(o.tongthanhtoan || 0);
+      ordersByDay[dayIndex] += 1;
+    }
   });
+  const labelsByDay = Array.from({ length: daysInMonth }, (_, i) =>
+    String(i + 1).padStart(2, "0")
+  );
 
   const ordersByMonth = Array(12).fill(0);
   orders.forEach((o) => {
@@ -143,12 +162,8 @@ export default function Dashboard() {
     statusCount[st]++;
   });
 
-  // Đếm trạng thái đơn hàng vòng lặp
-  orders.forEach((o) => {
-    const st = getOrderStatusForDashboard(o);
-    statusCount[st]++;
-  });
-  const chartData = metric === "revenue" ? revenueByMonth : ordersByMonth;
+  const chartData = metric === "revenue" ? revenueByDay : ordersByDay;
+
   const maxValue = Math.max(...chartData, 1);
 
   return (
@@ -245,6 +260,39 @@ export default function Dashboard() {
 
       {/* ===== BIỂU ĐỒ DOANH THU ===== */}
       <div className="bg-[#111111] border border-white/10 rounded-xl p-6 shadow-xl">
+        {/* FILTER THÁNG/NĂM */}
+        <div className="flex flex-wrap gap-3 mb-4">
+          <select
+            value={selectedMonth}
+            onChange={(e) => setSelectedMonth(Number(e.target.value))}
+            className="bg-[#111] border border-white/10 px-3 py-2 rounded-lg"
+          >
+            {Array.from({ length: 12 }).map((_, i) => (
+              <option key={i} value={i}>
+                Tháng {i + 1}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(Number(e.target.value))}
+            className="bg-[#111] border border-white/10 px-3 py-2 rounded-lg"
+          >
+            {[2024, 2025, 2026].map((y) => (
+              <option key={y} value={y}>
+                {y}
+              </option>
+            ))}
+          </select>
+
+          <div className="text-sm text-gray-400 flex items-center">
+            Tháng này có{" "}
+            <span className="mx-1 text-white font-bold">{daysInMonth}</span>{" "}
+            ngày
+          </div>
+        </div>
+
         {/* Button Mode */}
         <div className="flex gap-3 mb-4">
           {["column", "line", "area"].map((m) => (
@@ -295,8 +343,12 @@ flex flex-col"
           <div className="mb-3">
             <h3 className="text-lg font-bold text-white">
               {metric === "revenue"
-                ? "Doanh thu theo tháng (VNĐ)"
-                : "Số đơn hàng theo tháng"}
+                ? `Doanh thu theo ngày – Tháng ${
+                    selectedMonth + 1
+                  }/${selectedYear}`
+                : `Số đơn theo ngày – Tháng ${
+                    selectedMonth + 1
+                  }/${selectedYear}`}
             </h3>
             <p className="text-sm text-gray-400">
               Thống kê từ dữ liệu đơn hàng trong hệ thống
@@ -313,28 +365,29 @@ flex flex-col"
                   <stop offset="100%" stopColor="#0ea5e9" /> {/* Xanh đậm */}
                 </linearGradient>
               </defs>
-
-              {months.map((m, i) => {
-                const x = (i / 12) * 1200 + 50; // vị trí tháng dưới mỗi cột
+              {labelsByDay.map((d, i) => {
+                const x = (i / daysInMonth) * 1200 + 40;
                 return (
                   <text
-                    key={m}
+                    key={d}
                     x={x}
                     y={295}
                     textAnchor="middle"
-                    fontSize="22"
+                    fontSize="16"
                     fill="rgba(255,255,255,0.35)"
                   >
-                    {m}
+                    {d}
                   </text>
                 );
               })}
+
               {/* AREA */}
               {chartMode === "area" && (
                 <path
                   d={`M0 300 ${chartData
                     .map((v, i) => {
-                      const x = (i / 11) * 1200;
+                      const x = (i / (daysInMonth - 1)) * 1200;
+
                       const y = 300 - (v / maxValue) * 260;
                       return `L ${x} ${y}`;
                     })
@@ -343,7 +396,6 @@ flex flex-col"
                 />
               )}
 
-              {/* LINE */}
               {chartMode === "line" && (
                 <polyline
                   fill="none"
@@ -352,19 +404,54 @@ flex flex-col"
                   strokeLinecap="round"
                   points={chartData
                     .map((v, i) => {
-                      const x = (i / 11) * 1200;
+                      const x = (i / (daysInMonth - 1)) * 1200;
+
                       const y = 300 - (v / maxValue) * 260;
                       return `${x},${y}`;
                     })
                     .join(" ")}
                 />
               )}
+              {/* ===== DOT HOVER FOR LINE / AREA ===== */}
+              {(chartMode === "line" || chartMode === "area") &&
+                chartData.map((v, i) => {
+                  const x =
+                    daysInMonth > 1 ? (i / (daysInMonth - 1)) * 1200 : 0;
+                  const y = 300 - (v / maxValue) * 260;
+
+                  return (
+                    <circle
+                      key={i}
+                      cx={x}
+                      cy={y}
+                      r="8"
+                      fill="transparent"
+                      className="cursor-pointer"
+                      onMouseEnter={(e) => {
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        setTooltip({
+                          x: rect.left + rect.width / 2,
+                          y: rect.top,
+                          label:
+                            metric === "revenue"
+                              ? `Ngày ${labelsByDay[i]}: ${Number(
+                                  v
+                                ).toLocaleString("vi-VN")} VNĐ`
+                              : `Ngày ${labelsByDay[i]}: ${v} đơn`,
+                        });
+                      }}
+                      onMouseLeave={() => setTooltip(null)}
+                    />
+                  );
+                })}
 
               {/* COLUMN */}
               {chartMode === "column" &&
                 chartData.map((v, i) => {
                   const height = (v / maxValue) * 260;
-                  const x = (i / 12) * 1200 + 20;
+                  const barW = Math.max(8, 1000 / daysInMonth);
+                  const gap = 6;
+                  const x = 60 + i * (barW + gap);
 
                   return (
                     <g key={i}>
@@ -372,7 +459,7 @@ flex flex-col"
                       <rect
                         x={x}
                         y={300 - height}
-                        width="60"
+                        width={barW}
                         height={height}
                         rx="10"
                         fill="url(#revBar)"
@@ -384,17 +471,17 @@ flex flex-col"
                             y: rect.top,
                             label:
                               metric === "revenue"
-                                ? `${months[i]}: ${Number(v).toLocaleString(
-                                    "vi-VN"
-                                  )} VNĐ`
-                                : `${months[i]}: ${v} đơn`,
+                                ? `Ngày ${labelsByDay[i]}: ${Number(
+                                    v
+                                  ).toLocaleString("vi-VN")} VNĐ`
+                                : `Ngày ${labelsByDay[i]}: ${v} đơn`,
                           });
                         }}
                         onMouseLeave={() => setTooltip(null)}
                       />
 
                       {/* LABEL THÁNG */}
-                      <text
+                      {/* <text
                         x={x + 30}
                         y={295}
                         textAnchor="middle"
@@ -402,7 +489,7 @@ flex flex-col"
                         fill="rgba(255,255,255,0.35)"
                       >
                         {months[i]}
-                      </text>
+                      </text> */}
                     </g>
                   );
                 })}

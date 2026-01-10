@@ -147,7 +147,6 @@ export default function ChiTietSanPham() {
     };
     fetchProduct();
 
-    // ⏱️ refresh mỗi 5 giây
     const interval = setInterval(fetchProduct, 200000);
 
     return () => {

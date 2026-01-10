@@ -126,20 +126,18 @@ export default function ChiTietSanPham() {
 
   //Lấy chi tiết sản phẩm + biến thể
   useEffect(() => {
+    let isMounted = true;
     const fetchProduct = async () => {
       try {
         const res = await axios.get(`${BASE_URL}/api/sanpham/${id}`);
+        if (!isMounted) return;
         setProduct(res.data.sanpham);
         setVariants(res.data.bienthe);
-        reload();
 
         if (res.data.bienthe.length > 0) {
           setSelectedColor(res.data.bienthe[0].tenmausac);
           setSelectedSize(res.data.bienthe[0].tenkichthuoc);
         }
-        const interval = setInterval(() => {
-          reload();
-        }, 5000);
         return () => clearInterval(interval);
       } catch (err) {
         console.error(" Lỗi khi tải chi tiết sản phẩm:", err);
@@ -148,6 +146,14 @@ export default function ChiTietSanPham() {
       }
     };
     fetchProduct();
+
+    // ⏱️ refresh mỗi 5 giây
+    const interval = setInterval(fetchProduct, 200000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
   }, [id]);
 
   // ====== Dữ liệu UI hợp lệ theo variants ======

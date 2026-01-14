@@ -81,12 +81,12 @@ export default function DonHang() {
   }, []);
 
   /* ================================
-      LOGIC HỦY / HOÀN TIỀN
-     - COD     → hủy đơn
-     - ZALOPAY → hoàn tiền
-  ================================ */
+    LOGIC HỦY / HOÀN TIỀN
+   - COD     → gửi yêu cầu hủy
+   - ZALOPAY → gửi yêu cầu hủy + REFUND (ASYNC)
+================================ */
   const cancelOrder = async (order) => {
-    // 1️⃣ HỎI LÝ DO HỦY
+    // 1️⃣ HỎI LÝ DO HỦY (GIỮ NGUYÊN CỦA ANH)
     const { value: lydo_huy } = await Swal.fire({
       title: "Yêu cầu hủy đơn hàng",
       input: "select",
@@ -117,16 +117,16 @@ export default function DonHang() {
     const token = localStorage.getItem("token");
 
     try {
-      // 2️⃣ CHỈ GỬI YÊU CẦU HỦY (KHÔNG PHÂN BIỆT COD / ZALOPAY)
+      // 2️⃣ GỬI YÊU CẦU HỦY (GIỮ NGUYÊN API CỦA FILE MỚI)
       await axios.put(
-        `${BASE_URL}/huy/${order.madonhang}`, // 👈 giữ nguyên /huy
+        `${BASE_URL}/huy/${order.madonhang}`,
         { lydo_huy },
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
 
-      // 3️⃣ UPDATE UI
+      // UI: đã gửi yêu cầu
       setOrders((prev) =>
         prev.map((o) =>
           o.madonhang === order.madonhang
@@ -135,18 +135,70 @@ export default function DonHang() {
         )
       );
 
+      // =====================
+      // 🔵 ZALOPAY → REFUND (ASYNC)
+      // =====================
+      if (order.hinhthucthanhtoan === "ZALOPAY") {
+        const refundRes = await axios.post(
+          "http://localhost:5000/api/payment/zalopay/refund",
+          { madonhang: order.madonhang },
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        const refund_id = refundRes.data?.result?.refund_id;
+        if (!refund_id) throw new Error("Refund không hợp lệ");
+
+        // UI → đang hoàn tiền
+        setOrders((prev) =>
+          prev.map((o) =>
+            o.madonhang === order.madonhang
+              ? { ...o, trangthai: "Đang hoàn tiền" }
+              : o
+          )
+        );
+
+        // poll trạng thái hoàn tiền
+        setTimeout(async () => {
+          try {
+            const statusRes = await axios.get(
+              "http://localhost:5000/api/payment/zalopay/refund-status",
+              {
+                params: { refund_id },
+                headers: { Authorization: `Bearer ${token}` },
+              }
+            );
+
+            if (statusRes.data?.return_code === 1) {
+              setOrders((prev) =>
+                prev.map((o) =>
+                  o.madonhang === order.madonhang
+                    ? { ...o, trangthai: "Đã hoàn tiền" }
+                    : o
+                )
+              );
+            }
+          } catch (e) {
+            console.error("Lỗi query refund-status:", e);
+          }
+        }, 2000);
+      }
+
       Swal.fire(
         "Đã gửi yêu cầu",
-        "Yêu cầu hủy đơn hàng đã được gửi. Vui lòng chờ admin xác nhận.",
+        order.hinhthucthanhtoan === "ZALOPAY"
+          ? "Đơn ZaloPay đang được hoàn tiền."
+          : "Yêu cầu hủy đơn hàng đã được gửi.",
         "success"
       );
     } catch (err) {
-      console.error("Lỗi gửi yêu cầu hủy:", err);
-
+      console.error("Lỗi hủy / hoàn tiền:", err);
       Swal.fire(
         "Lỗi!",
         err?.response?.data?.message ||
-        "Không thể gửi yêu cầu hủy đơn hàng.",
+        err.message ||
+        "Không thể hủy / hoàn tiền đơn hàng này",
         "error"
       );
     }

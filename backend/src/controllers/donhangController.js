@@ -212,11 +212,14 @@ export const khachHuyDonHang = async (req, res) => {
       });
     }
 
-    // Đã thanh toán → không cho yêu cầu hủy
-    if (Number(donhang.dathanhtoan) === 1) {
+    // Đã thanh toán → không cho yêu cầu hủy với đơn cod
+    if (
+      donhang.hinhthucthanhtoan === "COD" &&
+      Number(donhang.dathanhtoan) === 1
+    ) {
       await connection.rollback();
       return res.status(400).json({
-        message: "Đơn hàng đã thanh toán, vui lòng liên hệ admin",
+        message: "Đơn COD đã xử lý, không thể hủy",
       });
     }
 

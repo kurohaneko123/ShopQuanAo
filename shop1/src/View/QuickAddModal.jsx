@@ -158,12 +158,7 @@ export default function QuickAddModal({
               </div>
             )}
 
-            <div className="px-4 py-3 border-t border-slate-200 bg-white">
-              <p className="text-xs text-slate-500">
-                Chọn đúng **màu / size** trước khi thêm vào giỏ để tránh nhầm
-                biến thể.
-              </p>
-            </div>
+            <div className="px-4 py-3 border-t border-slate-200 bg-white"></div>
           </div>
 
           {/* Right: Options */}

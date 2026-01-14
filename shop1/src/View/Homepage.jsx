@@ -278,6 +278,7 @@ export default function HomePage() {
             name: displayName,
             img: item.anhdaidien,
             slug: key,
+            productId: item.masanpham,
           };
 
           if (isMale) male[displayName] = entry;
@@ -404,11 +405,7 @@ export default function HomePage() {
                 key={cat.slug || index}
                 className="group flex flex-col items-center"
               >
-                <Link
-                  to={`/all/${selectedGender}/${cat.slug
-                    .replace("-nam", "")
-                    .replace("-nu", "")}`}
-                >
+                <Link to={`/product/${cat.productId}`}>
                   <figure className="w-full overflow-hidden rounded-2xl bg-gray-50 shadow-sm">
                     <img
                       src={cat.img}
@@ -428,12 +425,6 @@ export default function HomePage() {
         {/* ===== Sản phẩm Mặc hằng ngày ===== */}
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-3xl font-bold mb-6">Sản phẩm mặc hằng ngày</h2>
-          <Link
-            to="/all"
-            className="text-sm underline underline-offset-2 hover:text-blue-600"
-          >
-            Xem thêm
-          </Link>
         </div>
         {/* ===== Slider sản phẩm ====== */}
         <section className="relative overflow-visible pb-20">
@@ -582,13 +573,6 @@ export default function HomePage() {
             <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
               Ưu đãi nổi bật
             </h2>
-
-            <Link
-              to="/sale"
-              className="text-sm underline underline-offset-2 hover:text-blue-600"
-            >
-              Xem thêm
-            </Link>
           </div>
 
           {vouchers.length > 0 ? (

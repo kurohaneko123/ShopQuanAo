@@ -396,7 +396,6 @@ export default function HomePage() {
             </button>
           </nav>
         </section>
-
         {/* ===== Danh mục sản phẩm ===== */}
         <section className="pb-10">
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-6">

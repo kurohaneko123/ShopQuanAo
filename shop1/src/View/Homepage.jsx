@@ -99,7 +99,7 @@ export default function HomePage() {
   const settings = {
     dots: false,
     infinite: true,
-    speed: 600,
+    speed: 500,
     slidesToShow: 5,
     slidesToScroll: 1,
     arrows: true,
@@ -108,10 +108,22 @@ export default function HomePage() {
     responsive: [
       { breakpoint: 1280, settings: { slidesToShow: 4 } },
       { breakpoint: 1024, settings: { slidesToShow: 3 } },
+
+      // tablet
       { breakpoint: 768, settings: { slidesToShow: 2 } },
-      { breakpoint: 480, settings: { slidesToShow: 1 } },
+
+      // mobile
+      {
+        breakpoint: 480,
+        settings: {
+          slidesToShow: 2, //tắt hiển thị 2 sản phẩm
+          slidesToScroll: 1,
+          arrows: false, //ẩn nút điều hướng
+        },
+      },
     ],
   };
+
   /* ====== Ưu đãi nổi bật ====== */
   useEffect(() => {
     const fetchVouchers = async () => {
@@ -435,19 +447,19 @@ export default function HomePage() {
                   className="relative group bg-white border rounded-2xl overflow-hidden 
              shadow-sm hover:shadow-lg transition cursor-pointer"
                 >
-                  <div className="h-72 bg-gray-50">
+                  <div className="bg-gray-50 h-44 sm:h-56 md:h-72">
                     <img
                       src={p.img}
                       alt={p.name}
                       className="w-full h-full object-cover rounded-xl transition-transform duration-300 group-hover:scale-105"
                     />
                   </div>
-                  <div className="p-4 text-center">
-                    <h3 className="font-semibold text-lg line-clamp-1 leading-tight">
+                  <div className="p-2 sm:p-4 text-center">
+                    <h3 className="font-semibold text-[13px] sm:text-base line-clamp-2">
                       {p.name}
                     </h3>
                     {priceMap[p.id] ? (
-                      <p className="text-red-600 font-bold text-[15px]">
+                      <p className="text-red-600 font-bold text-sm sm:text-[15px] mt-0.5">
                         {priceMap[p.id].toLocaleString("vi-VN")}đ
                       </p>
                     ) : (
@@ -457,7 +469,7 @@ export default function HomePage() {
                   <div
                     className="
   absolute top-3 right-3
-  opacity-0 group-hover:opacity-100
+  opacity-100 sm:opacity-0 sm:group-hover:opacity-100
   transition-all duration-300
 "
                   >
@@ -467,7 +479,8 @@ export default function HomePage() {
                         handleAddToCart(p);
                       }}
                       className="
-  w-11 h-11 rounded-full
+  w-9 h-9 sm:w-11 sm:h-11
+ rounded-full
   bg-white text-[rgb(96,148,216)]
   border border-slate-200
   flex items-center justify-center
@@ -498,12 +511,6 @@ export default function HomePage() {
         {/* ===== Sản phẩm nổi bật ===== */}
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-3xl font-bold mb-6">Sản phẩm nổi bật</h2>
-          <Link
-            to="/all"
-            className="text-sm underline underline-offset-2 hover:text-blue-600"
-          >
-            Xem thêm
-          </Link>
         </div>
         {/* ===== Slider sản phẩm ====== */}
         <section className="relative overflow-visible pb-20">
@@ -515,15 +522,15 @@ export default function HomePage() {
                   className="relative group bg-white border rounded-2xl overflow-hidden 
              shadow-sm hover:shadow-lg transition cursor-pointer"
                 >
-                  <div className="h-72 bg-gray-50">
+                  <div className="bg-gray-50 h-48 sm:h-60 md:h-72">
                     <img
                       src={p.img}
                       alt={p.name}
                       className="w-full h-full object-cover rounded-xl transition-transform duration-300 group-hover:scale-105"
                     />
                   </div>
-                  <div className="p-4 text-center">
-                    <h3 className="font-semibold text-lg line-clamp-1 leading-tight">
+                  <div className="p-3 sm:p-4 text-center">
+                    <h3 className="font-semibold text-sm sm:text-base line-clamp-2">
                       {p.name}
                     </h3>
                     {priceMap[p.id] ? (

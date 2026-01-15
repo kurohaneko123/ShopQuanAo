@@ -1,4 +1,5 @@
 import db from "../config/db.js";
+import axios from "axios";
 import { queryRefundStatusService } from "./zalopay/ZalopayQueryRefund_Controller.js";
 import {
   layHoanTienTheoId,
@@ -30,6 +31,14 @@ export const adminCheckHoanTien = async (req, res) => {
 
     // 2️⃣ Gọi ZaloPay refund-status
     const result = await queryRefundStatusService(hoantien.m_refund_id);
+    // CHƯA HOÀN TIỀN → CHỈ TRẢ KẾT QUẢ
+    if (result.sub_return_code !== 1) {
+      await connection.commit();
+      return res.json({
+        message: "Hoàn tiền đang xử lý, chưa thể hủy GHN",
+        result,
+      });
+    }
 
     // 3️⃣ Nếu hoàn tiền xong
     if (result.sub_return_code === 1) {
@@ -44,8 +53,47 @@ export const adminCheckHoanTien = async (req, res) => {
         `,
         [hoantien.madonhang]
       );
-    }
+      // ================== HỦY GHN SAU KHI HOÀN TIỀN ==================
+      const [[donhang]] = await connection.query(
+        `SELECT * FROM donhang WHERE madonhang = ?`,
+        [hoantien.madonhang]
+      );
 
+      //  COD thì bỏ qua
+      if (
+        donhang.hinhthucthanhtoan === "ZALOPAY" &&
+        donhang.ghn_order_code
+      ) {
+        const tt = donhang.trangthai?.toLowerCase() || "";
+
+        //  nếu GHN đang / đã giao thì KHÔNG hủy
+        if (!["đang giao hàng", "đã giao hàng"].includes(tt)) {
+          try {
+            const ghnRes = await axios.post(
+              "https://dev-online-gateway.ghn.vn/shiip/public-api/v2/switch-status/cancel",
+              { order_codes: [donhang.ghn_order_code] },
+              {
+                headers: {
+                  ShopId: process.env.GHN_SHOP_ID,
+                  Token: process.env.GHN_TOKEN,
+                  "Content-Type": "application/json",
+                },
+              }
+            );
+
+            if (ghnRes.data?.code !== 200) {
+              throw new Error("GHN không cho phép hủy");
+            }
+          } catch (ghnErr) {
+            console.error(
+              "HỦY GHN THẤT BẠI:",
+              ghnErr?.response?.data || ghnErr.message
+            );
+            //  không rollback – tiền đã hoàn rồi
+          }
+        }
+      }
+    }
     await connection.commit();
 
     return res.json({

@@ -48,7 +48,7 @@ export default function AccountModal({ isOpen, onClose }) {
           Swal.fire(
             "Lỗi!",
             "Họ tên chỉ được chứa chữ cái, không được có số hoặc ký tự đặc biệt",
-            "error"
+            "error",
           );
           return;
         }
@@ -133,7 +133,7 @@ export default function AccountModal({ isOpen, onClose }) {
               if (data.nguoidung?.vaitro === "admin") {
                 navigate("/admin", { replace: true });
               } else {
-                navigate("/admin", { replace: true });
+                navigate("/", { replace: true });
               }
             }, 200);
           },
@@ -174,7 +174,9 @@ export default function AccountModal({ isOpen, onClose }) {
         // B2: đặt lại mật khẩu
         if (resetStep === 2) {
           if (!resetToken || !newPassword) {
-            throw new Error("Vui lòng nhập đầy đủ mã xác nhận và mật khẩu mới.");
+            throw new Error(
+              "Vui lòng nhập đầy đủ mã xác nhận và mật khẩu mới.",
+            );
           }
 
           const res = await fetch(`${API_URL}/datlaimatkhau`, {
@@ -363,10 +365,8 @@ export default function AccountModal({ isOpen, onClose }) {
                 required
                 className="w-full px-4 py-3.5 rounded-xl border bg-gray-100 text-gray-600"
               />
-
             </>
           )}
-
 
           <button
             type="submit"
@@ -404,6 +404,6 @@ export default function AccountModal({ isOpen, onClose }) {
         </div>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }

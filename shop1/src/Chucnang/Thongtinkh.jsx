@@ -24,7 +24,21 @@ export default function ThongTinKhachHang() {
       await axios.put("http://localhost:5000/api/nguoidung/capnhat", form, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
+      // Validate số điện thoại VN
+      const phoneRegex = /^(03|05|07|08|09)[0-9]{8}$/;
+      if (!phoneRegex.test(form.soDienThoai)) {
+        Swal.fire("Lỗi", "Số điện thoại không hợp lệ ", "error");
+        return;
+      }
+      const diaChiRegex = /^[a-zA-ZÀ-ỹ0-9\s,./-]+$/;
+      if (!diaChiRegex.test(form.diaChi)) {
+        Swal.fire(
+          "Lỗi",
+          "Địa chỉ chỉ được chứa chữ, số và các ký tự , . / -",
+          "error",
+        );
+        return;
+      }
       const updatedUser = {
         ...user,
         hoten: form.hoTen,
@@ -58,7 +72,7 @@ export default function ThongTinKhachHang() {
         // 1) Gọi API /thongtin để lấy ID từ token
         const res = await axios.get(
           "http://localhost:5000/api/nguoidung/thongtin",
-          { headers: { Authorization: `Bearer ${token}` } }
+          { headers: { Authorization: `Bearer ${token}` } },
         );
 
         const tokenUser = res.data.nguoidung; // id, email, vaitro
@@ -66,12 +80,12 @@ export default function ThongTinKhachHang() {
         // 2) Gọi API /danhsach để lấy danh sách đầy đủ từ DB
         const list = await axios.get(
           "http://localhost:5000/api/nguoidung/danhsach",
-          { headers: { Authorization: `Bearer ${token}` } }
+          { headers: { Authorization: `Bearer ${token}` } },
         );
 
         // 3) Lấy user đầy đủ theo ID
         const fullUser = list.data.nguoidung.find(
-          (u) => u.manguoidung === tokenUser.id
+          (u) => u.manguoidung === tokenUser.id,
         );
 
         // 4) SET USER HOÀN CHỈNH TỪ DB
@@ -128,7 +142,16 @@ export default function ThongTinKhachHang() {
                 className="w-full p-3 border rounded-lg"
                 placeholder="Địa chỉ"
                 value={form.diaChi}
-                onChange={(e) => setForm({ ...form, diaChi: e.target.value })}
+                onChange={(e) => {
+                  const raw = e.target.value;
+
+                  // Chỉ cho phép chữ (có dấu), số, space và , . / -
+                  const cleaned = raw
+                    .replace(/[^a-zA-ZÀ-ỹ0-9\s,./-]/g, "")
+                    .replace(/\s{2,}/g, " ");
+
+                  setForm({ ...form, diaChi: cleaned });
+                }}
               />
             </div>
 

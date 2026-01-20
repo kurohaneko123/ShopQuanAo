@@ -91,7 +91,7 @@ export default function Checkout() {
     return cart.reduce(
       (sum, item) =>
         sum + Number(item.giakhuyenmai || 0) * Number(item.soluong || 0),
-      0
+      0,
     );
   }, [cart]);
 
@@ -111,7 +111,7 @@ export default function Checkout() {
         Swal.fire(
           "Lỗi!",
           "Không tải được danh sách tỉnh/thành (GHN).",
-          "error"
+          "error",
         );
       }
     };
@@ -171,10 +171,10 @@ export default function Checkout() {
    * ===================================================== */
   const buildFullAddress = (next = formData) => {
     const p = provinces.find(
-      (x) => String(x.ProvinceID) === String(next.province_id)
+      (x) => String(x.ProvinceID) === String(next.province_id),
     );
     const d = districts.find(
-      (x) => String(x.DistrictID) === String(next.district_id)
+      (x) => String(x.DistrictID) === String(next.district_id),
     );
     const w = wards.find((x) => String(x.WardCode) === String(next.ward_code));
 
@@ -255,7 +255,7 @@ export default function Checkout() {
       Swal.fire(
         "Lỗi!",
         "Vui lòng chọn đầy đủ Tỉnh/Quận/Phường để giao hàng.",
-        "error"
+        "error",
       );
       return false;
     }
@@ -265,7 +265,7 @@ export default function Checkout() {
       Swal.fire(
         "Lỗi!",
         "Chưa tính được phí vận chuyển. Vui lòng chọn lại địa chỉ.",
-        "error"
+        "error",
       );
       return false;
     }
@@ -293,7 +293,7 @@ export default function Checkout() {
 
     const totalWeight = items.reduce(
       (sum, it) => sum + it.weight * it.quantity,
-      0
+      0,
     );
 
     // payload gửi BE /api/ghn/create-order
@@ -310,7 +310,7 @@ export default function Checkout() {
 
       weight: Math.max(100, totalWeight),
       insurance_value: Number(
-        payloadOrder.tongthanhtoan || payloadOrder.tongtien || 0
+        payloadOrder.tongthanhtoan || payloadOrder.tongtien || 0,
       ),
       cod_amount:
         payloadOrder.hinhthucthanhtoan === "COD"
@@ -321,7 +321,7 @@ export default function Checkout() {
 
     const res = await axios.post(
       "http://localhost:5000/api/ghn/create-order",
-      ghnPayload
+      ghnPayload,
     );
 
     return res.data; // BE trả { saved: {ghn_order_code, ghn_fee}, ... }
@@ -376,7 +376,7 @@ export default function Checkout() {
 
       const res = await axios.post(
         "http://localhost:5000/api/donhang/them",
-        payload
+        payload,
       );
 
       const orderId = res.data?.madonhang;
@@ -451,7 +451,7 @@ export default function Checkout() {
             {
               madonhang: orderId,
               tongthanhtoan: total,
-            }
+            },
           );
 
           const payUrl =
@@ -465,7 +465,7 @@ export default function Checkout() {
             Swal.fire(
               "Lỗi!",
               "Không lấy được link thanh toán ZaloPay!",
-              "error"
+              "error",
             );
             return;
           }
@@ -487,8 +487,7 @@ export default function Checkout() {
     } catch (err) {
       console.error("Lỗi tạo đơn:", err?.response?.data || err);
 
-      const message =
-        err?.response?.data?.message || "Không thể tạo đơn hàng!";
+      const message = err?.response?.data?.message || "Không thể tạo đơn hàng!";
 
       Swal.fire({
         icon: "error",
@@ -536,7 +535,7 @@ export default function Checkout() {
             required
           />
 
-          {/* ✅ Địa chỉ GHN: Tỉnh */}
+          {/* Địa chỉ GHN: Tỉnh */}
           <select
             className="w-full border rounded-lg p-3 mb-3 bg-white"
             value={formData.province_id}
@@ -550,7 +549,7 @@ export default function Checkout() {
             ))}
           </select>
 
-          {/* ✅ Quận */}
+          {/*  Quận */}
           <select
             className="w-full border rounded-lg p-3 mb-3 bg-white"
             value={formData.district_id}
@@ -565,7 +564,7 @@ export default function Checkout() {
             ))}
           </select>
 
-          {/* ✅ Phường */}
+          {/* Phường */}
           <select
             className="w-full border rounded-lg p-3 mb-3 bg-white"
             value={formData.ward_code}

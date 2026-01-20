@@ -210,10 +210,8 @@ export default function Checkout() {
     try {
       setShippingLoading(true);
 
-      // weight/insurance_value: anh có thể tính theo cart, chị để đơn giản
-      const weight = 800; // gram (demo)
+      const weight = 800; //
       const insurance_value = Number(subtotal || 0);
-
       const res = await ghnApi.post("/fee", {
         to_district_id: Number(next.district_id),
         to_ward_code: String(wardCode),
@@ -227,8 +225,7 @@ export default function Checkout() {
       setShippingCost(fee);
     } catch (e) {
       console.error(e);
-      Swal.fire("Lỗi!", "Không tính được phí vận chuyển (GHN).", "error");
-      setShippingCost(0);
+      setShippingCost(20000);
     } finally {
       setShippingLoading(false);
     }

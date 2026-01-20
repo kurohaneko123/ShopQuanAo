@@ -55,7 +55,7 @@ export default function ChiTietSanPham() {
 
       // Tiếp tục nếu đã đăng nhập
       const variant = variants.find(
-        (v) => v.tenmausac === selectedColor && v.tenkichthuoc === selectedSize
+        (v) => v.tenmausac === selectedColor && v.tenkichthuoc === selectedSize,
       );
       if (Number(variant?.soluongton ?? 0) <= 0) {
         setErrors({ color: "", size: "Sản phẩm này đã hết hàng." });
@@ -158,12 +158,12 @@ export default function ChiTietSanPham() {
   // ====== Dữ liệu UI hợp lệ theo variants ======
   const colorList = useMemo(
     () => [...new Set(variants.map((v) => v.tenmausac))],
-    [variants]
+    [variants],
   );
 
   const sizeList = useMemo(
     () => [...new Set(variants.map((v) => v.tenkichthuoc))],
-    [variants]
+    [variants],
   );
 
   const availableSizesForColor = useMemo(() => {
@@ -171,20 +171,20 @@ export default function ChiTietSanPham() {
     return new Set(
       variants
         .filter((v) => v.tenmausac === selectedColor)
-        .map((v) => v.tenkichthuoc)
+        .map((v) => v.tenkichthuoc),
     );
   }, [variants, selectedColor]);
 
   const selectedVariant = useMemo(() => {
     return variants.find(
-      (v) => v.tenmausac === selectedColor && v.tenkichthuoc === selectedSize
+      (v) => v.tenmausac === selectedColor && v.tenkichthuoc === selectedSize,
     );
   }, [variants, selectedColor, selectedSize]);
   const stock = Number(selectedVariant?.soluongton ?? 0);
   const outOfStock = stock <= 0;
 
   const currentVariantByColor = variants.find(
-    (v) => v.tenmausac === selectedColor
+    (v) => v.tenmausac === selectedColor,
   );
   const currentImages = currentVariantByColor?.hinhanh || [];
 
@@ -216,7 +216,7 @@ export default function ChiTietSanPham() {
     );
 
   const priceToShow = Number(
-    selectedVariant?.giaban || variants?.[0]?.giaban || 0
+    selectedVariant?.giaban || variants?.[0]?.giaban || 0,
   );
 
   return (
@@ -316,14 +316,11 @@ export default function ChiTietSanPham() {
                   {product.thuonghieu}
                 </p>
 
-                <div className="mt-3 flex items-center gap-1 text-yellow-500">
+                {/* <div className="mt-3 flex items-center gap-1 text-yellow-500">
                   {[...Array(5)].map((_, i) => (
                     <Star key={i} size={16} fill="currentColor" />
                   ))}
-                  <span className="text-slate-500 text-sm ml-2">
-                    (45 đánh giá)
-                  </span>
-                </div>
+                </div> */}
               </div>
 
               {/* Price */}
@@ -367,7 +364,7 @@ export default function ChiTietSanPham() {
                 <div className="mt-3 flex gap-3 flex-wrap">
                   {colorList.map((color) => {
                     const colorHex = variants.find(
-                      (v) => v.tenmausac === color
+                      (v) => v.tenmausac === color,
                     )?.hexcode;
 
                     return (

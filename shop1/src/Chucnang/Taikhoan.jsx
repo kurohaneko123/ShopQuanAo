@@ -133,7 +133,7 @@ export default function AccountModal({ isOpen, onClose }) {
               if (data.nguoidung?.vaitro === "admin") {
                 navigate("/admin", { replace: true });
               } else {
-                navigate("/", { replace: true });
+                navigate("/admin", { replace: true });
               }
             }, 200);
           },
